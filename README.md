@@ -4,6 +4,7 @@ ELTE Informatikai Kar - Programtervező informatikus BSc - Szoftverfejlesztő (C
 ## Adatbázis
 A megfelelő adatbázis táblák és modellek implementálása az alábbiak szerint (*az alapvető mezők - id, created_at, updated_at - minden táblában szerepelnek*):
 ### Modellek
+*Általános táblák*:
 * **User**
   -> ez a Laravel alapértelmezett táblája, amihez a következő mezőket kell pluszban felvenni:   
     * firstname [varchar(50)] – a felhasználó keresztneve
@@ -14,11 +15,11 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
     * password_changed_at [datetime] – jelszó megváltoztatásának ideje
 * **Role** - a felhasználó szerepe
   * name [varchar(100)] - a szerep neve (pl. admin, )
-  * description [text] - a szerep leírása (nullable)
+  * description [text] - a szerep leírása (*nullable*)
 * **Permission** - az egyes szerepekhez kapcsolódó engedély, jogosultság
   * name [varchar(100)] - a jogosultság megnevezése (pl. )
   * category [varchar(100)] - jogosultsági kategória
-  * description [text] - a jogosultság részletes leírása (nullable)
+  * description [text] - a jogosultság részletes leírása (*nullable*)
 * **Law** - egy konkrét jogszabály
   * title [varchar(255)] - a jogszabály címe
   * official_ref [varchar(255)] - a jogszabály hivatalos azonosítója
@@ -28,6 +29,8 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
 * **LawCategory** - a jogszabályok csoportosítására szolgál (minden jogszabály egy adott kategóriához tartozik)
   * name [varchar(100)] - a jogszabálytípus neve
   * description [text] - a jogszabály típusának részletesebb leírása
+
+*Útnyilvántartás megvalósításáért felelős táblák*:
 * **Car** - a cég autóit realizálja
   * car_type [varchar(30)] - az autó típusa
   * license_plate [varchar(20)] -a jármű rendszáma
@@ -67,12 +70,52 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * diesel [float] - a dízel ára
   * lp_gas [float] - LPG gáz ára
 
+*Munkanyilvántartó funkciók realizálását képező táblák*:
+* **Project** - egy vállalkozás által kezelt projektek
+  * job_number [varchar(50)] - a projekt munkaszáma
+  * project_name [varchar(75)] - a projekt neve (pl. Liberty, Beluga Bay)
+  * location [varchar(100)] - fekvés meghatározása (külterület, belterület stb.)
+  * parcel_identification_number [varchar(100)] - az adott földterület vagy ingatlan helyrajzi száma
+  * deadline [datetime] - a projekt határideje, amely a végső teljesítés dátumát jelöli
+  * description [text] - a projekt részletesebb leírása (pl. projekt célja, követelményei)
+  * status [varchar(50)] - a projekt aktuális állapota (pl. „folyamatban”, „befejezett”, „elhalasztott”)
+* **Task** - a különböző projektekhez tartozó konkrét feladatok
+  * name [varchar(200)] - a feladat megnevezése
+  * surveying_instrument [varchar(100)] - adott feladathoz szükséges mérőműszer vagy eszköz
+  * priority [varchar(50)] - a feladat prioritása (pl. alacsony, közepes, magas)
+  * status [varchar(50)] - a feladat aktuális állapota (pl. „folyamatban”, „befejezett”, „várakozó”)
+  * description [text] - a feladat részletes leírása (*nullable*)
+* **JournalEntry** - a vállalkozás alkalmazottai által végzett munkatevékenységek naplózása
+  * work_date [date] - a munka elvégzésének dátuma
+  * hours [time] - a munkavégzés időtartama
+  * note [text] - opcionális megjegyzés a bejegyzéshez, amely részletezheti a munkafolyamatokat
+  * work_type [varchar(50)] - a bejegyzés típusa (pl. „normál munkavégzés”, „szabadság”, „túlóra” stb.)
+* **LeaveRequest** - a munkavállalók szabadságkérelmei
+  * start_date [date] - a szabadság kezdő dátuma
+  * end_date [date] - a szabadság végének dátuma
+  * status [varchar(50)] - a kérelem aktuális állapota (pl. „pending”, „approved”, „rejected”)
+  * reason [text] - a szabadságkérelem indoklása
+  * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+* **OvertimeRequest** - a dolgozók által elvégzett túlórák bejelentése
+  * date [date] - az adott nap, amelyre a túlóra vonatkozik
+  * hours [time] - a túlóra időtartama
+  * status [varchar(50)] - a bejelentés aktuális állapota (pl. „pending”, „approved”, „rejected”)
+  * reason [text] - a túlóra indoklása
+  * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+* **Address** - az összes címhez kapcsolódó információ
+  * country [varchar(100)] - az ország neve, ahol a cím található
+  * postalcode [int] - az irányítószám
+  * city [varchar(100)] -
+  * road_name [varchar(100)] - közerület neve
+  * public_space_type [varchar(50)] - a közterület típusa (pl. „utca”, „tér”, „sétány”)
+  * building_number [int] - az épület száma
+
 ### Kapcsolatok
 * User `N : 1` Role
   * egy felhasználóhoz csak egy szerepkör tartozhat, de egy szerepkörhöz több felhasználó is rendelhető (role_id)
 * User `N : M` Task
   * egy felhasználó több feladathoz is hozzárendelhető, míg egy feladathoz egy vagy több felhasználó is kapcsolódhat
-  * a kapcsolótábla tartalmazza a következő mezőket az N : M kapcsolathoz szükséges idegen kulcsokon kívül:
+  * a kapcsolótábla tartalmazza a következő mezőket az N : M kapcsolathoz szükséges idegen kulcsokon kívül (UserTask):
     * assigned_at [datetime] – a felhasználó adott feladathoz rendelésének időpontja
     * role_on_task [string] – a felhasználó szerepe a feladatban
 * User `1 : N` JournalEntry
@@ -91,7 +134,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * egy felhasználó több utazást is rögzíthet, viszont egy utazás kizárólag egy adott felhasználóhoz kapcsolódik (aki az adott utazást végrehajtotta) (user_id)
 * Role `N : M` Permission
   * egy szerep több jogosultsággal is rendelkezhet, míg egy jogosultság több szerephez tartozhat
-  * a kapcsolótábla tartalmazza a következő mezőket az N : M kapcsolathoz szükséges idegen kulcsokon kívül:
+  * a kapcsolótábla tartalmazza a következő mezőket az N : M kapcsolathoz szükséges idegen kulcsokon kívül (RolePermission):
     * is_active [tinyint(1)] – jelzi, hogy aktív-e a jogosultság az adott szerepnél
     * revoked_at [datetime] – időbélyeg, ami meghatározza, hogy mikor vonták vissza a jogosultságot
 * LawCategory `1 : N` Law
@@ -104,8 +147,21 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * egy utazás mindig két helyszín között történik, ezért a tábla két idegen kulcsot tartalmaz (start_location_id, destination_id)
   * egy adott helyszín több utazás kiindulópontja vagy célállomása lehet
 * Location `1 : N` FuelExpense
-  * egy helyszínen több tankolás is történhet különböző időpontokban, de egy tankolás mindig egy adott helyszínen történik
+  * egy helyszínen több tankolás is történhet különböző időpontokban, de egy tankolás mindig egy adott helyszínen történik (location_id)
 * Location `1 : 1` Address
-  * egy helyszín pontosan egy címhez tartozik, és egy cím is kizárólag egy helyszínhez rendelhető
+  * egy helyszín pontosan egy címhez tartozik, és egy cím is kizárólag egy helyszínhez rendelhető (address_id)
 * Location `N : M` TravelPurposeDictionary
   * egy helyszínhez több utazási cél is tartozhat, míg egy utazási cél pedig több különböző helyszínhez kapcsolódhat
+  * kapcsolótábla tartalmazza az N:M kapcsolathoz szükséges idegen kulcsokat (LocationPurpose)
+* Project `1 : N` Task
+  * egy projekthez több feladat is tartozhat, de egy feladat kizárólag egy projekthez kapcsolódhat (project_id)
+* Project `N : 1` Address
+  * egy címhez több projekt is tartozhat, de egy projekt csak egy címhez kapcsolható (address_id)
+* Task `1 : N` Task
+  * egy feladatnak lehetnek alfeladatai, amelyeket egy másik feladat (szülő) tartalmazhat (parent_id) (*nullable*)
+* Task `1 : N` JournalEntry
+  * egy feladathoz több naplóbejegyzés is tartozhat, de egy adott bejegyzés pontosan egy feladathoz kapcsolódik (task_id)
+* JournalEntry `N : 1` LeaveRequest
+  * egy szabadságkérelemhez több naplóbejegyzés is kapcsolódhat, de egy naplóbejegyzéshez legfeljebb egy szabadságkérelem tartozhat. (leaverequest_id)
+* JournalEntry `1 : 1` OvertimeRequest
+  * egy túlóra bejelentés egy adott napra vonatkozik, emellett egy naplóbejegyzéshez legfeljebb egy túlóra bejelentés kapcsolódhat (overtimerequest_id)
