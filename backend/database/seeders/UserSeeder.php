@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         $adminRole = Role::where('slug', 'admin')->first();
         $webDeveloperRole = Role::where('slug', 'webdev')->first();
 
-        // Admin user létrehozása
+        // Admin felhasználó létrehozása
         User::create([
             'username' => 'adminuser',
             'firstname' => 'Sándor',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
             'role_id' => $adminRole ? $adminRole->id : null,
         ]);
 
-        // Web Developer user létrehozása
+        // Web fejlesztő létrehozása
         User::create([
             'username' => 'webdevuser',
             'firstname' => 'Máté',

@@ -14,21 +14,21 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1) Szerepek és jogosultságok lekérése
+        // Szerepek és jogosultságok lekérése
         $adminRole       = Role::where('slug', 'admin')->first();
         $webDevRole      = Role::where('slug', 'webdev')->first();
         $employeeRole    = Role::where('slug', 'employee')->first();
 
         $allPermissions  = Permission::all();
 
-        // 2) ADMIN: MINDEN jogosultság
+        // 1) ADMIN: MINDEN jogosultság
         if ($adminRole) {
             $adminRole->permissions()->sync(
                 $allPermissions->pluck('id')->toArray()
             );
         }
 
-        // 3) WEB DEVELOPER: Majdnem minden, kivéve a „jóváhagyás” permissionöket
+        // 2) WEB DEVELOPER: Majdnem minden, kivéve „jóváhagyás”
         if ($webDevRole) {
             $webDevPermissions = $allPermissions->filter(function ($perm) {
                 return ! in_array($perm->key, [
@@ -42,7 +42,7 @@ class RolePermissionSeeder extends Seeder
             );
         }
 
-        // 4) EMPLOYEE: erősen korlátozott jogosultság
+        // 3) EMPLOYEE: erősen korlátozott jogosultság
         if ($employeeRole) {
             $employeePermissions = Permission::whereIn('key', [
                 'edit.own.user',
