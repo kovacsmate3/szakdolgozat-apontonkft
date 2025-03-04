@@ -38,7 +38,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * fuel_type [varchar(50)] - az autó üzemanyagtípusa (pl. benzin, dízel, LPG-gáz)
   * standard_consumption [float] - az autó átlagos üzemanyag-fogyasztása (l/100km)
   * capacity [int] - a motor hengerűrtartalma (cm³)
-  * fuel_tank_capacity [float] – az üzemanyagtartály kapacitása (l)
+  * fuel_tank_capacity [int] – az üzemanyagtartály kapacitása (l)
 * **Trip** - az utazások rögzítéséért felelős
   * start_time [datetime] - az utazás kezdési időpontja
   * end_time [datetime] - az utazás befejezési időpontja
