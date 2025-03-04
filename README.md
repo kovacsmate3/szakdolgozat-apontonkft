@@ -35,6 +35,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * car_type [varchar(30)] - az autó típusa
   * license_plate [varchar(20)] -a jármű rendszáma
   * manufacturer [varchar(100)] - az autó gyártója (pl. Ford, Toyota)
+  * model [varchar(100)] - az autó modell
   * fuel_type [varchar(50)] - az autó üzemanyagtípusa (pl. benzin, dízel, LPG-gáz)
   * standard_consumption [float] - az autó átlagos üzemanyag-fogyasztása (l/100km)
   * capacity [int] - a motor hengerűrtartalma (cm³)
