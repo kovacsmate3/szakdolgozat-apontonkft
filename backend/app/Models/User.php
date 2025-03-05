@@ -20,7 +20,6 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'role_id',
         'username',
         'firstname',
         'lastname',
@@ -59,4 +58,17 @@ class User extends Authenticatable
     public function role() {
         return $this->belongsTo(Role::class, 'role_id');
     }
+
+    public function cars() {
+        return $this->hasMany(Car::class, 'user_id');
+    }
+
+    public function fuelExpenses() {
+        return $this->hasMany(FuelExpense::class, 'user_id');
+    }
+
+    public function trips() {
+        return $this->hasMany(Trip::class, 'user_id');
+    }
+
 }

@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Law extends Model
+class Address extends Model
 {
-    /** @use HasFactory<\Database\Factories\LawFactory> */
+    /** @use HasFactory<\Database\Factories\AddressFactory> */
     use HasFactory;
 
     protected $fillable = [
-        'title',
-        'official_ref',
-        'date_of_enactment',
-        'is_active',
-        'link',
+        'country',
+        'postalcode',
+        'city',
+        'road_name',
+        'public_space_type',
+        'building_number'
     ];
 
     /**
@@ -26,13 +27,11 @@ class Law extends Model
     protected function casts(): array
     {
         return [
-            'date_of_enactment' => 'date',
-            'is_active' => 'boolean',
+            'postalcode' => 'integer'
         ];
     }
 
-    public function category()
-    {
-        return $this->belongsTo(LawCategory::class, 'category_id');
+    public function location() {
+        return $this->belongsTo(Location::class, 'location_id');
     }
 }
