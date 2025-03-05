@@ -51,7 +51,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
 * **Location** - különböző helyszínek "megtestesítője"
   * name [varchar(255)] - a helyszín neve vagy elnevezése
   * location_type [enum('partner', 'site', 'station', 'other')] - a helyszín típusa (partner, telephely, töltőállomás, egyéb)
-  * is_headquarter [tinyint(1)] - jelzi, hogy a telephely maga a székhely-e
+  * is_headquarter [tinyint(1)] - jelzi, hogy a telephely maga a székhely-e (alapértelmezetten: false)
 * **TravelPurposeDictionary**  - utazás célja szótár
   * travel_purpose [varchar(100)] - az utazási cél megnevezése (pl. „Üzleti találkozó”, „Kiszállítás”, „Irodai munka” stb.)
   * type [varchar(50)] - az utazási cél típusa (pl. „munka”, „magáncél”, „logisztika” stb.)
