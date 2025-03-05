@@ -104,12 +104,12 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * reason [text] - a túlóra indoklása
   * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
 * **Address** - az összes címhez kapcsolódó információ
-  * country [varchar(100)] - az ország neve, ahol a cím található
-  * postalcode [int] - az irányítószám
-  * city [varchar(100)] -
-  * road_name [varchar(100)] - közerület neve
-  * public_space_type [varchar(50)] - a közterület típusa (pl. „utca”, „tér”, „sétány”)
-  * building_number [varchar(50)] - az épület száma
+  * country [varchar(100)] - ország neve, ahol a cím található (alapértelmezetten: "Magyarország")
+  * postalcode [int] - irányítószám
+  * city [varchar(100)] - város neve (alapértelmezetten: "Budapest")
+  * road_name [varchar(100)] - közterület neve
+  * public_space_type [varchar(50)] - közterület típusa (pl. „utca”, „tér”, „sétány”)
+  * building_number [varchar(50)] - épület száma
 
 ### Kapcsolatok
 * User `N : 1` Role
