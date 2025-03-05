@@ -109,7 +109,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * city [varchar(100)] -
   * road_name [varchar(100)] - közerület neve
   * public_space_type [varchar(50)] - a közterület típusa (pl. „utca”, „tér”, „sétány”)
-  * building_number [int] - az épület száma
+  * building_number [varchar(50)] - az épület száma
 
 ### Kapcsolatok
 * User `N : 1` Role
