@@ -96,13 +96,15 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * end_date [date] - a szabadság végének dátuma
   * status [varchar(50)] - a kérelem aktuális állapota (pl. „pending”, „approved”, „rejected”)
   * reason [text] - a szabadságkérelem indoklása
-  * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * processed_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * decision_comment [varchar(100)] - a döntés eredményének indoklása
 * **OvertimeRequest** - a dolgozók által elvégzett túlórák bejelentése
   * date [date] - az adott nap, amelyre a túlóra vonatkozik
   * hours [time] - a túlóra időtartama
   * status [varchar(50)] - a bejelentés aktuális állapota (pl. „pending”, „approved”, „rejected”)
   * reason [text] - a túlóra indoklása
-  * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * processed_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * decision_comment [varchar(100)] - a döntés eredményének indoklása
 * **Address** - az összes címhez kapcsolódó információ
   * country [varchar(100)] - ország neve, ahol a cím található (alapértelmezetten: "Magyarország")
   * postalcode [int] - irányítószám
@@ -123,10 +125,10 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
     * egy felhasználó több naplóbejegyzést is rögzíthet, míg egy naplóbejegyzés mindig csak egyetlen felhasználóhoz kapcsolódik (user_id)
 * User `1 : N` LeaveRequest
   * egy felhasználó több szabadságkérelmet is benyújthat, ezzel egyúttal egy szabadságkérelem mindig pontosan egy felhasználóhoz tartozik (user_id)
-  * egy admin több szabadságkérelmet is jóváhagyhat, ezért az approved_by kapcsolat is 1:N
+  * egy admin több szabadságkérelmet is jóváhagyhat, ezért az processed_by kapcsolat is 1:N
 * User `1 : N` OvertimeRequest
   * egy felhasználó többszöri alkalommal is bejelentheti a ledolgozott túlóráinak számát; egy túlóra bejelentés mindig ahhoz tartozik, aki azt benyújtotta (user_id)
-  * egy admin több túlóra bejelentést is elfogadhat, ezért az approved_by kapcsolat is 1:N
+  * egy admin több túlóra bejelentést is elfogadhat, ezért az processed_by kapcsolat is 1:N
 * User `1 : N` Car
   * egy felhasználónak több autója is lehet, azonban egy autónak csak egy tulajdonosa lehet (user_id)
 * User `1 : N` FuelExpense
