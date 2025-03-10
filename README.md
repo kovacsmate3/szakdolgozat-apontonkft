@@ -56,7 +56,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
 * **TravelPurposeDictionary**  - utazás célja szótár
   * travel_purpose [varchar(100)] - az utazási cél megnevezése (pl. „Üzleti találkozó”, „Kiszállítás”, „Irodai munka” stb.)
   * type [varchar(50)] - az utazási cél típusa (pl. „munka”, „magáncél”, „logisztika” stb.)
-  * note [text] - opcionális megjegyzés az utazási célhoz
+  * note [text] - opcionális megjegyzés az utazási célhoz (*nullable*)
   * is_system [tinyint(1)] - megmutatja, hogy a bejegyzés rendszer által létrehozott-e, vagy felhasználó által hozzáadott
 * **FuelExpense** - üzemanyagköltségek és tankolási események dokumentálása
   * expense_date [datetime] - a tankolás/töltés időpontja
@@ -89,7 +89,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
 * **JournalEntry** - a vállalkozás alkalmazottai által végzett munkatevékenységek naplózása
   * work_date [date] - a munka elvégzésének dátuma
   * hours [time] - a munkavégzés időtartama
-  * note [text] - opcionális megjegyzés a bejegyzéshez, amely részletezheti a munkafolyamatokat
+  * note [text] - megjegyzés a bejegyzéshez, amely részletezheti a munkafolyamatokat (*nullable*)
   * work_type [varchar(50)] - a bejegyzés típusa (pl. „normál munkavégzés”, „szabadság”, „túlóra” stb.)
 * **LeaveRequest** - a munkavállalók szabadságkérelmei
   * start_date [date] - a szabadság kezdő dátuma
