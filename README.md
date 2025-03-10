@@ -73,18 +73,18 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
 
 *Munkanyilvántartó funkciók realizálását képező táblák*:
 * **Project** - egy vállalkozás által kezelt projektek
-  * job_number [varchar(50)] - a projekt munkaszáma
+  * job_number [varchar(50)] - a projekt munkaszáma (*unique*)
   * project_name [varchar(75)] - a projekt neve (pl. Liberty, Beluga Bay)
-  * location [varchar(100)] - fekvés meghatározása (külterület, belterület stb.)
-  * parcel_identification_number [varchar(100)] - az adott földterület vagy ingatlan helyrajzi száma
-  * deadline [datetime] - a projekt határideje, amely a végső teljesítés dátumát jelöli
-  * description [text] - a projekt részletesebb leírása (pl. projekt célja, követelményei)
-  * status [varchar(50)] - a projekt aktuális állapota (pl. „folyamatban”, „befejezett”, „elhalasztott”)
+  * location [varchar(100)] - fekvés meghatározása (*nullable*)
+  * parcel_identification_number [varchar(100)] - az adott földterület vagy ingatlan helyrajzi száma (*nullable*)
+  * deadline [datetime] - a projekt határideje, amely a végső teljesítés dátumát jelöli (*nullable*)
+  * description [text] - a projekt részletesebb leírása (pl. projekt célja, követelményei, mappanév, FTP jelszó) (*nullable*)
+  * status [varchar(50)] - a projekt aktuális állapota (alapértelmezetten: "folyamatban lévő")
 * **Task** - a különböző projektekhez tartozó konkrét feladatok
   * name [varchar(200)] - a feladat megnevezése
-  * surveying_instrument [varchar(100)] - adott feladathoz szükséges mérőműszer vagy eszköz
-  * priority [varchar(50)] - a feladat prioritása (pl. alacsony, közepes, magas)
-  * status [varchar(50)] - a feladat aktuális állapota (pl. „folyamatban”, „befejezett”, „várakozó”)
+  * surveying_instrument [varchar(100)] - adott feladathoz szükséges mérőműszer vagy eszköz (*nullable*)
+  * priority [varchar(50)] - a feladat prioritása (alapértelmezetten: "normál")
+  * status [varchar(50)] - a feladat aktuális állapota (alapértelmezetten: "folyamatban lévő")
   * description [text] - a feladat részletes leírása (*nullable*)
 * **JournalEntry** - a vállalkozás alkalmazottai által végzett munkatevékenységek naplózása
   * work_date [date] - a munka elvégzésének dátuma
