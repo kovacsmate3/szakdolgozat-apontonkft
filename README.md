@@ -51,7 +51,7 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * actual_duration [time] - az utazás tényleges időtartama
 * **Location** - különböző helyszínek "megtestesítője"
   * name [varchar(255)] - a helyszín neve vagy elnevezése
-  * location_type [enum('partner', 'site', 'station', 'shop', 'other')] - a helyszín típusa (partner, telephely, töltőállomás, egyéb)
+  * location_type [enum('partner', 'telephely', 'töltőállomás', 'bolt', 'egyéb')] - a helyszín típusa
   * is_headquarter [tinyint(1)] - jelzi, hogy a telephely maga a székhely-e (alapértelmezetten: false)
 * **TravelPurposeDictionary**  - utazás célja szótár
   * travel_purpose [varchar(100)] - az utazási cél megnevezése (pl. „Üzleti találkozó”, „Kiszállítás”, „Irodai munka” stb.)
