@@ -16,17 +16,17 @@ class LocationSeeder extends Seeder
         $locations = [
             [
                 'name' => 'A-Ponton Kft. székhely',
-                'location_type' => 'site',
+                'location_type' => 'telephely',
                 'is_headquarter' => true,
             ],
             [
                 'name' => 'MOL Töltőállomás',
-                'location_type' => 'station',
+                'location_type' => 'töltőállomás',
                 'is_headquarter' => false,
             ],
             [
                 'name' => 'A-Ponton Kft. iroda',
-                'location_type' => 'site',
+                'location_type' => 'telephely',
                 'is_headquarter' => false,
             ],
             [
@@ -41,17 +41,17 @@ class LocationSeeder extends Seeder
             ],
             [
                 'name' => 'Praktiker',
-                'location_type' => 'shop',
+                'location_type' => 'bolt',
                 'is_headquarter' => false,
             ],
             [
                 'name' => 'Rákospalota 1 Posta',
-                'location_type' => 'other',
+                'location_type' => 'egyéb',
                 'is_headquarter' => false,
             ],
             [
                 'name' => 'Piri Dávid lakóhely',
-                'location_type' => 'other',
+                'location_type' => 'egyéb',
                 'is_headquarter' => false,
             ]
         ];

@@ -16,21 +16,21 @@ class TripFactory extends Factory
      */
     public function definition(): array
     {
-        $startTime = $this->faker->dateTimeBetween('-1 month', 'now');
+        $startTime = fake()->dateTimeBetween('-1 month', 'now');
         $endTime = (clone $startTime)->modify('+'.rand(30, 300).' minutes');
 
-        $startOdometer = $this->faker->numberBetween(10000, 200000);
-        $endOdometer = $startOdometer + $this->faker->numberBetween(10, 300);
+        $startOdometer = fake()->numberBetween(10000, 200000);
+        $endOdometer = $startOdometer + fake()->numberBetween(10, 300);
 
         return [
             'start_time' => $startTime,
             'end_time' => $endTime,
-            'planned_distance' => $this->faker->randomFloat(1, 10, 300),
-            'actual_distance' => $this->faker->randomFloat(1, 10, 300),
+            'planned_distance' => fake()->randomFloat(1, 10, 300),
+            'actual_distance' => fake()->randomFloat(1, 10, 300),
             'start_odometer' => $startOdometer,
             'end_odometer' => $endOdometer,
-            'planned_duration' => $this->faker->time('H:i:s', '3:00:00'),
-            'actual_duration' => $this->faker->time('H:i:s', '4:00:00'),
+            'planned_duration' => fake()->time('H:i:s', '3:00:00'),
+            'actual_duration' => fake()->time('H:i:s', '4:00:00'),
         ];
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->enum('location_type', ['partner', 'site', 'station', 'shop', 'other']);
+            $table->enum('location_type', ['partner','telephely','töltőállomás','bolt','egyéb']);
             $table->boolean('is_headquarter')->default(false);
             $table->timestamps();
         });

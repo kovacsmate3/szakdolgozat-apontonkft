@@ -22,6 +22,7 @@ class LawFactory extends Factory
             'date_of_enactment' => fake()->date(),
             'is_active' => fake()->boolean(75),
             'link' => fake()->url(),
+            'category_id' => null,
         ];
     }
 }

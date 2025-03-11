@@ -71,4 +71,24 @@ class User extends Authenticatable
         return $this->hasMany(Trip::class, 'user_id');
     }
 
+    public function leaveRequests() {
+        return $this->hasMany(LeaveRequest::class, 'user_id');
+    }
+
+    public function overtimeRequests() {
+        return $this->hasMany(OvertimeRequest::class, 'user_id');
+    }
+
+    public function approvedLeaveRequests() {
+        return $this->hasMany(LeaveRequest::class, 'processed_by');
+    }
+
+    public function approvedOvertimeRequests() {
+        return $this->hasMany(OvertimeRequest::class, 'processed_by');
+    }
+
+    public function journalEntries() {
+        return $this->hasMany(JournalEntry::class, 'user_id');
+    }
+
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('location_id')->unique();
+            $table->unsignedBigInteger('location_id')->unique()->nullable();
             $table->foreign('location_id')
             ->references('id')->on('locations')
             ->onDelete('cascade');

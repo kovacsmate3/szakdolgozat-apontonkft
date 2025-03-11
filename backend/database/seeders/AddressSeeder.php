@@ -86,6 +86,51 @@ class AddressSeeder extends Seeder
                 'public_space_type' => 'utca',
                 'building_number' => '82.',
             ],
+            [
+                'location_id' => null,
+                'country'     => 'Magyarország',
+                'postalcode'  => 1065,
+                'city'        => 'Budapest',
+                'road_name'   => 'Podmaniczky',
+                'public_space_type' => 'utca',
+                'building_number'   => '14.',
+            ],
+            [
+                'location_id' => null,
+                'country'     => 'Magyarország',
+                'postalcode'  => 2011,
+                'city'        => 'Budakalász',
+                'road_name'   => 'Petőfi Sándor',
+                'public_space_type' => 'utca',
+                'building_number'   => '9.',
+            ],
+            [
+                'location_id' => null,
+                'country'     => 'Magyarország',
+                'postalcode'  => 1026,
+                'city'        => 'Budapest',
+                'road_name'   => 'Gábor Áron',
+                'public_space_type' => 'utca',
+                'building_number'   => '26.',
+            ],
+            [
+                'location_id' => null,
+                'country'     => 'Magyarország',
+                'postalcode'  => 2310,
+                'city'        => 'Szigetszentmiklós',
+                'road_name'   => 'Diósgyőri',
+                'public_space_type' => 'utca',
+                'building_number'   => '1.',
+            ],
+            [
+                'location_id' => null,
+                'country'     => 'Magyarország',
+                'postalcode'  => 2141,
+                'city'        => 'Csömör',
+                'road_name'   => 'Szőlő',
+                'public_space_type' => 'köz',
+                'building_number'   => '1.',
+            ]
         ];
 
         foreach ($addresses as $address) {

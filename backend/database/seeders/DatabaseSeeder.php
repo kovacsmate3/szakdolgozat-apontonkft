@@ -23,12 +23,18 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
             CarSeeder::class,
-            LocationSeeder::class,
             TravelPurposeDictionarySeeder::class,
+            LocationSeeder::class,
             LocationPurposeSeeder::class,
             AddressSeeder::class,
             FuelExpenseSeeder::class,
-            TripSeeder::class
+            TripSeeder::class,
+            LeaveRequestSeeder::class,
+            OvertimeRequestSeeder::class,
+            ProjectSeeder::class,
+            TaskSeeder::class,
+            UserTaskSeeder::class,
+            JournalEntrySeeder::class
         ]);
     }
 }
