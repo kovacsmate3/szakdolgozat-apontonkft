@@ -35,10 +35,11 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * car_type [varchar(30)] - az autó típusa
   * license_plate [varchar(20)] -a jármű rendszáma
   * manufacturer [varchar(100)] - az autó gyártója (pl. Ford, Toyota)
+  * modell [varchar(100)] - az autó modellje
   * fuel_type [varchar(50)] - az autó üzemanyagtípusa (pl. benzin, dízel, LPG-gáz)
   * standard_consumption [float] - az autó átlagos üzemanyag-fogyasztása (l/100km)
   * capacity [int] - a motor hengerűrtartalma (cm³)
-  * fuel_tank_capacity [float] – az üzemanyagtartály kapacitása (l)
+  * fuel_tank_capacity [int] – az üzemanyagtartály kapacitása (l)
 * **Trip** - az utazások rögzítéséért felelős
   * start_time [datetime] - az utazás kezdési időpontja
   * end_time [datetime] - az utazás befejezési időpontja
@@ -50,12 +51,12 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
   * actual_duration [time] - az utazás tényleges időtartama
 * **Location** - különböző helyszínek "megtestesítője"
   * name [varchar(255)] - a helyszín neve vagy elnevezése
-  * location_type [enum('partner', 'site', 'station', 'other')] - a helyszín típusa (partner, telephely, töltőállomás, egyéb)
-  * is_headquarter [tinyint(1)] - jelzi, hogy a telephely maga a székhely-e
+  * location_type [enum('partner', 'telephely', 'töltőállomás', 'bolt', 'egyéb')] - a helyszín típusa
+  * is_headquarter [tinyint(1)] - jelzi, hogy a telephely maga a székhely-e (alapértelmezetten: false)
 * **TravelPurposeDictionary**  - utazás célja szótár
   * travel_purpose [varchar(100)] - az utazási cél megnevezése (pl. „Üzleti találkozó”, „Kiszállítás”, „Irodai munka” stb.)
   * type [varchar(50)] - az utazási cél típusa (pl. „munka”, „magáncél”, „logisztika” stb.)
-  * note [text] - opcionális megjegyzés az utazási célhoz
+  * note [text] - opcionális megjegyzés az utazási célhoz (*nullable*)
   * is_system [tinyint(1)] - megmutatja, hogy a bejegyzés rendszer által létrehozott-e, vagy felhasználó által hozzáadott
 * **FuelExpense** - üzemanyagköltségek és tankolási események dokumentálása
   * expense_date [datetime] - a tankolás/töltés időpontja
@@ -72,43 +73,45 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
 
 *Munkanyilvántartó funkciók realizálását képező táblák*:
 * **Project** - egy vállalkozás által kezelt projektek
-  * job_number [varchar(50)] - a projekt munkaszáma
+  * job_number [varchar(50)] - a projekt munkaszáma (*unique*)
   * project_name [varchar(75)] - a projekt neve (pl. Liberty, Beluga Bay)
-  * location [varchar(100)] - fekvés meghatározása (külterület, belterület stb.)
-  * parcel_identification_number [varchar(100)] - az adott földterület vagy ingatlan helyrajzi száma
-  * deadline [datetime] - a projekt határideje, amely a végső teljesítés dátumát jelöli
-  * description [text] - a projekt részletesebb leírása (pl. projekt célja, követelményei)
-  * status [varchar(50)] - a projekt aktuális állapota (pl. „folyamatban”, „befejezett”, „elhalasztott”)
+  * location [varchar(100)] - fekvés meghatározása (*nullable*)
+  * parcel_identification_number [varchar(100)] - az adott földterület vagy ingatlan helyrajzi száma (*nullable*)
+  * deadline [datetime] - a projekt határideje, amely a végső teljesítés dátumát jelöli (*nullable*)
+  * description [text] - a projekt részletesebb leírása (pl. projekt célja, követelményei, mappanév, FTP jelszó) (*nullable*)
+  * status [varchar(50)] - a projekt aktuális állapota (alapértelmezetten: "folyamatban lévő")
 * **Task** - a különböző projektekhez tartozó konkrét feladatok
   * name [varchar(200)] - a feladat megnevezése
-  * surveying_instrument [varchar(100)] - adott feladathoz szükséges mérőműszer vagy eszköz
-  * priority [varchar(50)] - a feladat prioritása (pl. alacsony, közepes, magas)
-  * status [varchar(50)] - a feladat aktuális állapota (pl. „folyamatban”, „befejezett”, „várakozó”)
+  * surveying_instrument [varchar(100)] - adott feladathoz szükséges mérőműszer vagy eszköz (*nullable*)
+  * priority [varchar(50)] - a feladat prioritása (alapértelmezetten: "normál")
+  * status [varchar(50)] - a feladat aktuális állapota (alapértelmezetten: "folyamatban lévő")
   * description [text] - a feladat részletes leírása (*nullable*)
 * **JournalEntry** - a vállalkozás alkalmazottai által végzett munkatevékenységek naplózása
   * work_date [date] - a munka elvégzésének dátuma
   * hours [time] - a munkavégzés időtartama
-  * note [text] - opcionális megjegyzés a bejegyzéshez, amely részletezheti a munkafolyamatokat
+  * note [text] - megjegyzés a bejegyzéshez, amely részletezheti a munkafolyamatokat (*nullable*)
   * work_type [varchar(50)] - a bejegyzés típusa (pl. „normál munkavégzés”, „szabadság”, „túlóra” stb.)
 * **LeaveRequest** - a munkavállalók szabadságkérelmei
   * start_date [date] - a szabadság kezdő dátuma
   * end_date [date] - a szabadság végének dátuma
   * status [varchar(50)] - a kérelem aktuális állapota (pl. „pending”, „approved”, „rejected”)
   * reason [text] - a szabadságkérelem indoklása
-  * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * processed_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * decision_comment [varchar(100)] - a döntés eredményének indoklása
 * **OvertimeRequest** - a dolgozók által elvégzett túlórák bejelentése
   * date [date] - az adott nap, amelyre a túlóra vonatkozik
   * hours [time] - a túlóra időtartama
   * status [varchar(50)] - a bejelentés aktuális állapota (pl. „pending”, „approved”, „rejected”)
   * reason [text] - a túlóra indoklása
-  * approved_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * processed_at [datetime] - az időbélyeg, amikor a kérelmet elbírálták
+  * decision_comment [varchar(100)] - a döntés eredményének indoklása
 * **Address** - az összes címhez kapcsolódó információ
-  * country [varchar(100)] - az ország neve, ahol a cím található
-  * postalcode [int] - az irányítószám
-  * city [varchar(100)] -
-  * road_name [varchar(100)] - közerület neve
-  * public_space_type [varchar(50)] - a közterület típusa (pl. „utca”, „tér”, „sétány”)
-  * building_number [int] - az épület száma
+  * country [varchar(100)] - ország neve, ahol a cím található (alapértelmezetten: "Magyarország")
+  * postalcode [int] - irányítószám
+  * city [varchar(100)] - város neve (alapértelmezetten: "Budapest")
+  * road_name [varchar(100)] - közterület neve
+  * public_space_type [varchar(50)] - közterület típusa (pl. „utca”, „tér”, „sétány”)
+  * building_number [varchar(50)] - épület száma
 
 ### Kapcsolatok
 * User `N : 1` Role
@@ -122,10 +125,10 @@ A megfelelő adatbázis táblák és modellek implementálása az alábbiak szer
     * egy felhasználó több naplóbejegyzést is rögzíthet, míg egy naplóbejegyzés mindig csak egyetlen felhasználóhoz kapcsolódik (user_id)
 * User `1 : N` LeaveRequest
   * egy felhasználó több szabadságkérelmet is benyújthat, ezzel egyúttal egy szabadságkérelem mindig pontosan egy felhasználóhoz tartozik (user_id)
-  * egy admin több szabadságkérelmet is jóváhagyhat, ezért az approved_by kapcsolat is 1:N
+  * egy admin több szabadságkérelmet is jóváhagyhat, ezért az processed_by kapcsolat is 1:N
 * User `1 : N` OvertimeRequest
   * egy felhasználó többszöri alkalommal is bejelentheti a ledolgozott túlóráinak számát; egy túlóra bejelentés mindig ahhoz tartozik, aki azt benyújtotta (user_id)
-  * egy admin több túlóra bejelentést is elfogadhat, ezért az approved_by kapcsolat is 1:N
+  * egy admin több túlóra bejelentést is elfogadhat, ezért az processed_by kapcsolat is 1:N
 * User `1 : N` Car
   * egy felhasználónak több autója is lehet, azonban egy autónak csak egy tulajdonosa lehet (user_id)
 * User `1 : N` FuelExpense
