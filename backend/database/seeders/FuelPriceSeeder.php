@@ -15,6 +15,13 @@ class FuelPriceSeeder extends Seeder
     {
         $prices = [
             [
+                'period'  => '2025-04-01',
+                'petrol'  => 624,
+                'mixture' => 675,
+                'diesel'  => 638,
+                'lp_gas'  => 384,
+            ],
+            [
                 'period'  => '2025-03-01',
                 'petrol'  => 638,
                 'mixture' => 669,
