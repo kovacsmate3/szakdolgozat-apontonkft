@@ -33,7 +33,9 @@ class RolePermissionSeeder extends Seeder
             $webDevPermissions = $allPermissions->filter(function ($perm) {
                 return !in_array($perm->key, [
                     'approve.leave_request',
+                    'reject.leave_request',
                     'approve.overtime_request',
+                    'reject.overtime_request'
                 ]);
             });
 
