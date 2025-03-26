@@ -26,8 +26,10 @@ class User extends Authenticatable
         'birthdate',
         'phonenumber',
         'email',
+        'email_verified_at',
         'password',
-        'password_changed_at'
+        'password_changed_at',
+        'role_id'
     ];
 
     /**
@@ -79,11 +81,11 @@ class User extends Authenticatable
         return $this->hasMany(OvertimeRequest::class, 'user_id');
     }
 
-    public function approvedLeaveRequests() {
+    public function processedLeaveRequests() {
         return $this->hasMany(LeaveRequest::class, 'processed_by');
     }
 
-    public function approvedOvertimeRequests() {
+    public function processedOvertimeRequests() {
         return $this->hasMany(OvertimeRequest::class, 'processed_by');
     }
 
