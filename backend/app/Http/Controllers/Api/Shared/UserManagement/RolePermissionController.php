@@ -172,7 +172,7 @@ class RolePermissionController extends Controller
         $role->permissions()->detach($permissionId);
 
         return response()->json([
-            'message' => "'{$permission->key}' jogosultság sikeresen eltávolítva a '{$role->title}' szerepkörtől."
+            'message' => "{$permission->key} jogosultság sikeresen eltávolítva a {$role->title} szerepkörtől."
         ], Response::HTTP_OK);
     }
 
