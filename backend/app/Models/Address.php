@@ -35,4 +35,8 @@ class Address extends Model
     public function location() {
         return $this->belongsTo(Location::class, 'location_id');
     }
+
+    public function projects() {
+        return $this->hasMany(Project::class, 'address_id');
+    }
 }
