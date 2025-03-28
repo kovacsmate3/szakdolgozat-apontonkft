@@ -29,11 +29,11 @@ class Location extends Model
     }
 
     public function startTrips() {
-        return $this->hasMany(Trip::class, 'start_location_id');
+        return $this->hasMany(Trip::class, 'start_location_id', 'id');
     }
 
     public function destinationTrips() {
-        return $this->hasMany(Trip::class, 'destination_id');
+        return $this->hasMany(Trip::class, 'destination_location_id', 'id');
     }
 
     public function fuelExpenses() {

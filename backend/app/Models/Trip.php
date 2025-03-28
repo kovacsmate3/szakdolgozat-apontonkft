@@ -57,6 +57,6 @@ class Trip extends Model
     }
 
     public function destinationLocation() {
-        return $this->belongsTo(Location::class, 'destination_id');
+        return $this->belongsTo(Location::class, 'destination_location_id');
     }
 }
