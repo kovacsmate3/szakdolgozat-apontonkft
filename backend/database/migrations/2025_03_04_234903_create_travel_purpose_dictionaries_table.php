@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('travel_purpose_dictionaries', function (Blueprint $table) {
             $table->id();
             $table->string('travel_purpose', 100);
-            $table->string('type', 50)->nullable();
+            $table->string('type', 50);
             $table->text('note')->nullable();
             $table->boolean('is_system')->default(false);
             $table->timestamps();
