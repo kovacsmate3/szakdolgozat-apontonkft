@@ -24,7 +24,7 @@ class TravelPurposeDictionaryController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('travel_purpose', 'like', "%{$search}%")
-                  ->orWhere('note', 'like', "%{$search}%");
+                    ->orWhere('note', 'like', "%{$search}%");
             });
         }
 
@@ -49,25 +49,27 @@ class TravelPurposeDictionaryController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'travel_purpose' => ['required', 'string', 'max:100'],
-            'type' => ['required', 'string', 'max:50'],
-            'note' => ['nullable', 'string'],
-            'is_system' => ['sometimes', 'boolean']
-        ],
-        [
-            'travel_purpose.required' => 'Az utazás céljának megadása kötelező.',
-            'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
-            'travel_purpose.max' => 'Az utazás célja maximum 100 karakter hosszú lehet.',
+        $validated = $request->validate(
+            [
+                'travel_purpose' => ['required', 'string', 'max:100'],
+                'type' => ['required', 'string', 'max:50'],
+                'note' => ['nullable', 'string'],
+                'is_system' => ['sometimes', 'boolean']
+            ],
+            [
+                'travel_purpose.required' => 'Az utazás céljának megadása kötelező.',
+                'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
+                'travel_purpose.max' => 'Az utazás célja maximum 100 karakter hosszú lehet.',
 
-            'type.required' => 'A típus megadása kötelező.',
-            'type.string' => 'A típus csak szöveg formátumú lehet.',
-            'type.max' => 'A típus maximum 50 karakter hosszú lehet.',
+                'type.required' => 'A típus megadása kötelező.',
+                'type.string' => 'A típus csak szöveg formátumú lehet.',
+                'type.max' => 'A típus maximum 50 karakter hosszú lehet.',
 
-            'note.string' => 'A megjegyzés csak szöveg formátumú lehet.',
+                'note.string' => 'A megjegyzés csak szöveg formátumú lehet.',
 
-            'is_system.boolean' => 'A rendszerszintű jelölés csak igaz vagy hamis értéket vehet fel.',
-        ]);
+                'is_system.boolean' => 'A rendszerszintű jelölés csak igaz vagy hamis értéket vehet fel.',
+            ]
+        );
 
         $travelPurpose = TravelPurposeDictionary::create($validated);
 
@@ -86,7 +88,7 @@ class TravelPurposeDictionaryController extends Controller
 
         if (!$travelPurpose) {
             return response()->json([
-                'message' => 'A megadott azonosítójú utazási cél nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') utazási cél nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -102,7 +104,7 @@ class TravelPurposeDictionaryController extends Controller
 
         if (!$travelPurpose) {
             return response()->json([
-                'message' => 'A megadott azonosítójú utazási cél nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') utazási cél nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -112,23 +114,25 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $validated = $request->validate([
-            'travel_purpose' => ['sometimes', 'string', 'max:100'],
-            'type' => ['sometimes', 'string', 'max:50'],
-            'note' => ['sometimes', 'nullable', 'string'],
-            'is_system' => ['sometimes', 'boolean']
-        ],
-        [
-            'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
-            'travel_purpose.max' => 'Az utazás célja maximum 100 karakter hosszú lehet.',
+        $validated = $request->validate(
+            [
+                'travel_purpose' => ['sometimes', 'string', 'max:100'],
+                'type' => ['sometimes', 'string', 'max:50'],
+                'note' => ['sometimes', 'nullable', 'string'],
+                'is_system' => ['sometimes', 'boolean']
+            ],
+            [
+                'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
+                'travel_purpose.max' => 'Az utazás célja maximum 100 karakter hosszú lehet.',
 
-            'type.string' => 'A típus csak szöveg formátumú lehet.',
-            'type.max' => 'A típus maximum 50 karakter hosszú lehet.',
+                'type.string' => 'A típus csak szöveg formátumú lehet.',
+                'type.max' => 'A típus maximum 50 karakter hosszú lehet.',
 
-            'note.string' => 'A megjegyzés csak szöveg formátumú lehet.',
+                'note.string' => 'A megjegyzés csak szöveg formátumú lehet.',
 
-            'is_system.boolean' => 'A rendszerszintű jelölés csak igaz vagy hamis értéket vehet fel.',
-        ]);
+                'is_system.boolean' => 'A rendszerszintű jelölés csak igaz vagy hamis értéket vehet fel.',
+            ]
+        );
 
         $travelPurpose->update($validated);
 
@@ -147,7 +151,7 @@ class TravelPurposeDictionaryController extends Controller
 
         if (!$travelPurpose) {
             return response()->json([
-                'message' => 'A megadott azonosítójú utazási cél nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') utazási cél nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

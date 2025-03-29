@@ -21,7 +21,7 @@ class LawCategoryController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -88,7 +88,7 @@ class LawCategoryController extends Controller
 
         if (!$lawCategory) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogszabály kategória nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogszabály kategória nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -104,7 +104,7 @@ class LawCategoryController extends Controller
 
         if (!$lawCategory) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogszabály kategória nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogszabály kategória nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -135,7 +135,7 @@ class LawCategoryController extends Controller
 
         if (!$lawCategory) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogszabály kategória nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogszabály kategória nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

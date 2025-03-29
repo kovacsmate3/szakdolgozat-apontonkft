@@ -30,67 +30,69 @@ class UserController extends Controller
     {
         $minimumBirthdate = Carbon::now()->subYears(18)->format('Y-m-d');
 
-        $validated = $request->validate([
-            'username' => ['required', 'string', 'max:25', 'unique:users'],
-            'firstname' => ['required', 'string', 'max:50'],
-            'lastname' => ['required', 'string', 'max:50'],
-            'birthdate' => [
-                'required',
-                'date',
-                'before_or_equal:' . $minimumBirthdate
+        $validated = $request->validate(
+            [
+                'username' => ['required', 'string', 'max:25', 'unique:users'],
+                'firstname' => ['required', 'string', 'max:50'],
+                'lastname' => ['required', 'string', 'max:50'],
+                'birthdate' => [
+                    'required',
+                    'date',
+                    'before_or_equal:' . $minimumBirthdate
+                ],
+                'phonenumber' => ['required', 'phone:HU', 'max:30', 'unique:users'],
+                'email' => ['required', 'email', 'max:255', 'unique:users'],
+                'password' => [
+                    'required',
+                    Rules\Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                        ->uncompromised(3)
+                ],
+                'role_id' => ['required', 'exists:roles,id'],
             ],
-            'phonenumber' => ['required', 'phone:HU', 'max:30', 'unique:users'],
-            'email' => ['required', 'email', 'max:255', 'unique:users'],
-            'password' => [
-                'required',
-                Rules\Password::min(8)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-                    ->uncompromised(3)
-            ],
-            'role_id' => ['required', 'exists:roles,id'],
-        ],
-        [
-            'username.required' => 'A felhasználónév megadása kötelező.',
-            'username.string' => 'A felhasználónév csak szöveg formátumú lehet.',
-            'username.max' => 'A felhasználónév maximum 25 karakter hosszú lehet.',
-            'username.unique' => 'Ez a felhasználónév már foglalt.',
+            [
+                'username.required' => 'A felhasználónév megadása kötelező.',
+                'username.string' => 'A felhasználónév csak szöveg formátumú lehet.',
+                'username.max' => 'A felhasználónév maximum 25 karakter hosszú lehet.',
+                'username.unique' => 'Ez a felhasználónév már foglalt.',
 
-            'firstname.required' => 'A keresztnév megadása kötelező.',
-            'firstname.string' => 'A keresztnév csak szöveg formátumú lehet.',
-            'firstname.max' => 'A keresztnév maximum 50 karakter hosszú lehet.',
+                'firstname.required' => 'A keresztnév megadása kötelező.',
+                'firstname.string' => 'A keresztnév csak szöveg formátumú lehet.',
+                'firstname.max' => 'A keresztnév maximum 50 karakter hosszú lehet.',
 
-            'lastname.required' => 'A vezetéknév megadása kötelező.',
-            'lastname.string' => 'A vezetéknév csak szöveg formátumú lehet.',
-            'lastname.max' => 'A vezetéknév maximum 50 karakter hosszú lehet.',
+                'lastname.required' => 'A vezetéknév megadása kötelező.',
+                'lastname.string' => 'A vezetéknév csak szöveg formátumú lehet.',
+                'lastname.max' => 'A vezetéknév maximum 50 karakter hosszú lehet.',
 
-            'birthdate.required' => 'A születési dátum megadása kötelező.',
-            'birthdate.date' => 'A születési dátum érvénytelen formátumú.',
-            'birthdate.before_or_equal' => 'A felhasználónak legalább 18 évesnek kell lennie.',
+                'birthdate.required' => 'A születési dátum megadása kötelező.',
+                'birthdate.date' => 'A születési dátum érvénytelen formátumú.',
+                'birthdate.before_or_equal' => 'A felhasználónak legalább 18 évesnek kell lennie.',
 
-            'phonenumber.required' => 'A telefonszám megadása kötelező.',
-            'phonenumber.phone' => 'Érvénytelen magyar telefonszám formátum.',
-            'phonenumber.max' => 'A telefonszám maximum 30 karakter hosszú lehet.',
-            'phonenumber.unique' => 'Ez a telefonszám már regisztrálva van.',
+                'phonenumber.required' => 'A telefonszám megadása kötelező.',
+                'phonenumber.phone' => 'Érvénytelen magyar telefonszám formátum.',
+                'phonenumber.max' => 'A telefonszám maximum 30 karakter hosszú lehet.',
+                'phonenumber.unique' => 'Ez a telefonszám már regisztrálva van.',
 
-            'email.required' => 'Az email cím megadása kötelező.',
-            'email.email' => 'Érvénytelen email cím formátum.',
-            'email.max' => 'Az email cím maximum 255 karakter hosszú lehet.',
-            'email.unique' => 'Ez az email cím már regisztrálva van.',
+                'email.required' => 'Az email cím megadása kötelező.',
+                'email.email' => 'Érvénytelen email cím formátum.',
+                'email.max' => 'Az email cím maximum 255 karakter hosszú lehet.',
+                'email.unique' => 'Ez az email cím már regisztrálva van.',
 
-            'password.required' => 'A jelszó megadása kötelező.',
-            'password.min' => 'A jelszónak legalább :min karakter hosszúnak kell lennie.',
-            'password.letters' => 'A jelszónak tartalmaznia kell legalább egy betűt.',
-            'password.mixed' => 'A jelszónak tartalmaznia kell kis- és nagybetűt is.',
-            'password.numbers' => 'A jelszónak tartalmaznia kell legalább egy számot.',
-            'password.symbols' => 'A jelszónak tartalmaznia kell legalább egy speciális karaktert.',
-            'password.uncompromised' => 'A megadott jelszó kiszivárgott. Kérlek, válassz másikat.',
+                'password.required' => 'A jelszó megadása kötelező.',
+                'password.min' => 'A jelszónak legalább :min karakter hosszúnak kell lennie.',
+                'password.letters' => 'A jelszónak tartalmaznia kell legalább egy betűt.',
+                'password.mixed' => 'A jelszónak tartalmaznia kell kis- és nagybetűt is.',
+                'password.numbers' => 'A jelszónak tartalmaznia kell legalább egy számot.',
+                'password.symbols' => 'A jelszónak tartalmaznia kell legalább egy speciális karaktert.',
+                'password.uncompromised' => 'A megadott jelszó kiszivárgott. Kérlek, válassz másikat.',
 
-            'role_id.required' => 'A szerepkör kiválasztása kötelező.',
-            'role_id.exists' => 'A kiválasztott szerepkör nem létezik.',
-        ]);
+                'role_id.required' => 'A szerepkör kiválasztása kötelező.',
+                'role_id.exists' => 'A kiválasztott szerepkör nem létezik.',
+            ]
+        );
 
         if (isset($validated['phonenumber'])) {
             $validated['phonenumber'] = phone($validated['phonenumber'], 'HU', PhoneNumberFormat::E164);
@@ -130,9 +132,14 @@ class UserController extends Controller
         if ($request->has('include')) {
             $includes = explode(',', $request->input('include'));
             $allowedIncludes = [
-                'cars', 'fuelExpenses', 'trips', 'leaveRequests',
-                'overtimeRequests', 'approvedLeaveRequests',
-                'approvedOvertimeRequests', 'journalEntries'
+                'cars',
+                'fuelExpenses',
+                'trips',
+                'leaveRequests',
+                'overtimeRequests',
+                'approvedLeaveRequests',
+                'approvedOvertimeRequests',
+                'journalEntries'
             ];
 
             foreach ($includes as $include) {
@@ -146,7 +153,7 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'A megadott azonosítójú felhasználó nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') felhasználó nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -162,65 +169,67 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'A megadott azonosítójú felhasználó nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') felhasználó nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
         $minimumBirthdate = Carbon::now()->subYears(18)->format('Y-m-d');
 
-        $validated = $request->validate([
-            'username' => ['sometimes', 'string', 'max:25', Rule::unique('users', 'username')->ignore($user->id)],
-            'firstname' => ['sometimes', 'string', 'max:50'],
-            'lastname' => ['sometimes', 'string', 'max:50'],
-            'birthdate' => [
-                'sometimes',
-                'date',
-                'before_or_equal:' . $minimumBirthdate
+        $validated = $request->validate(
+            [
+                'username' => ['sometimes', 'string', 'max:25', Rule::unique('users', 'username')->ignore($user->id)],
+                'firstname' => ['sometimes', 'string', 'max:50'],
+                'lastname' => ['sometimes', 'string', 'max:50'],
+                'birthdate' => [
+                    'sometimes',
+                    'date',
+                    'before_or_equal:' . $minimumBirthdate
+                ],
+                'phonenumber' => ['sometimes', 'phone:HU', 'max:30', Rule::unique('users', 'phonenumber')->ignore($user->id)],
+                'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+                'password' => [
+                    'sometimes',
+                    Rules\Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                        ->uncompromised(3)
+                ],
+                'role_id' => ['sometimes', 'exists:roles,id'],
             ],
-            'phonenumber' => ['sometimes', 'phone:HU', 'max:30', Rule::unique('users', 'phonenumber')->ignore($user->id)],
-            'email' => ['sometimes', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => [
-                'sometimes',
-                Rules\Password::min(8)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-                    ->uncompromised(3)
-            ],
-            'role_id' => ['sometimes', 'exists:roles,id'],
-        ],
-        [
-            'username.string' => 'A felhasználónév kizárólag nem üres, szöveg formátumú lehet.',
-            'username.max' => 'A felhasználónév maximum 25 karakter hosszú lehet.',
-            'username.unique' => 'Ez a felhasználónév már foglalt.',
+            [
+                'username.string' => 'A felhasználónév kizárólag nem üres, szöveg formátumú lehet.',
+                'username.max' => 'A felhasználónév maximum 25 karakter hosszú lehet.',
+                'username.unique' => 'Ez a felhasználónév már foglalt.',
 
-            'firstname.string' => 'A keresztnév kizárólag nem üres, szöveg formátumú lehet.',
-            'firstname.max' => 'A keresztnév maximum 50 karakter hosszú lehet.',
+                'firstname.string' => 'A keresztnév kizárólag nem üres, szöveg formátumú lehet.',
+                'firstname.max' => 'A keresztnév maximum 50 karakter hosszú lehet.',
 
-            'lastname.string' => 'A vezetéknév kizárólag nem üres, szöveg formátumú lehet.',
-            'lastname.max' => 'A vezetéknév maximum 50 karakter hosszú lehet.',
+                'lastname.string' => 'A vezetéknév kizárólag nem üres, szöveg formátumú lehet.',
+                'lastname.max' => 'A vezetéknév maximum 50 karakter hosszú lehet.',
 
-            'birthdate.date' => 'A születési dátum érvénytelen formátumú.',
-            'birthdate.before_or_equal' => 'A felhasználónak legalább 18 évesnek kell lennie.',
+                'birthdate.date' => 'A születési dátum érvénytelen formátumú.',
+                'birthdate.before_or_equal' => 'A felhasználónak legalább 18 évesnek kell lennie.',
 
-            'phonenumber.phone' => 'Érvénytelen magyar telefonszám formátum.',
-            'phonenumber.max' => 'A telefonszám maximum 30 karakter hosszú lehet.',
-            'phonenumber.unique' => 'Ez a telefonszám már regisztrálva van.',
+                'phonenumber.phone' => 'Érvénytelen magyar telefonszám formátum.',
+                'phonenumber.max' => 'A telefonszám maximum 30 karakter hosszú lehet.',
+                'phonenumber.unique' => 'Ez a telefonszám már regisztrálva van.',
 
-            'email.email' => 'Érvénytelen email cím formátum.',
-            'email.max' => 'Az email cím maximum 255 karakter hosszú lehet.',
-            'email.unique' => 'Ez az email cím már regisztrálva van.',
+                'email.email' => 'Érvénytelen email cím formátum.',
+                'email.max' => 'Az email cím maximum 255 karakter hosszú lehet.',
+                'email.unique' => 'Ez az email cím már regisztrálva van.',
 
-            'password.min' => 'A jelszónak legalább :min karakter hosszúnak kell lennie.',
-            'password.letters' => 'A jelszónak tartalmaznia kell legalább egy betűt.',
-            'password.mixed' => 'A jelszónak tartalmaznia kell kis- és nagybetűt is.',
-            'password.numbers' => 'A jelszónak tartalmaznia kell legalább egy számot.',
-            'password.symbols' => 'A jelszónak tartalmaznia kell legalább egy speciális karaktert.',
-            'password.uncompromised' => 'A megadott jelszó kiszivárgott. Kérlek, válassz másikat.',
+                'password.min' => 'A jelszónak legalább :min karakter hosszúnak kell lennie.',
+                'password.letters' => 'A jelszónak tartalmaznia kell legalább egy betűt.',
+                'password.mixed' => 'A jelszónak tartalmaznia kell kis- és nagybetűt is.',
+                'password.numbers' => 'A jelszónak tartalmaznia kell legalább egy számot.',
+                'password.symbols' => 'A jelszónak tartalmaznia kell legalább egy speciális karaktert.',
+                'password.uncompromised' => 'A megadott jelszó kiszivárgott. Kérlek, válassz másikat.',
 
-            'role_id.exists' => 'A kiválasztott szerepkör nem létezik.',
-        ]);
+                'role_id.exists' => 'A kiválasztott szerepkör nem létezik.',
+            ]
+        );
 
         if (isset($validated['phonenumber'])) {
             $validated['phonenumber'] = phone($validated['phonenumber'], 'HU', PhoneNumberFormat::E164);
@@ -262,12 +271,12 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'A megadott azonosítójú felhasználó nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') felhasználó nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
         if ($user->role && $user->role->slug === 'admin') {
-            $adminCount = User::whereHas('role', function($q) {
+            $adminCount = User::whereHas('role', function ($q) {
                 $q->where('slug', 'admin');
             })->count();
 

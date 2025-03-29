@@ -104,7 +104,7 @@ class CarController extends Controller
 
         if (!$car) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jármű nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jármű nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -120,7 +120,7 @@ class CarController extends Controller
 
         if (!$car) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jármű nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jármű nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -181,7 +181,7 @@ class CarController extends Controller
 
         if (!$car) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jármű nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jármű nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

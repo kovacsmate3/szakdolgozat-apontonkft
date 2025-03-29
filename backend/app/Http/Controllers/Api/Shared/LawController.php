@@ -31,7 +31,7 @@ class LawController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('official_ref', 'like', "%{$search}%");
+                    ->orWhere('official_ref', 'like', "%{$search}%");
             });
         }
 
@@ -112,7 +112,7 @@ class LawController extends Controller
 
         if (!$law) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogszabály nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogszabály nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -128,32 +128,34 @@ class LawController extends Controller
 
         if (!$law) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogszabály nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogszabály nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $validated = $request->validate([
-            'category_id' => ['sometimes', 'nullable', 'exists:law_categories,id'],
-            'title' => ['sometimes', 'string', 'max:255', Rule::unique('laws')->ignore($law->id)],
-            'official_ref' => ['sometimes', 'string', 'max:255', Rule::unique('laws')->ignore($law->id)],
-            'date_of_enactment' => ['sometimes', 'nullable', 'date'],
-            'is_active' => ['sometimes', 'boolean'],
-            'link' => ['sometimes', 'nullable', 'string', 'max:424', 'url'],
-        ],
-        [
-            'category_id.exists' => 'A megadott kategória nem létezik.',
-            'title.string' => 'A jogszabály címe kizárólag nem üres, szöveg formátumú lehet.',
-            'title.max' => 'A jogszabály címe maximum 255 karakter hosszú lehet.',
-            'title.unique' => 'Ez a jogszabály cím már létezik.',
-            'official_ref.string' => 'A jogszabály hivatalos hivatkozása kizárólag nem üres, szöveg formátumú lehet.',
-            'official_ref.max' => 'A jogszabály hivatalos hivatkozása maximum 255 karakter hosszú lehet.',
-            'official_ref.unique' => 'Ez a hivatalos hivatkozás már létezik.',
-            'date_of_enactment.date' => 'A hatálybalépés dátuma érvénytelen formátumú.',
-            'is_active.boolean' => 'Az aktív állapot csak igaz vagy hamis érték lehet.',
-            'link.string' => 'A link kizárólag nem üres, szöveg formátumú lehet.',
-            'link.max' => 'A link maximum 424 karakter hosszú lehet.',
-            'link.url' => 'A megadott link érvénytelen formátumú.',
-        ]);
+        $validated = $request->validate(
+            [
+                'category_id' => ['sometimes', 'nullable', 'exists:law_categories,id'],
+                'title' => ['sometimes', 'string', 'max:255', Rule::unique('laws')->ignore($law->id)],
+                'official_ref' => ['sometimes', 'string', 'max:255', Rule::unique('laws')->ignore($law->id)],
+                'date_of_enactment' => ['sometimes', 'nullable', 'date'],
+                'is_active' => ['sometimes', 'boolean'],
+                'link' => ['sometimes', 'nullable', 'string', 'max:424', 'url'],
+            ],
+            [
+                'category_id.exists' => 'A megadott kategória nem létezik.',
+                'title.string' => 'A jogszabály címe kizárólag nem üres, szöveg formátumú lehet.',
+                'title.max' => 'A jogszabály címe maximum 255 karakter hosszú lehet.',
+                'title.unique' => 'Ez a jogszabály cím már létezik.',
+                'official_ref.string' => 'A jogszabály hivatalos hivatkozása kizárólag nem üres, szöveg formátumú lehet.',
+                'official_ref.max' => 'A jogszabály hivatalos hivatkozása maximum 255 karakter hosszú lehet.',
+                'official_ref.unique' => 'Ez a hivatalos hivatkozás már létezik.',
+                'date_of_enactment.date' => 'A hatálybalépés dátuma érvénytelen formátumú.',
+                'is_active.boolean' => 'Az aktív állapot csak igaz vagy hamis érték lehet.',
+                'link.string' => 'A link kizárólag nem üres, szöveg formátumú lehet.',
+                'link.max' => 'A link maximum 424 karakter hosszú lehet.',
+                'link.url' => 'A megadott link érvénytelen formátumú.',
+            ]
+        );
 
         $law->update($validated);
         $law->load('category');
@@ -173,7 +175,7 @@ class LawController extends Controller
 
         if (!$law) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogszabály nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogszabály nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

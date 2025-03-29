@@ -28,7 +28,7 @@ class PermissionController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('key', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -54,21 +54,22 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'key' => ['required', 'string', 'max:100', 'unique:permissions'],
-            'module' => ['required', 'string', 'max:50'],
-            'description' => ['nullable', 'string'],
-        ],
-        [
-            'key.required' => 'A jogosultság kulcs mezőjének megadása kötelező.',
-            'key.string' => 'A jogosultság kulcs mezője csak szöveg formátumú lehet.',
-            'key.max' => 'A jogosultság kulcs mezője maximum 100 karakter hosszú lehet.',
-            'key.unique' => 'Ez a jogosultsági kulcs már létezik.',
-            'module.required' => 'A jogosultság modul mezőjének megadása kötelező.',
-            'module.string' => 'A jogosultsági modul neve csak szöveg formátumú lehet.',
-            'module.max' => 'A jogosultsági modul neve maximum 50 karakter hosszú lehet.',
-            'description.string' => 'A jogosultság leírása csak szöveg formátumú lehet.'
-        ]
+        $validated = $request->validate(
+            [
+                'key' => ['required', 'string', 'max:100', 'unique:permissions'],
+                'module' => ['required', 'string', 'max:50'],
+                'description' => ['nullable', 'string'],
+            ],
+            [
+                'key.required' => 'A jogosultság kulcs mezőjének megadása kötelező.',
+                'key.string' => 'A jogosultság kulcs mezője csak szöveg formátumú lehet.',
+                'key.max' => 'A jogosultság kulcs mezője maximum 100 karakter hosszú lehet.',
+                'key.unique' => 'Ez a jogosultsági kulcs már létezik.',
+                'module.required' => 'A jogosultság modul mezőjének megadása kötelező.',
+                'module.string' => 'A jogosultsági modul neve csak szöveg formátumú lehet.',
+                'module.max' => 'A jogosultsági modul neve maximum 50 karakter hosszú lehet.',
+                'description.string' => 'A jogosultság leírása csak szöveg formátumú lehet.'
+            ]
         );
 
         $permission = Permission::create($validated);
@@ -101,7 +102,7 @@ class PermissionController extends Controller
 
         if (!$permission) {
             return response()->json([
-                'message' => 'A megadott azonosítójú engedély nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') engedély nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -117,7 +118,7 @@ class PermissionController extends Controller
 
         if (!$permission) {
             return response()->json([
-                'message' => 'A megadott azonosítójú engedély nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') engedély nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -151,7 +152,7 @@ class PermissionController extends Controller
 
         if (!$permission) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogosultság nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') jogosultság nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

@@ -65,7 +65,7 @@ class FuelPriceController extends Controller
 
         if (!$fuelPrice) {
             return response()->json([
-                'message' => 'A megadott azonosítójú üzemanyagár nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') üzemanyagár nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -81,7 +81,7 @@ class FuelPriceController extends Controller
 
         if (!$fuelPrice) {
             return response()->json([
-                'message' => 'A megadott azonosítójú üzemanyagár nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') üzemanyagár nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -121,7 +121,7 @@ class FuelPriceController extends Controller
 
         if (!$fuelPrice) {
             return response()->json([
-                'message' => 'A megadott azonosítójú üzemanyagár nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') üzemanyagár nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

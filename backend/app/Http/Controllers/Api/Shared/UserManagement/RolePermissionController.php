@@ -19,7 +19,7 @@ class RolePermissionController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $roleId . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -37,7 +37,7 @@ class RolePermissionController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $roleId . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -46,9 +46,9 @@ class RolePermissionController extends Controller
             'permissions.*' => ['required', 'exists:permissions,id'],
         ], [
             'permissions.required' => 'Legalább egy jogosultságot meg kell adni.',
-            'permissions.array' => 'A jogosultságok formátuma érvénytelen.',
-            'permissions.*.required' => 'A jogosultság azonosító nem lehet üres.',
-            'permissions.*.exists' => 'Egy vagy több megadott jogosultság nem létezik.',
+            'permissions.array' => 'A jogosultságok formátuma helytelen. A jogosultságokat listaként (tömbként) kell megadni.',
+            'permissions.*.required' => 'A jogosultság azonosítója nem lehet üres.',
+            'permissions.*.exists' => 'A megadott jogosultságok közül egy vagy több nem szerepel az adatbázisban.',
         ]);
 
         $syncData = [];
@@ -61,7 +61,7 @@ class RolePermissionController extends Controller
         $updatedPermissions = $role->permissions()->get();
 
         return response()->json([
-            'message' => 'Jogosultságok sikeresen hozzárendelve a szerepkörhöz.',
+            'message' => 'A(z) ' . $role->title . ' szerepkörhöz sikeresen hozzárendeltük a megadott jogosultságokat.',
             'permissions' => $updatedPermissions
         ], Response::HTTP_OK);
     }
@@ -75,7 +75,7 @@ class RolePermissionController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $roleId . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -83,7 +83,7 @@ class RolePermissionController extends Controller
 
         if (!$permission) {
             return response()->json([
-                'message' => 'A jogosultság nem tartozik ehhez a szerepkörhöz vagy nem létezik.'
+                'message' => 'A megadott jogosultság (ID: ' . $permissionId . ') nem tartozik a(z) ' . $role->title . ' szerepkörhöz, vagy nem található az adatbázisban.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -99,7 +99,7 @@ class RolePermissionController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $roleId . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -107,7 +107,7 @@ class RolePermissionController extends Controller
 
         if (!$permission) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogosultság nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $permissionId . ') jogosultság nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -115,7 +115,7 @@ class RolePermissionController extends Controller
 
         if (!$rolePermission) {
             return response()->json([
-                'message' => 'A jogosultság nem tartozik ehhez a szerepkörhöz.'
+                'message' => 'A jogosultság nem tartozik a(z) ' . $role->title . '  szerepkörhöz.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -135,7 +135,7 @@ class RolePermissionController extends Controller
         $updatedPermission = $role->permissions()->where('permissions.id', $permissionId)->first();
 
         return response()->json([
-            'message' => 'A jogosultság állapota sikeresen frissítve.',
+            'message' => 'A(z) ' . $permission->key . ' jogosultság állapota sikeresen frissítve a(z) ' . $role->title . ' szerepkörhöz.',
             'permission' => $updatedPermission
         ], Response::HTTP_OK);
     }
@@ -149,7 +149,7 @@ class RolePermissionController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $roleId . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -157,7 +157,7 @@ class RolePermissionController extends Controller
 
         if (!$permission) {
             return response()->json([
-                'message' => 'A megadott azonosítójú jogosultság nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $permissionId . ')  jogosultság nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -165,7 +165,7 @@ class RolePermissionController extends Controller
 
         if (!$rolePermission) {
             return response()->json([
-                'message' => 'A jogosultság nem tartozik ehhez a szerepkörhöz.'
+                'message' => 'A jogosultság nem tartozik a(z) ' . $role->title . '  szerepkörhöz.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -185,7 +185,7 @@ class RolePermissionController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú szerepkör (ID: ' . $roleId . ') nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -193,10 +193,10 @@ class RolePermissionController extends Controller
             'permissions' => ['required', 'array'],
             'permissions.*' => ['required', 'exists:permissions,id'],
         ], [
-            'permissions.required' => 'A jogosultságok listája kötelező.',
-            'permissions.array' => 'A jogosultságok formátuma érvénytelen.',
-            'permissions.*.required' => 'A jogosultság azonosító nem lehet üres.',
-            'permissions.*.exists' => 'Egy vagy több megadott jogosultság nem létezik.',
+            'permissions.required' => 'Legalább egy jogosultságot meg kell adni.',
+            'permissions.array' => 'A jogosultságok formátuma helytelen. A jogosultságokat listaként (tömbként) kell megadni.',
+            'permissions.*.required' => 'A jogosultság azonosítója nem lehet üres.',
+            'permissions.*.exists' => 'A megadott jogosultságok közül egy vagy több nem szerepel az adatbázisban.',
         ]);
 
         $syncData = [];
@@ -209,7 +209,7 @@ class RolePermissionController extends Controller
         $updatedPermissions = $role->permissions()->get();
 
         return response()->json([
-            'message' => 'Jogosultságok sikeresen szinkronizálva.',
+            'message' => 'Jogosultságok sikeresen szinkronizálva a(z) ' . $role->title . ' szerepkörhöz.',
             'permissions' => $updatedPermissions
         ], Response::HTTP_OK);
     }

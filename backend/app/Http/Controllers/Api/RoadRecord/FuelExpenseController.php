@@ -125,7 +125,7 @@ class FuelExpenseController extends Controller
 
         if (!$fuelExpense) {
             return response()->json([
-                'message' => 'A megadott azonosítójú tankolási adat nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') tankolási adat nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -141,7 +141,7 @@ class FuelExpenseController extends Controller
 
         if (!$fuelExpense) {
             return response()->json([
-                'message' => 'A megadott azonosítójú tankolási adat nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') tankolási adat nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -202,7 +202,7 @@ class FuelExpenseController extends Controller
 
         if (!$fuelExpense) {
             return response()->json([
-                'message' => 'A megadott azonosítójú tankolási adat nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') tankolási adat nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

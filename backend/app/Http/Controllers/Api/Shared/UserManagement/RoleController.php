@@ -24,24 +24,26 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'slug' => ['required', 'string', 'max:50', 'unique:roles'],
-            'title' => ['required', 'string', 'max:100', 'unique:roles'],
-            'description' => ['nullable', 'string'],
-        ],
-        [
-            'slug.required' => 'A szerepkör azonosítójának megadása kötelező.',
-            'slug.string' => 'A szerepkör azonosítója csak szöveg formátumú lehet.',
-            'slug.max' => 'A szerepkör azonosítója maximum 50 karakter hosszú lehet.',
-            'slug.unique' => 'Ez a szerepkör azonosító már létezik.',
+        $validated = $request->validate(
+            [
+                'slug' => ['required', 'string', 'max:50', 'unique:roles'],
+                'title' => ['required', 'string', 'max:100', 'unique:roles'],
+                'description' => ['nullable', 'string'],
+            ],
+            [
+                'slug.required' => 'A szerepkör azonosítójának megadása kötelező.',
+                'slug.string' => 'A szerepkör azonosítója csak szöveg formátumú lehet.',
+                'slug.max' => 'A szerepkör azonosítója maximum 50 karakter hosszú lehet.',
+                'slug.unique' => 'Ez a szerepkör azonosító már létezik.',
 
-            'title.required' => 'A szerepkör nevének megadása kötelező.',
-            'title.string' => 'A szerepkör neve csak szöveg formátumú lehet.',
-            'title.max' => 'A szerepkör neve maximum 100 karakter hosszú lehet.',
-            'title.unique' => 'Ez a szerepkör név már létezik.',
+                'title.required' => 'A szerepkör nevének megadása kötelező.',
+                'title.string' => 'A szerepkör neve csak szöveg formátumú lehet.',
+                'title.max' => 'A szerepkör neve maximum 100 karakter hosszú lehet.',
+                'title.unique' => 'Ez a szerepkör név már létezik.',
 
-            'description.string' => 'A szerepkör leírása csak szöveg formátumú lehet.',
-        ]);
+                'description.string' => 'A szerepkör leírása csak szöveg formátumú lehet.',
+            ]
+        );
 
         $role = Role::create($validated);
 
@@ -73,7 +75,7 @@ class RoleController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -89,7 +91,7 @@ class RoleController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -126,7 +128,7 @@ class RoleController extends Controller
 
         if (!$role) {
             return response()->json([
-                'message' => 'A megadott azonosítójú szerepkör nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szerepkör nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
         if ($role->users()->count() > 0) {

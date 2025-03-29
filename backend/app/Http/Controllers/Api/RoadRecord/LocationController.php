@@ -88,7 +88,7 @@ class LocationController extends Controller
 
         if (!$location) {
             return response()->json([
-                'message' => 'A megadott azonosítójú helyszín nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') helyszín nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -105,7 +105,7 @@ class LocationController extends Controller
 
         if (!$location) {
             return response()->json([
-                'message' => 'A megadott azonosítójú helyszín nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') helyszín nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -140,7 +140,7 @@ class LocationController extends Controller
 
         if (!$location) {
             return response()->json([
-                'message' => 'A megadott azonosítójú helyszín nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') helyszín nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 

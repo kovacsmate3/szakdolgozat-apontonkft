@@ -20,8 +20,8 @@ class AddressController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('country', 'like', "%{$search}%")
-                ->orWhere('city', 'like', "%{$search}%")
-                ->orWhere('road_name', 'like', "%{$search}%");
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('road_name', 'like', "%{$search}%");
             });
         }
 
@@ -45,35 +45,37 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'location_id' => ['nullable', 'exists:locations,id'],
-            'country' => ['required', 'string', 'max:100'],
-            'postalcode' => ['required', 'integer'],
-            'city' => ['required', 'string', 'max:100'],
-            'road_name' => ['required', 'string', 'max:100'],
-            'public_space_type' => ['required', 'string', 'max:50'],
-            'building_number' => ['required', 'string', 'max:50'],
-        ],
-        [
-            'location_id.exists' => 'A megadott helyszín nem létezik.',
-            'country.required' => 'Az ország megadása kötelező.',
-            'country.string' => 'Az ország csak szöveg formátumú lehet.',
-            'country.max' => 'Az ország neve maximum 100 karakter hosszú lehet.',
-            'postalcode.required' => 'Az irányítószám megadása kötelező.',
-            'postalcode.integer' => 'Az irányítószám csak szám lehet.',
-            'city.required' => 'A város megadása kötelező.',
-            'city.string' => 'A város csak szöveg formátumú lehet.',
-            'city.max' => 'A város neve maximum 100 karakter hosszú lehet.',
-            'road_name.required' => 'A közterület nevének megadása kötelező.',
-            'road_name.string' => 'A közterület neve csak szöveg formátumú lehet.',
-            'road_name.max' => 'A közterület neve maximum 100 karakter hosszú lehet.',
-            'public_space_type.required' => 'A közterület jellegének megadása kötelező.',
-            'public_space_type.string' => 'A közterület jellege csak szöveg formátumú lehet.',
-            'public_space_type.max' => 'A közterület jellege maximum 50 karakter hosszú lehet.',
-            'building_number.required' => 'A házszám megadása kötelező.',
-            'building_number.string' => 'A házszám csak szöveg formátumú lehet.',
-            'building_number.max' => 'A házszám maximum 50 karakter hosszú lehet.',
-        ]);
+        $validated = $request->validate(
+            [
+                'location_id' => ['nullable', 'exists:locations,id'],
+                'country' => ['required', 'string', 'max:100'],
+                'postalcode' => ['required', 'integer'],
+                'city' => ['required', 'string', 'max:100'],
+                'road_name' => ['required', 'string', 'max:100'],
+                'public_space_type' => ['required', 'string', 'max:50'],
+                'building_number' => ['required', 'string', 'max:50'],
+            ],
+            [
+                'location_id.exists' => 'A megadott helyszín nem létezik.',
+                'country.required' => 'Az ország megadása kötelező.',
+                'country.string' => 'Az ország csak szöveg formátumú lehet.',
+                'country.max' => 'Az ország neve maximum 100 karakter hosszú lehet.',
+                'postalcode.required' => 'Az irányítószám megadása kötelező.',
+                'postalcode.integer' => 'Az irányítószám csak szám lehet.',
+                'city.required' => 'A város megadása kötelező.',
+                'city.string' => 'A város csak szöveg formátumú lehet.',
+                'city.max' => 'A város neve maximum 100 karakter hosszú lehet.',
+                'road_name.required' => 'A közterület nevének megadása kötelező.',
+                'road_name.string' => 'A közterület neve csak szöveg formátumú lehet.',
+                'road_name.max' => 'A közterület neve maximum 100 karakter hosszú lehet.',
+                'public_space_type.required' => 'A közterület jellegének megadása kötelező.',
+                'public_space_type.string' => 'A közterület jellege csak szöveg formátumú lehet.',
+                'public_space_type.max' => 'A közterület jellege maximum 50 karakter hosszú lehet.',
+                'building_number.required' => 'A házszám megadása kötelező.',
+                'building_number.string' => 'A házszám csak szöveg formátumú lehet.',
+                'building_number.max' => 'A házszám maximum 50 karakter hosszú lehet.',
+            ]
+        );
 
         $address = Address::create($validated);
         $address->load('location');
@@ -106,7 +108,7 @@ class AddressController extends Controller
 
         if (!$address) {
             return response()->json([
-                'message' => 'A megadott azonosítójú cím nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') cím nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -122,7 +124,7 @@ class AddressController extends Controller
 
         if (!$address) {
             return response()->json([
-                'message' => 'A megadott azonosítójú cím nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') cím nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -167,7 +169,7 @@ class AddressController extends Controller
 
         if (!$address) {
             return response()->json([
-                'message' => 'A megadott azonosítójú cím nem található.'
+                'message' => 'A megadott azonosítójú (ID: ' . $id . ') cím nem található.'
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -177,7 +179,7 @@ class AddressController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        $addressInfo = $address->postalcode . ' ' .$address->city . ', ' . $address->road_name . ' ' . $address->public_space_type . ' ' . $address->building_number;
+        $addressInfo = $address->postalcode . ' ' . $address->city . ', ' . $address->road_name . ' ' . $address->public_space_type . ' ' . $address->building_number;
 
         $address->delete();
         return response()->json([
