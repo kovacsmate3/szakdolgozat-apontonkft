@@ -11,6 +11,8 @@ class Trip extends Model
     use HasFactory;
 
     protected $fillable = [
+        'car_id',
+        'user_id',
         'start_location_id',
         'destination_location_id',
         'start_time',
@@ -52,11 +54,13 @@ class Trip extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function startLocation() {
+    public function startLocation()
+    {
         return $this->belongsTo(Location::class, 'start_location_id');
     }
 
-    public function destinationLocation() {
+    public function destinationLocation()
+    {
         return $this->belongsTo(Location::class, 'destination_location_id');
     }
 }
