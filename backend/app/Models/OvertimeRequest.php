@@ -11,12 +11,13 @@ class OvertimeRequest extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'date',
         'hours',
         'status',
         'reason',
-        'processed_at',
         'processed_by',
+        'processed_at',
         'decision_comment'
     ];
 
@@ -29,16 +30,18 @@ class OvertimeRequest extends Model
     {
         return [
             'date' => 'date',
-            'hours' => 'datetime:H:i:s',
+            'hours' => 'datetime:H:i',
             'processed_at' => 'datetime',
         ];
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function approver() {
+    public function approver()
+    {
         return $this->belongsTo(User::class, 'processed_by');
     }
 
@@ -47,5 +50,4 @@ class OvertimeRequest extends Model
         return $this->hasOne(JournalEntry::class, 'overtimerequest_id');
     }
     */
-
 }
