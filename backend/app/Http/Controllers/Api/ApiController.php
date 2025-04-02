@@ -16,39 +16,28 @@ class ApiController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'email' => ['required_without:username', 'email', 'string'],
-            'username' => ['required_without:email', 'string'],
+            'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'email.required_without' => 'Az email cím vagy felhasználónév megadása kötelező.',
-            'email.email' => 'Érvénytelen email formátum.',
-            'email.string' => 'Az email cím csak szöveg formátumú lehet.',
-            'username.required_without' => 'A felhasználónév vagy email cím megadása kötelező.',
-            'username.string' => 'A felhasználónév csak szöveg formátumú lehet.',
+            'identifier.required' => 'Az email cím vagy felhasználónév megadása kötelező.',
+            'identifier.string' => 'Az azonosító csak szöveg formátumú lehet.',
             'password.required' => 'A jelszó megadása kötelező.',
             'password.string' => 'A jelszó csak szöveg formátumú lehet.',
         ]);
 
         $user = null;
-        $loginField = null;
-        $loginValue = null;
+        $identifier = $request->identifier;
 
-        if ($request->has('email')) {
-            $loginField = 'email';
-            $loginValue = $request->email;
-            $user = User::where('email', $loginValue)->first();
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $identifier)->first();
         } else {
-            $loginField = 'username';
-            $loginValue = $request->username;
-            $user = User::where('username', $loginValue)->first();
+            $user = User::where('username', $identifier)->first();
         }
 
         if (!$user) {
             return response()->json([
                 "status" => false,
-                "message" => "Érvénytelen azonosító adatok. A megadott " .
-                    ($loginField == 'email' ? 'email cím' : 'felhasználónév') .
-                    " nem található."
+                "message" => "Érvénytelen azonosító adatok."
             ], Response::HTTP_UNAUTHORIZED);
         }
 
