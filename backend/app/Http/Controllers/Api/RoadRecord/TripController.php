@@ -217,7 +217,7 @@ class TripController extends Controller
                 'date',
                 function ($attribute, $value, $fail) use ($request, $trip) {
                     $endTime = $request->input('end_time', $trip->end_time);
-                    if ($value > $endTime) {
+                    if ($value && ($value > $endTime)) {
                         $fail('Az indulási idő nem lehet későbbi, mint az érkezési idő.');
                     }
                 }
@@ -228,7 +228,7 @@ class TripController extends Controller
                 'date',
                 function ($attribute, $value, $fail) use ($request, $trip) {
                     $startTime = $request->input('start_time', $trip->start_time);
-                    if ($value && $value < $startTime) {
+                    if ($value && ($value < $startTime)) {
                         $fail('Az érkezési idő nem lehet korábbi, mint az indulási idő.');
                     }
                 }

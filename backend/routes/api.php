@@ -37,22 +37,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/', function () {
-    return response()->json([
-        'message' => 'Üdvözöljük az A-Ponton Kft. API felületén!',
-        'company' => 'A-Ponton Kft.',
-        'services' => [
-            'Geodéziai felmérések',
-            'Kitűzések',
-            'Ingatlan-nyilvántartási feladatok',
-            'Épületfeltüntetés'
-        ],
-        'status' => 'Az API működik',
-        'version' => '1.0',
-        'date' => now()->format('Y-m-d H:i:s')
-    ]);
-});
-
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {
