@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TravelPurposeDictionary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class TravelPurposeDictionaryController extends Controller
 {
@@ -108,7 +109,7 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        if ($travelPurpose->is_system) { //&& !auth()->user()->hasRole('admin')) {
+        if ($travelPurpose->is_system && !Auth::user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Rendszerszintű utazási cél nem módosítható.'
             ], Response::HTTP_FORBIDDEN);
@@ -155,7 +156,7 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        if ($travelPurpose->is_system) { //&& !auth()->user()->hasRole('admin')) {
+        if ($travelPurpose->is_system && !Auth::user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Rendszerszintű utazási cél nem törölhető.'
             ], Response::HTTP_FORBIDDEN);

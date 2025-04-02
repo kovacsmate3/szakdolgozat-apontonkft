@@ -51,7 +51,7 @@ class OvertimeRequestController extends Controller
 
         if ($request->has('include')) {
             $includes = explode(',', $request->input('include'));
-            $allowedIncludes = ['user', 'approver'];
+            $allowedIncludes = ['user', 'approver', 'journalEntry'];
 
             foreach ($includes as $include) {
                 if (in_array($include, $allowedIncludes)) {
@@ -190,7 +190,7 @@ class OvertimeRequestController extends Controller
      */
     public function show(string $id)
     {
-        $overtimeRequest = OvertimeRequest::with(['user', 'approver'])->find($id);
+        $overtimeRequest = OvertimeRequest::with(['user', 'approver', 'journalEntry'])->find($id);
 
         if (!$overtimeRequest) {
             return response()->json([

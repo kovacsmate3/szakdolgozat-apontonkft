@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Trip;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class TripController extends Controller
 {
@@ -62,9 +63,8 @@ class TripController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'car_id' => ['required', 'exists:cars,id'],
-            'user_id' => ['required', 'exists:users,id'],
             'start_location_id' => [
                 'required',
                 'exists:locations,id',
@@ -82,12 +82,11 @@ class TripController extends Controller
             'end_odometer' => ['nullable', 'integer', 'min:0', 'gte:start_odometer'],
             'planned_duration' => ['nullable', 'date_format:H:i:s'],
             'actual_duration' => ['nullable', 'date_format:H:i:s'],
-        ], [
+        ];
+
+        $messages = [
             'car_id.required' => 'A jármű azonosító megadása kötelező.',
             'car_id.exists' => 'A megadott jármű nem létezik.',
-
-            'user_id.required' => 'A felhasználó azonosító megadása kötelező.',
-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
 
             'start_location_id.required' => 'Az indulási helyszín megadása kötelező.',
             'start_location_id.exists' => 'A megadott indulási helyszín nem létezik.',
@@ -117,7 +116,21 @@ class TripController extends Controller
 
             'planned_duration.date_format' => 'A tervezett időtartam érvénytelen formátumú (óra:perc:másodperc).',
             'actual_duration.date_format' => 'A tényleges időtartam érvénytelen formátumú (óra:perc:másodperc).',
-        ]);
+        ];
+
+        $userRole = Auth::user()->role->slug ?? null;
+
+        if (in_array($userRole, ['admin', 'webdev'])) {
+            $rules['user_id'] = ['required', 'exists:users,id'];
+            $messages['user_id.required'] = 'A felhasználó azonosító megadása kötelező.';
+            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
+        }
+
+        $validated = $request->validate($rules, $messages);
+
+        if (!in_array($userRole, ['admin', 'webdev'])) {
+            $validated['user_id'] = Auth::id();
+        }
 
         $trip = Trip::create($validated);
         $trip->load(['car', 'user', 'startLocation', 'destinationLocation']);
@@ -170,9 +183,15 @@ class TripController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $validated = $request->validate([
+        $userRole = Auth::user()->role->slug ?? null;
+        if (!in_array($userRole, ['admin', 'webdev']) && $trip->user_id !== Auth::id()) {
+            return response()->json([
+                'message' => 'Nincs jogosultsága módosítani ezt az utat.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $rules = [
             'car_id' => ['sometimes', 'exists:cars,id'],
-            'user_id' => ['sometimes', 'exists:users,id'],
             'start_location_id' => [
                 'sometimes',
                 'exists:locations,id',
@@ -193,7 +212,16 @@ class TripController extends Controller
                     }
                 }
             ],
-            'start_time' => ['sometimes', 'date'],
+            'start_time' => [
+                'sometimes',
+                'date',
+                function ($attribute, $value, $fail) use ($request, $trip) {
+                    $endTime = $request->input('end_time', $trip->end_time);
+                    if ($value > $endTime) {
+                        $fail('Az indulási idő nem lehet későbbi, mint az érkezési idő.');
+                    }
+                }
+            ],
             'end_time' => [
                 'sometimes',
                 'nullable',
@@ -222,20 +250,18 @@ class TripController extends Controller
             ],
             'planned_duration' => ['sometimes', 'nullable', 'date_format:H:i:s'],
             'actual_duration' => ['sometimes', 'nullable', 'date_format:H:i:s'],
-        ], [
+        ];
+
+        $messages = [
             'car_id.exists' => 'A megadott jármű nem létezik.',
 
-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
-
             'start_location_id.exists' => 'A megadott indulási helyszín nem létezik.',
-            'start_location_id.different' => 'Az indulási és érkezési helyszín nem lehet azonos.',
 
             'destination_location_id.exists' => 'A megadott érkezési helyszín nem létezik.',
 
             'start_time.date' => 'Az indulási idő érvénytelen dátum formátumú.',
 
             'end_time.date' => 'Az érkezési idő érvénytelen dátum formátumú.',
-            'end_time.after_or_equal' => 'Az érkezési idő nem lehet korábbi, mint az indulási idő.',
 
             'planned_distance.numeric' => 'A tervezett távolság csak szám lehet.',
             'planned_distance.min' => 'A tervezett távolság nem lehet negatív érték.',
@@ -252,7 +278,22 @@ class TripController extends Controller
 
             'planned_duration.date_format' => 'A tervezett időtartam érvénytelen formátumú (óra:perc:másodperc).',
             'actual_duration.date_format' => 'A tényleges időtartam érvénytelen formátumú (óra:perc:másodperc).',
-        ]);
+        ];
+
+        if (in_array($userRole, ['admin', 'webdev'])) {
+            $rules['user_id'] = ['sometimes', 'exists:users,id'];
+            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
+        }
+
+        $validated = $request->validate($rules, $messages);
+
+        if (!isset($validated['start_time'])) {
+            $validated['start_time'] = now();
+        }
+
+        if (!in_array($userRole, ['admin', 'webdev']) && isset($validated['user_id'])) {
+            unset($validated['user_id']);
+        }
 
         $trip->update($validated);
         $trip->load(['car', 'user', 'startLocation', 'destinationLocation']);
@@ -274,6 +315,13 @@ class TripController extends Controller
             return response()->json([
                 'message' => 'A megadott azonosítójú (ID: ' . $id . ') út nem található.'
             ], Response::HTTP_NOT_FOUND);
+        }
+
+        $userRole = Auth::user()->role->slug ?? null;
+        if (!in_array($userRole, ['admin', 'webdev']) && $trip->user_id !== Auth::id()) {
+            return response()->json([
+                'message' => 'Nincs jogosultsága törölni ezt az utat.'
+            ], Response::HTTP_FORBIDDEN);
         }
 
         $tripInfo = 'Út (' . date('Y-m-d H:i', strtotime($trip->start_time)) . '): ' .

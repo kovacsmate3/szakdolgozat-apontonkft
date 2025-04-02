@@ -7,6 +7,7 @@ use App\Models\FuelExpense;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class FuelExpenseController extends Controller
 {
@@ -59,9 +60,8 @@ class FuelExpenseController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'car_id' => ['required', 'exists:cars,id'],
-            'user_id' => ['required', 'exists:users,id'],
             'location_id' => [
                 'required',
                 function ($attribute, $value, $fail) {
@@ -78,12 +78,11 @@ class FuelExpenseController extends Controller
             'currency' => ['required', 'string', 'max:10'],
             'fuel_quantity' => ['required', 'numeric', 'min:0'],
             'odometer' => ['required', 'integer', 'min:0'],
-        ], [
+        ];
+
+        $messages = [
             'car_id.required' => 'A jármű azonosító megadása kötelező.',
             'car_id.exists' => 'A megadott jármű nem létezik.',
-
-            'user_id.required' => 'A felhasználó azonosító megadása kötelező.',
-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
 
             'location_id.required' => 'A helyszín azonosító megadása kötelező.',
 
@@ -105,7 +104,21 @@ class FuelExpenseController extends Controller
             'odometer.required' => 'A kilométeróra állásának megadása kötelező.',
             'odometer.integer' => 'A kilométeróra állása csak egész szám lehet.',
             'odometer.min' => 'A kilométeróra állása nem lehet negatív érték.',
-        ]);
+        ];
+
+        $userRole = Auth::user()->role->slug ?? null;
+
+        if (in_array($userRole, ['admin'])) {
+            $rules['user_id'] = ['required', 'exists:users,id'];
+            $messages['user_id.required'] = 'A felhasználó azonosító megadása kötelező.';
+            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
+        }
+
+        $validated = $request->validate($rules, $messages);
+
+        if (!in_array($userRole, ['admin'])) {
+            $validated['user_id'] = Auth::id();
+        }
 
         $fuelExpense = FuelExpense::create($validated);
         $fuelExpense->load(['car', 'user', 'location']);
@@ -145,9 +158,15 @@ class FuelExpenseController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $validated = $request->validate([
+        $userRole = Auth::user()->role->slug ?? null;
+        if (!in_array($userRole, ['admin']) && $fuelExpense->user_id !== Auth::id()) {
+            return response()->json([
+                'message' => 'Nincs jogosultsága módosítani ezt a tankolási adatot.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $rules = [
             'car_id' => ['sometimes', 'exists:cars,id'],
-            'user_id' => ['sometimes', 'exists:users,id'],
             'location_id' => [
                 'sometimes',
                 function ($attribute, $value, $fail) {
@@ -164,10 +183,10 @@ class FuelExpenseController extends Controller
             'currency' => ['sometimes', 'string', 'max:10'],
             'fuel_quantity' => ['sometimes', 'numeric', 'min:0'],
             'odometer' => ['sometimes', 'integer', 'min:0'],
-        ], [
-            'car_id.exists' => 'A megadott jármű nem létezik.',
+        ];
 
-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
+        $messages = [
+            'car_id.exists' => 'A megadott jármű nem létezik.',
 
             'expense_date.date' => 'A költség dátuma érvénytelen formátumú.',
 
@@ -182,7 +201,18 @@ class FuelExpenseController extends Controller
 
             'odometer.integer' => 'A kilométeróra állása csak egész szám lehet.',
             'odometer.min' => 'A kilométeróra állása nem lehet negatív érték.',
-        ]);
+        ];
+
+        if (in_array($userRole, ['admin'])) {
+            $rules['user_id'] = ['sometimes', 'exists:users,id'];
+            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
+        }
+
+        $validated = $request->validate($rules, $messages);
+
+        if (!in_array($userRole, ['admin']) && isset($validated['user_id'])) {
+            unset($validated['user_id']);
+        }
 
         $fuelExpense->update($validated);
         $fuelExpense->load(['car', 'user', 'location']);
@@ -204,6 +234,13 @@ class FuelExpenseController extends Controller
             return response()->json([
                 'message' => 'A megadott azonosítójú (ID: ' . $id . ') tankolási adat nem található.'
             ], Response::HTTP_NOT_FOUND);
+        }
+
+        $userRole = Auth::user()->role->slug ?? null;
+        if (!in_array($userRole, ['admin']) && $fuelExpense->user_id !== Auth::id()) {
+            return response()->json([
+                'message' => 'Nincs jogosultsága törölni ezt a tankolási adatot.'
+            ], Response::HTTP_FORBIDDEN);
         }
 
         $expenseDate = $fuelExpense->expense_date->format('Y-m-d H:i');

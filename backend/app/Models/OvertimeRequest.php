@@ -45,9 +45,8 @@ class OvertimeRequest extends Model
         return $this->belongsTo(User::class, 'processed_by');
     }
 
-    /*
-    public function journalEntry() {
+    public function journalEntry()
+    {
         return $this->hasOne(JournalEntry::class, 'overtimerequest_id');
     }
-    */
 }

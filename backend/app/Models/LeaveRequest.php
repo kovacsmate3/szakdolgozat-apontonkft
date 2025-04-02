@@ -11,6 +11,7 @@ class LeaveRequest extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'start_date',
         'end_date',
         'status',
@@ -34,16 +35,18 @@ class LeaveRequest extends Model
         ];
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function approver() {
+    public function approver()
+    {
         return $this->belongsTo(User::class, 'processed_by');
     }
 
-    public function journalEntries() {
+    public function journalEntries()
+    {
         return $this->hasMany(JournalEntry::class, 'leaverequest_id');
     }
-    
 }
