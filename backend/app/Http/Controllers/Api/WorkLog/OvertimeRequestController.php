@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\WorkLog;
 
 use App\Http\Controllers\Controller;
+use App\Models\JournalEntry;
 use App\Models\OvertimeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -177,7 +178,12 @@ class OvertimeRequestController extends Controller
         }
 
         $overtimeRequest = OvertimeRequest::create($validated);
-        $overtimeRequest->load(['user', 'approver']);
+        if ($overtimeRequest->status === 'jóváhagyott') {
+            $this->createJournalEntryForOvertimeRequest($overtimeRequest);
+        }
+
+        $overtimeRequest->load(['user', 'approver', 'journalEntry']);
+
 
         return response()->json([
             'message' => 'A túlóra igény sikeresen létrehozva.',
@@ -315,8 +321,19 @@ class OvertimeRequestController extends Controller
             }
         }
 
+        $oldStatus = $overtimeRequest->status;
+
         $overtimeRequest->update($validated);
-        $overtimeRequest->load(['user', 'approver']);
+
+        if ($isAdmin && isset($validated['status']) && $oldStatus !== $validated['status']) {
+            if ($oldStatus === 'jóváhagyott' && $validated['status'] !== 'jóváhagyott') {
+                JournalEntry::where('overtimerequest_id', $overtimeRequest->id)->delete();
+            } elseif ($oldStatus !== 'jóváhagyott' && $validated['status'] === 'jóváhagyott') {
+                $this->createJournalEntryForOvertimeRequest($overtimeRequest);
+            }
+        }
+
+        $overtimeRequest->load(['user', 'approver', 'journalEntry']);
 
         return response()->json([
             'message' => 'A túlóra igény adatai sikeresen frissítve lettek.',
@@ -408,7 +425,9 @@ class OvertimeRequestController extends Controller
             'decision_comment' => $validated['decision_comment'] ?? null,
         ]);
 
-        $overtimeRequest->load(['user', 'approver']);
+        $this->createJournalEntryForOvertimeRequest($overtimeRequest);
+
+        $overtimeRequest->load(['user', 'approver', 'journalEntry']);
 
         return response()->json([
             'message' => 'A túlóra igény sikeresen jóváhagyva.',
@@ -472,5 +491,31 @@ class OvertimeRequestController extends Controller
             'message' => 'A túlóra igény elutasítva.',
             'overtime_request' => $overtimeRequest
         ], Response::HTTP_OK);
+    }
+
+    /**
+     * Létrehozza a naplóbejegyzést egy jóváhagyott túlóra kérelemhez
+     *
+     * @param OvertimeRequest $overtimeRequest
+     * @return JournalEntry|null A létrehozott naplóbejegyzés vagy null
+     */
+    private function createJournalEntryForOvertimeRequest(OvertimeRequest $overtimeRequest)
+    {
+        if ($overtimeRequest->status !== 'jóváhagyott') {
+            return null;
+        }
+
+        $userFirstName = $overtimeRequest->user->firstname ?? '';
+        $reason = $overtimeRequest->reason ?? '';
+
+        return JournalEntry::create([
+            'work_date' => $overtimeRequest->date,
+            'hours' => $overtimeRequest->hours,
+            'work_type' => 'túlóra',
+            'overtimerequest_id' => $overtimeRequest->id,
+            'user_id' => $overtimeRequest->user_id,
+            'task_id' => null,
+            'note' => "TÚLÓRA: {$userFirstName} - {$reason}"
+        ]);
     }
 }

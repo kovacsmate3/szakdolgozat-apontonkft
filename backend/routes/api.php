@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\RoadRecord\CarController;
 use App\Http\Controllers\Api\RoadRecord\FuelExpenseController;
 use App\Http\Controllers\Api\RoadRecord\FuelPriceController;
 use App\Http\Controllers\Api\RoadRecord\LocationController;
@@ -14,10 +15,10 @@ use App\Http\Controllers\Api\Shared\UserManagement\PermissionController;
 use App\Http\Controllers\Api\Shared\UserManagement\RoleController;
 use App\Http\Controllers\Api\Shared\UserManagement\RolePermissionController;
 use App\Http\Controllers\Api\Shared\UserManagement\UserController;
+use App\Http\Controllers\Api\WorkLog\JournalEntryController;
 use App\Http\Controllers\Api\WorkLog\LeaveRequestController;
 use App\Http\Controllers\Api\WorkLog\OvertimeRequestController;
 use App\Http\Controllers\Api\WorkLog\ProjectController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -36,22 +37,34 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::get('/', function () {
+    return response()->json([
+        'message' => 'Üdvözöljük az A-Ponton Kft. API felületén!',
+        'company' => 'A-Ponton Kft.',
+        'services' => [
+            'Geodéziai felmérések',
+            'Kitűzések',
+            'Ingatlan-nyilvántartási feladatok',
+            'Épületfeltüntetés'
+        ],
+        'status' => 'Az API működik',
+        'version' => '1.0',
+        'date' => now()->format('Y-m-d H:i:s')
+    ]);
+});
 
-Route::post('/login', [ApiController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/profile', [ApiController::class, 'profile']);
-    Route::post('/logout', [ApiController::class, 'logout']);
+    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
-    //UserController
+    // UserController
     Route::apiResource('users', UserController::class);
-    // RoleController
-    Route::apiResource('roles', RoleController::class);
     // PermissionController
     Route::apiResource('permissions', PermissionController::class);
+    // RoleController
+    Route::apiResource('roles', RoleController::class);
 
     // RolePermissionController
     Route::get('roles/{roleId}/permissions', [RolePermissionController::class, 'index']);
@@ -65,10 +78,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('addresses', AddressController::class);
     // LawCategoryController
     Route::apiResource('law-categories', LawCategoryController::class);
-    // LawController
+    // lawController
     Route::apiResource('laws', LawController::class);
     // CarController
-    Route::apiResource('cars', LawController::class);
+    Route::apiResource('cars', CarController::class);
     // FuelPriceController
     Route::apiResource('fuel-prices', FuelPriceController::class);
     // LocationController
@@ -97,4 +110,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('leave-requests', LeaveRequestController::class);
     Route::post('leave-requests/{id}/approve', [LeaveRequestController::class, 'approve']);
     Route::post('leave-requests/{id}/reject', [LeaveRequestController::class, 'reject']);
+    // JournalEntryController
+    Route::apiResource('journal-entries', JournalEntryController::class);
 });

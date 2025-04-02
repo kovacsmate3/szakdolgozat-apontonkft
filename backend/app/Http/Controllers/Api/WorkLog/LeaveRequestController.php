@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\WorkLog;
 
 use App\Http\Controllers\Controller;
+use App\Models\JournalEntry;
 use App\Models\LeaveRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -90,7 +92,7 @@ class LeaveRequestController extends Controller
                 'exists:users,id',
                 function ($attribute, $value, $fail) use ($currentUserId) {
                     if ($value == $currentUserId) {
-                        $fail('Adminisztrátor nem vehet fel magának szabadság igényt.');
+                        $fail('Adminisztrátor nem vehet fel magának szabadság kérelmet.');
                     }
                 }
             ];
@@ -146,6 +148,10 @@ class LeaveRequestController extends Controller
             }
         }
 
+        if (!$isAdmin) {
+            $validated['user_id'] = Auth::id();
+        }
+
         $overlapping = LeaveRequest::where('user_id', $validated['user_id'])
             ->where(function ($query) use ($validated) {
                 $query->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
@@ -182,7 +188,12 @@ class LeaveRequestController extends Controller
         }
 
         $leaveRequest = LeaveRequest::create($validated);
-        $leaveRequest->load(['user', 'approver']);
+
+        if ($leaveRequest->status === 'jóváhagyott') {
+            $this->createJournalEntriesForLeaveRequest($leaveRequest);
+        }
+
+        $leaveRequest->load(['user', 'approver', 'journalEntries']);
 
         return response()->json([
             'message' => 'A szabadság kérelem sikeresen létrehozva.',
@@ -241,7 +252,7 @@ class LeaveRequestController extends Controller
                 'date',
                 function ($attribute, $value, $fail) use ($request, $leaveRequest) {
                     $endDate = $request->input('end_date', $leaveRequest->end_date);
-                    if ($value > $endDate) {
+                    if ($value && ($value > $endDate)) {
                         $fail('A szabadság kezdete nem lehet későbbi, mint a vége.');
                     }
                 }
@@ -251,7 +262,7 @@ class LeaveRequestController extends Controller
                 'date',
                 function ($attribute, $value, $fail) use ($request, $leaveRequest) {
                     $startDate = $request->input('start_date', $leaveRequest->start_date);
-                    if ($value < $startDate) {
+                    if ($value && ($value < $startDate)) {
                         $fail('A szabadság vége nem lehet korábbi, mint a kezdete.');
                     }
                 }
@@ -292,7 +303,7 @@ class LeaveRequestController extends Controller
             'status.in' => 'A státusz csak a következők egyike lehet: függőben lévő, jóváhagyott, elutasított.',
             'decision_comment.string' => 'A döntés megjegyzése csak szöveg formátumú lehet.',
             'decision_comment.max' => 'A döntés megjegyzése maximum 100 karakter hosszú lehet.',
-            'decision_comment.required_if' => 'Szabadság igény elutasításakor kötelező megadni az elutasítás indokát.',
+            'decision_comment.required_if' => 'Szabadság kérelem elutasításakor kötelező megadni az elutasítás indokát.',
         ];
 
         $validated = $request->validate($rules, $messages);
@@ -347,7 +358,18 @@ class LeaveRequestController extends Controller
             }
         }
 
+        $oldStatus = $leaveRequest->status;
+
         $leaveRequest->update($validated);
+
+        if ($isAdmin && isset($validated['status']) && $oldStatus !== $validated['status']) {
+            if ($oldStatus === 'jóváhagyott' && $validated['status'] !== 'jóváhagyott') {
+                JournalEntry::where('leaverequest_id', $leaveRequest->id)->delete();
+            } elseif ($oldStatus !== 'jóváhagyott' && $validated['status'] === 'jóváhagyott') {
+                $this->createJournalEntriesForLeaveRequest($leaveRequest);
+            }
+        }
+
         $leaveRequest->load(['user', 'approver', 'journalEntries']);
 
         return response()->json([
@@ -447,7 +469,9 @@ class LeaveRequestController extends Controller
             'decision_comment' => $validated['decision_comment'] ?? null,
         ]);
 
-        $leaveRequest->load(['user', 'approver']);
+        $this->createJournalEntriesForLeaveRequest($leaveRequest);
+
+        $leaveRequest->load(['user', 'approver', 'journalEntries']);
 
         return response()->json([
             'message' => 'A szabadság kérelem sikeresen jóváhagyva.',
@@ -510,5 +534,39 @@ class LeaveRequestController extends Controller
             'message' => 'A szabadság kérelem elutasítva.',
             'leave_request' => $leaveRequest
         ], Response::HTTP_OK);
+    }
+
+    /**
+     * Létrehozza a naplóbejegyzéseket egy jóváhagyott szabadság kérelemhez
+     *
+     * @param LeaveRequest $leaveRequest
+     * @return array A létrehozott naplóbejegyzések
+     */
+    private function createJournalEntriesForLeaveRequest(LeaveRequest $leaveRequest)
+    {
+        if ($leaveRequest->status !== 'jóváhagyott') {
+            return [];
+        }
+
+        $entries = [];
+        $userFirstName = $leaveRequest->user->firstname ?? '';
+        $reason = $leaveRequest->reason ?? '';
+
+        $startDate = Carbon::parse($leaveRequest->start_date);
+        $endDate = Carbon::parse($leaveRequest->end_date);
+
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $entries[] = JournalEntry::create([
+                'work_date' => $date->format('Y-m-d'),
+                'hours' => '0:00:00',
+                'work_type' => 'szabadság',
+                'leaverequest_id' => $leaveRequest->id,
+                'user_id' => $leaveRequest->user_id,
+                'task_id' => null,
+                'note' => "SZABADSÁG: {$userFirstName} - {$reason}"
+            ]);
+        }
+
+        return $entries;
     }
 }

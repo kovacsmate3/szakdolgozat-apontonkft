@@ -11,6 +11,7 @@ class JournalEntry extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'task_id',
         'work_date',
         'hours',
@@ -20,7 +21,7 @@ class JournalEntry extends Model
         'overtimerequest_id',
     ];
 
-        /**
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -33,19 +34,23 @@ class JournalEntry extends Model
         ];
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function task() {
+    public function task()
+    {
         return $this->belongsTo(Task::class, 'task_id');
     }
 
-    public function leaveRequest() {
+    public function leaveRequest()
+    {
         return $this->belongsTo(LeaveRequest::class, 'leaverequest_id');
     }
 
-    public function overtimeRequest() {
+    public function overtimeRequest()
+    {
         return $this->belongsTo(OvertimeRequest::class, 'overtimerequest_id');
     }
 }
