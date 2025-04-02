@@ -1,0 +1,917 @@
+diff --git a/backend/app/Http/Controllers/Api/RoadRecord/FuelExpenseController.php b/backend/app/Http/Controllers/Api/RoadRecord/FuelExpenseController.php
+index a06c7087..d7325413 100644
+--- a/backend/app/Http/Controllers/Api/RoadRecord/FuelExpenseController.php
++++ b/backend/app/Http/Controllers/Api/RoadRecord/FuelExpenseController.php
+@@ -7,6 +7,7 @@
+ use App\Models\Location;
+ use Illuminate\Http\Request;
+ use Illuminate\Http\Response;
++use Illuminate\Support\Facades\Auth;
+ 
+ class FuelExpenseController extends Controller
+ {
+@@ -59,9 +60,8 @@ public function index(Request $request)
+      */
+     public function store(Request $request)
+     {
+-        $validated = $request->validate([
++        $rules = [
+             'car_id' => ['required', 'exists:cars,id'],
+-            'user_id' => ['required', 'exists:users,id'],
+             'location_id' => [
+                 'required',
+                 function ($attribute, $value, $fail) {
+@@ -78,13 +78,12 @@ function ($attribute, $value, $fail) {
+             'currency' => ['required', 'string', 'max:10'],
+             'fuel_quantity' => ['required', 'numeric', 'min:0'],
+             'odometer' => ['required', 'integer', 'min:0'],
+-        ], [
++        ];
++
++        $messages = [
+             'car_id.required' => 'A jármű azonosító megadása kötelező.',
+             'car_id.exists' => 'A megadott jármű nem létezik.',
+ 
+-            'user_id.required' => 'A felhasználó azonosító megadása kötelező.',
+-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
+-
+             'location_id.required' => 'A helyszín azonosító megadása kötelező.',
+ 
+             'expense_date.required' => 'A költség dátumának megadása kötelező.',
+@@ -105,7 +104,21 @@ function ($attribute, $value, $fail) {
+             'odometer.required' => 'A kilométeróra állásának megadása kötelező.',
+             'odometer.integer' => 'A kilométeróra állása csak egész szám lehet.',
+             'odometer.min' => 'A kilométeróra állása nem lehet negatív érték.',
+-        ]);
++        ];
++
++        $userRole = Auth::user()->role->slug ?? null;
++
++        if (in_array($userRole, ['admin'])) {
++            $rules['user_id'] = ['required', 'exists:users,id'];
++            $messages['user_id.required'] = 'A felhasználó azonosító megadása kötelező.';
++            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
++        }
++
++        $validated = $request->validate($rules, $messages);
++
++        if (!in_array($userRole, ['admin'])) {
++            $validated['user_id'] = Auth::id();
++        }
+ 
+         $fuelExpense = FuelExpense::create($validated);
+         $fuelExpense->load(['car', 'user', 'location']);
+@@ -145,9 +158,15 @@ public function update(Request $request, string $id)
+             ], Response::HTTP_NOT_FOUND);
+         }
+ 
+-        $validated = $request->validate([
++        $userRole = Auth::user()->role->slug ?? null;
++        if (!in_array($userRole, ['admin']) && $fuelExpense->user_id !== Auth::id()) {
++            return response()->json([
++                'message' => 'Nincs jogosultsága módosítani ezt a tankolási adatot.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        $rules = [
+             'car_id' => ['sometimes', 'exists:cars,id'],
+-            'user_id' => ['sometimes', 'exists:users,id'],
+             'location_id' => [
+                 'sometimes',
+                 function ($attribute, $value, $fail) {
+@@ -164,10 +183,10 @@ function ($attribute, $value, $fail) {
+             'currency' => ['sometimes', 'string', 'max:10'],
+             'fuel_quantity' => ['sometimes', 'numeric', 'min:0'],
+             'odometer' => ['sometimes', 'integer', 'min:0'],
+-        ], [
+-            'car_id.exists' => 'A megadott jármű nem létezik.',
++        ];
+ 
+-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
++        $messages = [
++            'car_id.exists' => 'A megadott jármű nem létezik.',
+ 
+             'expense_date.date' => 'A költség dátuma érvénytelen formátumú.',
+ 
+@@ -182,7 +201,18 @@ function ($attribute, $value, $fail) {
+ 
+             'odometer.integer' => 'A kilométeróra állása csak egész szám lehet.',
+             'odometer.min' => 'A kilométeróra állása nem lehet negatív érték.',
+-        ]);
++        ];
++
++        if (in_array($userRole, ['admin'])) {
++            $rules['user_id'] = ['sometimes', 'exists:users,id'];
++            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
++        }
++
++        $validated = $request->validate($rules, $messages);
++
++        if (!in_array($userRole, ['admin']) && isset($validated['user_id'])) {
++            unset($validated['user_id']);
++        }
+ 
+         $fuelExpense->update($validated);
+         $fuelExpense->load(['car', 'user', 'location']);
+@@ -206,6 +236,13 @@ public function destroy(string $id)
+             ], Response::HTTP_NOT_FOUND);
+         }
+ 
++        $userRole = Auth::user()->role->slug ?? null;
++        if (!in_array($userRole, ['admin']) && $fuelExpense->user_id !== Auth::id()) {
++            return response()->json([
++                'message' => 'Nincs jogosultsága törölni ezt a tankolási adatot.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
+         $expenseDate = $fuelExpense->expense_date->format('Y-m-d H:i');
+         $fuelQuantity = $fuelExpense->fuel_quantity;
+ 
+diff --git a/backend/app/Http/Controllers/Api/RoadRecord/TravelPurposeDictionaryController.php b/backend/app/Http/Controllers/Api/RoadRecord/TravelPurposeDictionaryController.php
+index 311ba8c9..4c76a75e 100644
+--- a/backend/app/Http/Controllers/Api/RoadRecord/TravelPurposeDictionaryController.php
++++ b/backend/app/Http/Controllers/Api/RoadRecord/TravelPurposeDictionaryController.php
+@@ -6,6 +6,7 @@
+ use App\Models\TravelPurposeDictionary;
+ use Illuminate\Http\Request;
+ use Illuminate\Http\Response;
++use Illuminate\Support\Facades\Auth;
+ 
+ class TravelPurposeDictionaryController extends Controller
+ {
+@@ -108,7 +109,7 @@ public function update(Request $request, string $id)
+             ], Response::HTTP_NOT_FOUND);
+         }
+ 
+-        if ($travelPurpose->is_system) { //&& !auth()->user()->hasRole('admin')) {
++        if ($travelPurpose->is_system && !Auth::user()->hasRole('admin')) {
+             return response()->json([
+                 'message' => 'Rendszerszintű utazási cél nem módosítható.'
+             ], Response::HTTP_FORBIDDEN);
+@@ -155,7 +156,7 @@ public function destroy(string $id)
+             ], Response::HTTP_NOT_FOUND);
+         }
+ 
+-        if ($travelPurpose->is_system) { //&& !auth()->user()->hasRole('admin')) {
++        if ($travelPurpose->is_system && !Auth::user()->hasRole('admin')) {
+             return response()->json([
+                 'message' => 'Rendszerszintű utazási cél nem törölhető.'
+             ], Response::HTTP_FORBIDDEN);
+diff --git a/backend/app/Http/Controllers/Api/RoadRecord/TripController.php b/backend/app/Http/Controllers/Api/RoadRecord/TripController.php
+index 1e2077cf..7b56aac7 100644
+--- a/backend/app/Http/Controllers/Api/RoadRecord/TripController.php
++++ b/backend/app/Http/Controllers/Api/RoadRecord/TripController.php
+@@ -6,6 +6,7 @@
+ use App\Models\Trip;
+ use Illuminate\Http\Request;
+ use Illuminate\Http\Response;
++use Illuminate\Support\Facades\Auth;
+ 
+ class TripController extends Controller
+ {
+@@ -62,9 +63,8 @@ public function index(Request $request)
+      */
+     public function store(Request $request)
+     {
+-        $validated = $request->validate([
++        $rules = [
+             'car_id' => ['required', 'exists:cars,id'],
+-            'user_id' => ['required', 'exists:users,id'],
+             'start_location_id' => [
+                 'required',
+                 'exists:locations,id',
+@@ -82,13 +82,12 @@ public function store(Request $request)
+             'end_odometer' => ['nullable', 'integer', 'min:0', 'gte:start_odometer'],
+             'planned_duration' => ['nullable', 'date_format:H:i:s'],
+             'actual_duration' => ['nullable', 'date_format:H:i:s'],
+-        ], [
++        ];
++
++        $messages = [
+             'car_id.required' => 'A jármű azonosító megadása kötelező.',
+             'car_id.exists' => 'A megadott jármű nem létezik.',
+ 
+-            'user_id.required' => 'A felhasználó azonosító megadása kötelező.',
+-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
+-
+             'start_location_id.required' => 'Az indulási helyszín megadása kötelező.',
+             'start_location_id.exists' => 'A megadott indulási helyszín nem létezik.',
+             'start_location_id.different' => 'Az indulási és érkezési helyszín nem lehet azonos.',
+@@ -117,7 +116,21 @@ public function store(Request $request)
+ 
+             'planned_duration.date_format' => 'A tervezett időtartam érvénytelen formátumú (óra:perc:másodperc).',
+             'actual_duration.date_format' => 'A tényleges időtartam érvénytelen formátumú (óra:perc:másodperc).',
+-        ]);
++        ];
++
++        $userRole = Auth::user()->role->slug ?? null;
++
++        if (in_array($userRole, ['admin', 'webdev'])) {
++            $rules['user_id'] = ['required', 'exists:users,id'];
++            $messages['user_id.required'] = 'A felhasználó azonosító megadása kötelező.';
++            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
++        }
++
++        $validated = $request->validate($rules, $messages);
++
++        if (!in_array($userRole, ['admin', 'webdev'])) {
++            $validated['user_id'] = Auth::id();
++        }
+ 
+         $trip = Trip::create($validated);
+         $trip->load(['car', 'user', 'startLocation', 'destinationLocation']);
+@@ -170,9 +183,15 @@ public function update(Request $request, string $id)
+             ], Response::HTTP_NOT_FOUND);
+         }
+ 
+-        $validated = $request->validate([
++        $userRole = Auth::user()->role->slug ?? null;
++        if (!in_array($userRole, ['admin', 'webdev']) && $trip->user_id !== Auth::id()) {
++            return response()->json([
++                'message' => 'Nincs jogosultsága módosítani ezt az utat.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        $rules = [
+             'car_id' => ['sometimes', 'exists:cars,id'],
+-            'user_id' => ['sometimes', 'exists:users,id'],
+             'start_location_id' => [
+                 'sometimes',
+                 'exists:locations,id',
+@@ -193,7 +212,16 @@ function ($attribute, $value, $fail) use ($request, $trip) {
+                     }
+                 }
+             ],
+-            'start_time' => ['sometimes', 'date'],
++            'start_time' => [
++                'sometimes',
++                'date',
++                function ($attribute, $value, $fail) use ($request, $trip) {
++                    $endTime = $request->input('end_time', $trip->end_time);
++                    if ($value > $endTime) {
++                        $fail('Az indulási idő nem lehet későbbi, mint az érkezési idő.');
++                    }
++                }
++            ],
+             'end_time' => [
+                 'sometimes',
+                 'nullable',
+@@ -222,20 +250,18 @@ function ($attribute, $value, $fail) use ($request, $trip) {
+             ],
+             'planned_duration' => ['sometimes', 'nullable', 'date_format:H:i:s'],
+             'actual_duration' => ['sometimes', 'nullable', 'date_format:H:i:s'],
+-        ], [
+-            'car_id.exists' => 'A megadott jármű nem létezik.',
++        ];
+ 
+-            'user_id.exists' => 'A megadott felhasználó nem létezik.',
++        $messages = [
++            'car_id.exists' => 'A megadott jármű nem létezik.',
+ 
+             'start_location_id.exists' => 'A megadott indulási helyszín nem létezik.',
+-            'start_location_id.different' => 'Az indulási és érkezési helyszín nem lehet azonos.',
+ 
+             'destination_location_id.exists' => 'A megadott érkezési helyszín nem létezik.',
+ 
+             'start_time.date' => 'Az indulási idő érvénytelen dátum formátumú.',
+ 
+             'end_time.date' => 'Az érkezési idő érvénytelen dátum formátumú.',
+-            'end_time.after_or_equal' => 'Az érkezési idő nem lehet korábbi, mint az indulási idő.',
+ 
+             'planned_distance.numeric' => 'A tervezett távolság csak szám lehet.',
+             'planned_distance.min' => 'A tervezett távolság nem lehet negatív érték.',
+@@ -252,7 +278,22 @@ function ($attribute, $value, $fail) use ($request, $trip) {
+ 
+             'planned_duration.date_format' => 'A tervezett időtartam érvénytelen formátumú (óra:perc:másodperc).',
+             'actual_duration.date_format' => 'A tényleges időtartam érvénytelen formátumú (óra:perc:másodperc).',
+-        ]);
++        ];
++
++        if (in_array($userRole, ['admin', 'webdev'])) {
++            $rules['user_id'] = ['sometimes', 'exists:users,id'];
++            $messages['user_id.exists'] = 'A megadott felhasználó nem létezik.';
++        }
++
++        $validated = $request->validate($rules, $messages);
++
++        if (!isset($validated['start_time'])) {
++            $validated['start_time'] = now();
++        }
++
++        if (!in_array($userRole, ['admin', 'webdev']) && isset($validated['user_id'])) {
++            unset($validated['user_id']);
++        }
+ 
+         $trip->update($validated);
+         $trip->load(['car', 'user', 'startLocation', 'destinationLocation']);
+@@ -276,6 +317,13 @@ public function destroy(string $id)
+             ], Response::HTTP_NOT_FOUND);
+         }
+ 
++        $userRole = Auth::user()->role->slug ?? null;
++        if (!in_array($userRole, ['admin', 'webdev']) && $trip->user_id !== Auth::id()) {
++            return response()->json([
++                'message' => 'Nincs jogosultsága törölni ezt az utat.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
+         $tripInfo = 'Út (' . date('Y-m-d H:i', strtotime($trip->start_time)) . '): ' .
+             $trip->startLocation->name . ' -> ' .
+             $trip->destinationLocation->name;
+diff --git a/backend/app/Http/Controllers/Api/WorkLog/LeaveRequestController.php b/backend/app/Http/Controllers/Api/WorkLog/LeaveRequestController.php
+index 5d037751..28c85dd5 100644
+--- a/backend/app/Http/Controllers/Api/WorkLog/LeaveRequestController.php
++++ b/backend/app/Http/Controllers/Api/WorkLog/LeaveRequestController.php
+@@ -5,15 +5,68 @@
+ use App\Http\Controllers\Controller;
+ use App\Models\LeaveRequest;
+ use Illuminate\Http\Request;
++use Illuminate\Http\Response;
++use Illuminate\Support\Facades\Auth;
+ 
+ class LeaveRequestController extends Controller
+ {
+     /**
+      * Display a listing of the resource.
+      */
+-    public function index()
++    public function index(Request $request)
+     {
+-        //
++        $query = LeaveRequest::query();
++
++        if ($request->has('user_id')) {
++            $query->where('user_id', $request->input('user_id'));
++        }
++
++        if ($request->has('status')) {
++            $query->where('status', $request->input('status'));
++        }
++
++        if ($request->has('date_from')) {
++            $query->where('start_date', '>=', $request->input('date_from'));
++        }
++
++        if ($request->has('date_to')) {
++            $query->where('end_date', '<=', $request->input('date_to'));
++        }
++
++        if ($request->has('search')) {
++            $search = $request->input('search');
++            $query->where(function ($q) use ($search) {
++                $q->where('reason', 'like', "%{$search}%")
++                    ->orWhere('decision_comment', 'like', "%{$search}%");
++            });
++        }
++
++        if ($request->has('sort_by')) {
++            $sortBy = $request->input('sort_by', 'start_date');
++            $sortDir = $request->input('sort_dir', 'desc');
++            $query->orderBy($sortBy, $sortDir);
++        } else {
++            $query->orderBy('start_date', 'desc');
++        }
++
++        if ($request->has('include')) {
++            $includes = explode(',', $request->input('include'));
++            $allowedIncludes = ['user', 'approver', 'journalEntries'];
++
++            foreach ($includes as $include) {
++                if (in_array($include, $allowedIncludes)) {
++                    $query->with($include);
++                }
++            }
++        }
++
++        if ($request->has('per_page')) {
++            $leaveRequests = $query->paginate($request->input('per_page', 15));
++        } else {
++            $leaveRequests = $query->get();
++        }
++
++        return response()->json($leaveRequests, Response::HTTP_OK);
+     }
+ 
+     /**
+@@ -21,30 +74,441 @@ public function index()
+      */
+     public function store(Request $request)
+     {
+-        //
++        $currentUserId = Auth::id();
++        $userRole = Auth::user()->role->slug ?? null;
++        $isAdmin = ($userRole === 'admin');
++
++        $rules = [
++            'start_date' => ['required', 'date'],
++            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
++            'reason' => ['required', 'string'],
++        ];
++
++        if ($isAdmin) {
++            $rules['user_id'] = [
++                'required',
++                'exists:users,id',
++                function ($attribute, $value, $fail) use ($currentUserId) {
++                    if ($value == $currentUserId) {
++                        $fail('Adminisztrátor nem vehet fel magának szabadság igényt.');
++                    }
++                }
++            ];
++            $rules['status'] = [
++                'sometimes',
++                'string',
++                'max:50',
++                'in:függőben lévő,jóváhagyott,elutasított'
++            ];
++            $rules['decision_comment'] = [
++                'sometimes',
++                'required_if:status,elutasított',
++                'string',
++                'max:100'
++            ];
++        }
++
++        $messages = [
++            'user_id.required' => 'A felhasználó azonosítójának megadása kötelező.',
++            'user_id.exists' => 'A megadott felhasználó nem létezik.',
++
++            'start_date.required' => 'A szabadság kezdetének megadása kötelező.',
++            'start_date.date' => 'A szabadság kezdete érvénytelen formátumú.',
++
++            'end_date.required' => 'A szabadság végének megadása kötelező.',
++            'end_date.date' => 'A szabadság vége érvénytelen formátumú.',
++            'end_date.after_or_equal' => 'A szabadság vége nem lehet korábbi, mint a kezdete.',
++
++            'reason.required' => 'A szabadság indoklásának megadása kötelező.',
++            'reason.string' => 'Az indoklás csak szöveg formátumú lehet.',
++
++            'status.string' => 'A státusz csak szöveg formátumú lehet.',
++            'status.max' => 'A státusz maximum 50 karakter hosszú lehet.',
++            'status.in' => 'A státusz csak a következők egyike lehet: függőben lévő, jóváhagyott, elutasított.',
++
++            'processed_at.date' => 'A feldolgozás dátuma érvénytelen formátumú.',
++
++            'processed_by.exists' => 'A megadott jóváhagyó felhasználó nem létezik.',
++
++            'decision_comment.string' => 'A döntés megjegyzése csak szöveg formátumú lehet.',
++            'decision_comment.max' => 'A döntés megjegyzése maximum 100 karakter hosszú lehet.',
++            'decision_comment.required_if' => 'Szabadság kérelem elutasításakor kötelező megadni az elutasítás indokát.',
++        ];
++
++        $validated = $request->validate($rules, $messages);
++
++        if (!$isAdmin) {
++            $keysToFilter = ['user_id', 'status', 'processed_at', 'processed_by', 'decision_comment'];
++            foreach ($keysToFilter as $key) {
++                if (isset($validated[$key])) {
++                    unset($validated[$key]);
++                }
++            }
++        }
++
++        $overlapping = LeaveRequest::where('user_id', $validated['user_id'])
++            ->where(function ($query) use ($validated) {
++                $query->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
++                    ->orWhereBetween('end_date', [$validated['start_date'], $validated['end_date']])
++                    ->orWhere(function ($q) use ($validated) {
++                        $q->where('start_date', '<=', $validated['start_date'])
++                            ->where('end_date', '>=', $validated['end_date']);
++                    });
++            })
++            ->where('status', '!=', 'elutasított')
++            ->exists();
++
++        if ($overlapping) {
++            return response()->json([
++                'message' => 'A megadott időszakra már létezik szabadság kérelem a felhasználóhoz.',
++            ], Response::HTTP_CONFLICT);
++        }
++
++        if (!$isAdmin) {
++            $validated['status'] = 'függőben lévő';
++            $validated['processed_at'] = null;
++            $validated['processed_by'] = null;
++            $validated['decision_comment'] = null;
++        } else {
++            if (isset($validated['status']) && in_array($validated['status'], ['jóváhagyott', 'elutasított'])) {
++                $validated['processed_at'] = now();
++                $validated['processed_by'] = Auth::id();
++            } else {
++                $validated['status'] = $validated['status'] ?? 'függőben lévő';
++                $validated['processed_at'] = null;
++                $validated['processed_by'] = null;
++                $validated['decision_comment'] = null;
++            }
++        }
++
++        $leaveRequest = LeaveRequest::create($validated);
++        $leaveRequest->load(['user', 'approver']);
++
++        return response()->json([
++            'message' => 'A szabadság kérelem sikeresen létrehozva.',
++            'leave_request' => $leaveRequest
++        ], Response::HTTP_CREATED);
+     }
+ 
+     /**
+      * Display the specified resource.
+      */
+-    public function show(LeaveRequest $leaveRequest)
++    public function show(string $id)
+     {
+-        //
++        $leaveRequest = LeaveRequest::with(['user', 'approver', 'journalEntries'])->find($id);
++
++        if (!$leaveRequest) {
++            return response()->json([
++                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szabadság kérelem nem található.'
++            ], Response::HTTP_NOT_FOUND);
++        }
++
++        return response()->json($leaveRequest, Response::HTTP_OK);
+     }
+ 
+     /**
+      * Update the specified resource in storage.
+      */
+-    public function update(Request $request, LeaveRequest $leaveRequest)
++    public function update(Request $request, string $id)
+     {
+-        //
++        $leaveRequest = LeaveRequest::find($id);
++
++        if (!$leaveRequest) {
++            return response()->json([
++                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szabadság kérelem nem található.'
++            ], Response::HTTP_NOT_FOUND);
++        }
++
++        $currentUserId = Auth::id();
++        $userRole = Auth::user()->role->slug ?? null;
++        $isAdmin = ($userRole === 'admin');
++
++        if (!$isAdmin && $leaveRequest->user_id !== $currentUserId) {
++            return response()->json([
++                'message' => 'Nincs jogosultsága módosítani más felhasználó szabadság kérelmét.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        if (!$isAdmin && $leaveRequest->status !== 'függőben lévő') {
++            return response()->json([
++                'message' => 'Már feldolgozott szabadság kérelmet csak adminisztrátor módosíthat.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        $rules = [
++            'start_date' => [
++                'sometimes',
++                'date',
++                function ($attribute, $value, $fail) use ($request, $leaveRequest) {
++                    $endDate = $request->input('end_date', $leaveRequest->end_date);
++                    if ($value > $endDate) {
++                        $fail('A szabadság kezdete nem lehet későbbi, mint a vége.');
++                    }
++                }
++            ],
++            'end_date' => [
++                'sometimes',
++                'date',
++                function ($attribute, $value, $fail) use ($request, $leaveRequest) {
++                    $startDate = $request->input('start_date', $leaveRequest->start_date);
++                    if ($value < $startDate) {
++                        $fail('A szabadság vége nem lehet korábbi, mint a kezdete.');
++                    }
++                }
++            ],
++            'reason' => ['sometimes', 'string'],
++        ];
++
++        if ($isAdmin) {
++            $rules['user_id'] = [
++                'sometimes',
++                'exists:users,id',
++                function ($attribute, $value, $fail) use ($currentUserId) {
++                    if ($value == $currentUserId) {
++                        $fail('Adminisztrátor nem módosíthatja a szabadság kérelmet saját magára.');
++                    }
++                }
++            ];
++            $rules['status'] = [
++                'sometimes',
++                'string',
++                'max:50',
++                'in:függőben lévő,jóváhagyott,elutasított'
++            ];
++            $rules['decision_comment'] = [
++                'required_if:status,elutasított',
++                'string',
++                'max:100'
++            ];
++        }
++
++        $messages = [
++            'user_id.exists' => 'A megadott felhasználó nem létezik.',
++            'start_date.date' => 'A szabadság kezdete érvénytelen formátumú.',
++            'end_date.date' => 'A szabadság vége érvénytelen formátumú.',
++            'reason.string' => 'Az indoklás kizárólag nem üres, szöveg formátumú lehet.',
++            'status.string' => 'A státusz kizárólag nem üres, szöveg formátumú lehet.',
++            'status.max' => 'A státusz maximum 50 karakter hosszú lehet.',
++            'status.in' => 'A státusz csak a következők egyike lehet: függőben lévő, jóváhagyott, elutasított.',
++            'decision_comment.string' => 'A döntés megjegyzése csak szöveg formátumú lehet.',
++            'decision_comment.max' => 'A döntés megjegyzése maximum 100 karakter hosszú lehet.',
++            'decision_comment.required_if' => 'Szabadság igény elutasításakor kötelező megadni az elutasítás indokát.',
++        ];
++
++        $validated = $request->validate($rules, $messages);
++
++        if (!$isAdmin) {
++            $keysToFilter = ['user_id', 'status', 'processed_at', 'processed_by', 'decision_comment'];
++            foreach ($keysToFilter as $key) {
++                if (isset($validated[$key])) {
++                    unset($validated[$key]);
++                }
++            }
++        }
++
++        if (isset($validated['start_date']) || isset($validated['end_date']) || isset($validated['user_id'])) {
++            $userId = $validated['user_id'] ?? $leaveRequest->user_id;
++            $startDate = $validated['start_date'] ?? $leaveRequest->start_date;
++            $endDate = $validated['end_date'] ?? $leaveRequest->end_date;
++
++            $overlapping = LeaveRequest::where('user_id', $userId)
++                ->where('id', '!=', $id)
++                ->where(function ($query) use ($startDate, $endDate) {
++                    $query->whereBetween('start_date', [$startDate, $endDate])
++                        ->orWhereBetween('end_date', [$startDate, $endDate])
++                        ->orWhere(function ($q) use ($startDate, $endDate) {
++                            $q->where('start_date', '<=', $startDate)
++                                ->where('end_date', '>=', $endDate);
++                        });
++                })
++                ->where('status', '!=', 'elutasított')
++                ->exists();
++
++            if ($overlapping) {
++                return response()->json([
++                    'message' => 'A megadott időszakra már létezik szabadság kérelem a felhasználóhoz.',
++                ], Response::HTTP_CONFLICT);
++            }
++        }
++
++        if ($isAdmin && isset($validated['status'])) {
++            $oldStatus = $leaveRequest->status;
++            $newStatus = $validated['status'];
++
++            if ($oldStatus === 'függőben lévő' && ($newStatus === 'jóváhagyott' || $newStatus === 'elutasított')) {
++                $validated['processed_at'] = now();
++                $validated['processed_by'] = $currentUserId;
++            } else if (($oldStatus === 'jóváhagyott' || $oldStatus === 'elutasított') && $newStatus === 'függőben lévő') {
++                $validated['processed_at'] = null;
++                $validated['processed_by'] = null;
++                if (!isset($validated['decision_comment'])) {
++                    $validated['decision_comment'] = null;
++                }
++            }
++        }
++
++        $leaveRequest->update($validated);
++        $leaveRequest->load(['user', 'approver', 'journalEntries']);
++
++        return response()->json([
++            'message' => 'A szabadság kérelem adatai sikeresen frissítve lettek.',
++            'leave_request' => $leaveRequest
++        ], Response::HTTP_OK);
+     }
+ 
+     /**
+      * Remove the specified resource from storage.
+      */
+-    public function destroy(LeaveRequest $leaveRequest)
++    public function destroy(string $id)
++    {
++        $leaveRequest = LeaveRequest::find($id);
++
++        if (!$leaveRequest) {
++            return response()->json([
++                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szabadság kérelem nem található.'
++            ], Response::HTTP_NOT_FOUND);
++        }
++
++        $currentUserId = Auth::id();
++        $userRole = Auth::user()->role->slug ?? null;
++        $isAdmin = ($userRole === 'admin');
++        $isOwnRequest = ($leaveRequest->user_id === $currentUserId);
++        $isPending = ($leaveRequest->status === 'függőben lévő');
++
++        if (!$isAdmin && (!$isOwnRequest || !$isPending)) {
++            return response()->json([
++                'message' => 'Nem megfelelő jogosultság a törléshez. Csak saját függőben lévő szabadság kérelmeket törölhet, vagy adminisztrátor jogosultság szükséges.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        if ($leaveRequest->journalEntries()->count() > 0) {
++            return response()->json([
++                'message' => 'Ez a szabadság kérelem már rögzítve van a munkanaplóban, ezért nem törölhető.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        $reason = $leaveRequest->reason;
++        $startDate = $leaveRequest->start_date->format('Y-m-d');
++        $endDate = $leaveRequest->end_date->format('Y-m-d');
++        $userName = optional($leaveRequest->user)->firstname . ' ' . optional($leaveRequest->user)->lastname;
++
++        $leaveRequest->delete();
++
++        return response()->json([
++            'message' => "{$userName} szabadság kérelme ({$reason}: {$startDate} - {$endDate}) sikeresen törölve."
++        ], Response::HTTP_OK);
++    }
++
++    /**
++     * Approve the leave request.
++     */
++    public function approve(Request $request, string $id)
++    {
++        $leaveRequest = LeaveRequest::find($id);
++
++        if (!$leaveRequest) {
++            return response()->json([
++                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szabadság kérelem nem található.'
++            ], Response::HTTP_NOT_FOUND);
++        }
++
++        $currentUserId = Auth::id();
++        $userRole = Auth::user()->role->slug ?? null;
++
++        if ($userRole !== 'admin') {
++            return response()->json([
++                'message' => 'Szabadság kérelem jóváhagyásához adminisztrátor jogosultság szükséges.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        if ($leaveRequest->status !== 'függőben lévő') {
++            return response()->json([
++                'message' => 'Csak függőben lévő szabadság kérelem hagyható jóvá.'
++            ], Response::HTTP_UNPROCESSABLE_ENTITY);
++        }
++
++        if ($leaveRequest->user_id == $currentUserId) {
++            return response()->json([
++                'message' => 'Admin saját szabadság kérelmének jóváhagyása nem megengedett.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        $validated = $request->validate([
++            'decision_comment' => ['nullable', 'string', 'max:100'],
++        ], [
++            'decision_comment.string' => 'A döntés megjegyzése csak szöveg formátumú lehet.',
++            'decision_comment.max' => 'A döntés megjegyzése maximum 100 karakter hosszú lehet.',
++        ]);
++
++        $leaveRequest->update([
++            'status' => 'jóváhagyott',
++            'processed_at' => now(),
++            'processed_by' => Auth::id(),
++            'decision_comment' => $validated['decision_comment'] ?? null,
++        ]);
++
++        $leaveRequest->load(['user', 'approver']);
++
++        return response()->json([
++            'message' => 'A szabadság kérelem sikeresen jóváhagyva.',
++            'leave_request' => $leaveRequest
++        ], Response::HTTP_OK);
++    }
++
++    /**
++     * Reject the leave request.
++     */
++    public function reject(Request $request, string $id)
+     {
+-        //
++        $leaveRequest = LeaveRequest::find($id);
++
++        if (!$leaveRequest) {
++            return response()->json([
++                'message' => 'A megadott azonosítójú (ID: ' . $id . ') szabadság kérelem nem található.'
++            ], Response::HTTP_NOT_FOUND);
++        }
++
++        $currentUserId = Auth::id();
++        $userRole = Auth::user()->role->slug ?? null;
++
++        if ($userRole !== 'admin') {
++            return response()->json([
++                'message' => 'Szabadság kérelem elutasításához adminisztrátor jogosultság szükséges.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        if ($leaveRequest->status !== 'függőben lévő') {
++            return response()->json([
++                'message' => 'Csak függőben lévő szabadság kérelem utasítható el.'
++            ], Response::HTTP_UNPROCESSABLE_ENTITY);
++        }
++
++        if ($leaveRequest->user_id == $currentUserId) {
++            return response()->json([
++                'message' => 'Admin saját szabadság kérelmének elutasítása nem megengedett.'
++            ], Response::HTTP_FORBIDDEN);
++        }
++
++        $validated = $request->validate([
++            'decision_comment' => ['required', 'string', 'max:100'],
++        ], [
++            'decision_comment.required' => 'Az elutasítás indokának megadása kötelező.',
++            'decision_comment.string' => 'Az elutasítás indoka csak szöveg formátumú lehet.',
++            'decision_comment.max' => 'Az elutasítás indoka maximum 100 karakter hosszú lehet.',
++        ]);
++
++        $leaveRequest->update([
++            'status' => 'elutasított',
++            'processed_at' => now(),
++            'processed_by' => Auth::id(),
++            'decision_comment' => $validated['decision_comment'],
++        ]);
++
++        $leaveRequest->load(['user', 'approver']);
++
++        return response()->json([
++            'message' => 'A szabadság kérelem elutasítva.',
++            'leave_request' => $leaveRequest
++        ], Response::HTTP_OK);
+     }
+ }
+diff --git a/backend/app/Http/Controllers/Api/WorkLog/OvertimeRequestController.php b/backend/app/Http/Controllers/Api/WorkLog/OvertimeRequestController.php
+index 13cb040d..bdc52615 100644
+--- a/backend/app/Http/Controllers/Api/WorkLog/OvertimeRequestController.php
++++ b/backend/app/Http/Controllers/Api/WorkLog/OvertimeRequestController.php
+@@ -51,7 +51,7 @@ public function index(Request $request)
+ 
+         if ($request->has('include')) {
+             $includes = explode(',', $request->input('include'));
+-            $allowedIncludes = ['user', 'approver'];
++            $allowedIncludes = ['user', 'approver', 'journalEntry'];
+ 
+             foreach ($includes as $include) {
+                 if (in_array($include, $allowedIncludes)) {
+@@ -190,7 +190,7 @@ function ($attribute, $value, $fail) use ($currentUserId) {
+      */
+     public function show(string $id)
+     {
+-        $overtimeRequest = OvertimeRequest::with(['user', 'approver'])->find($id);
++        $overtimeRequest = OvertimeRequest::with(['user', 'approver', 'journalEntry'])->find($id);
+ 
+         if (!$overtimeRequest) {
+             return response()->json([
+diff --git a/backend/app/Models/LeaveRequest.php b/backend/app/Models/LeaveRequest.php
+index fa446815..3bb2f789 100644
+--- a/backend/app/Models/LeaveRequest.php
++++ b/backend/app/Models/LeaveRequest.php
+@@ -11,6 +11,7 @@ class LeaveRequest extends Model
+     use HasFactory;
+ 
+     protected $fillable = [
++        'user_id',
+         'start_date',
+         'end_date',
+         'status',
+@@ -34,16 +35,18 @@ protected function casts(): array
+         ];
+     }
+ 
+-    public function user() {
++    public function user()
++    {
+         return $this->belongsTo(User::class, 'user_id');
+     }
+ 
+-    public function approver() {
++    public function approver()
++    {
+         return $this->belongsTo(User::class, 'processed_by');
+     }
+ 
+-    public function journalEntries() {
++    public function journalEntries()
++    {
+         return $this->hasMany(JournalEntry::class, 'leaverequest_id');
+     }
+-    
+ }
+diff --git a/backend/app/Models/OvertimeRequest.php b/backend/app/Models/OvertimeRequest.php
+index 22ce1b3d..e0c51d42 100644
+--- a/backend/app/Models/OvertimeRequest.php
++++ b/backend/app/Models/OvertimeRequest.php
+@@ -45,9 +45,8 @@ public function approver()
+         return $this->belongsTo(User::class, 'processed_by');
+     }
+ 
+-    /*
+-    public function journalEntry() {
++    public function journalEntry()
++    {
+         return $this->hasOne(JournalEntry::class, 'overtimerequest_id');
+     }
+-    */
+ }

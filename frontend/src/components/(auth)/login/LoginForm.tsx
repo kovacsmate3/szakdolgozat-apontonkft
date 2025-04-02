@@ -37,32 +37,46 @@ const LoginForm = () => {
     value: string | boolean
   ) => {
     setData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    let isValid = true;
+
+    if (!data.identifier) {
+      newErrors.identifier =
+        "Az email cím vagy felhasználónév megadása kötelező.";
+      isValid = false;
+    } else if (
+      data.identifier.includes("@") &&
+      !validateEmail(data.identifier)
+    ) {
+      newErrors.identifier = "Érvénytelen email formátum.";
+      isValid = false;
+    }
+    if (!data.password) {
+      newErrors.password = "A jelszó megadása kötelező.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setProcessing(true);
-    setErrors({});
 
-    if (!data.identifier) {
-      setErrors((prev) => ({
-        ...prev,
-        identifier: "Az email cím vagy felhasználónév megadása kötelező.",
-      }));
-    }
-    if (!data.password) {
-      setErrors((prev) => ({
-        ...prev,
-        password: "A jelszó megadása kötelező.",
-      }));
-    }
+    const isValid = validateForm();
 
-    if (data.identifier.includes("@") && !validateEmail(data.identifier)) {
-      setErrors((prev) => ({
-        ...prev,
-        identifier: "Érvénytelen email formátum.",
-      }));
+    if (!isValid) {
       setProcessing(false);
       return;
     }
@@ -80,23 +94,24 @@ const LoginForm = () => {
 
       if (!res.ok) {
         if (result.errors) {
-          setErrors((prev) => ({
-            ...prev,
-            identifier: result.errors.identifier
-              ? result.errors.identifier[0]
-              : "",
-            password: result.errors.password ? result.errors.password[0] : "",
-          }));
+          const serverErrors: { [key: string]: string } = {};
+
+          if (result.errors.identifier) {
+            serverErrors.identifier = result.errors.identifier[0];
+          }
+
+          if (result.errors.password) {
+            serverErrors.password = result.errors.password[0];
+          }
+
+          setErrors(serverErrors);
         } else if (result.message) {
-          setErrors((prev) => ({
-            ...prev,
-            general: result.message,
-          }));
+          setErrors({ general: result.message });
         }
       } else {
         localStorage.setItem("access_token", result.token);
         localStorage.setItem("user", JSON.stringify(result.user));
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (error) {
       console.error("Bejelentkezési hiba:", error);
@@ -121,6 +136,7 @@ const LoginForm = () => {
             value={data.identifier}
             onChange={(e) => handleChange("identifier", e.target.value)}
             placeholder="email@example.com/username"
+            aria-invalid={!!errors.identifier}
           />
           <InputError message={errors.identifier} />
         </div>
@@ -133,6 +149,7 @@ const LoginForm = () => {
             value={data.password}
             onChange={(e) => handleChange("password", e.target.value)}
             placeholder="Jelszó"
+            aria-invalid={!!errors.password}
           />
           <InputError message={errors.password} />
         </div>
