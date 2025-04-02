@@ -11,6 +11,7 @@ class Law extends Model
     use HasFactory;
 
     protected $fillable = [
+        'category_id',
         'title',
         'official_ref',
         'date_of_enactment',

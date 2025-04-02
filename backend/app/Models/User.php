@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -26,8 +24,10 @@ class User extends Authenticatable
         'birthdate',
         'phonenumber',
         'email',
+        'email_verified_at',
         'password',
-        'password_changed_at'
+        'password_changed_at',
+        'role_id'
     ];
 
     /**
@@ -55,40 +55,48 @@ class User extends Authenticatable
         ];
     }
 
-    public function role() {
+    public function role()
+    {
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function cars() {
+    public function cars()
+    {
         return $this->hasMany(Car::class, 'user_id');
     }
 
-    public function fuelExpenses() {
+    public function fuelExpenses()
+    {
         return $this->hasMany(FuelExpense::class, 'user_id');
     }
 
-    public function trips() {
+    public function trips()
+    {
         return $this->hasMany(Trip::class, 'user_id');
     }
 
-    public function leaveRequests() {
+    public function leaveRequests()
+    {
         return $this->hasMany(LeaveRequest::class, 'user_id');
     }
 
-    public function overtimeRequests() {
+    public function overtimeRequests()
+    {
         return $this->hasMany(OvertimeRequest::class, 'user_id');
     }
 
-    public function approvedLeaveRequests() {
+    public function processedLeaveRequests()
+    {
         return $this->hasMany(LeaveRequest::class, 'processed_by');
     }
 
-    public function approvedOvertimeRequests() {
+    public function processedOvertimeRequests()
+    {
         return $this->hasMany(OvertimeRequest::class, 'processed_by');
     }
 
-    public function journalEntries() {
+    public function journalEntries()
+    {
         return $this->hasMany(JournalEntry::class, 'user_id');
     }
-
 }

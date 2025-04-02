@@ -31,9 +31,11 @@ class RolePermissionSeeder extends Seeder
         // 2) WEB DEVELOPER: Majdnem minden, kivéve „jóváhagyás”
         if ($webDevRole) {
             $webDevPermissions = $allPermissions->filter(function ($perm) {
-                return ! in_array($perm->key, [
+                return !in_array($perm->key, [
                     'approve.leave_request',
+                    'reject.leave_request',
                     'approve.overtime_request',
+                    'reject.overtime_request'
                 ]);
             });
 
@@ -45,24 +47,31 @@ class RolePermissionSeeder extends Seeder
         // 3) EMPLOYEE: erősen korlátozott jogosultság
         if ($employeeRole) {
             $employeePermissions = Permission::whereIn('key', [
-                'edit.own.user',
+                'edit.user',
                 'view.project',
-                'view.trip',
                 'create.trip',
                 'edit.trip',
-                'view.fuel_expense',
+                'view.trip',
+                'calculate.trip_cost',
+                'view.trip_map',
+                'export.trip.gps_data',
+                'analyze.trip.gps_data',
                 'create.fuel_expense',
                 'edit.fuel_expense',
+                'view.fuel_expense',
+                'calculate.fuel_consumption',
                 'view.car',
                 'create.travel_purpose',
                 'edit.travel_purpose',
                 'delete.travel_purpose',
                 'view.travel_purpose',
                 'view.task',
+                'change_status.task',
                 'create.journal_entry',
                 'edit.journal_entry',
                 'delete.journal_entry',
                 'view.journal_entry',
+                'comment.journal_entry',
                 'create.leave_request',
                 'edit.leave_request',
                 'delete.leave_request',
@@ -71,6 +80,15 @@ class RolePermissionSeeder extends Seeder
                 'edit.overtime_request',
                 'delete.overtime_request',
                 'view.overtime_request',
+                'create.location',
+                'edit.location',
+                'view.location',
+                'assign.travel_purpose_to_location',
+                'view.gps_data',
+                'create.address',
+                'edit.address',
+                'view.address',
+                'assign.location_to_address'
             ])->get();
 
             $employeeRole->permissions()->sync(

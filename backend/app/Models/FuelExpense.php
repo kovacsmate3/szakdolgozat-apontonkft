@@ -11,6 +11,9 @@ class FuelExpense extends Model
     use HasFactory;
 
     protected $fillable = [
+        'car_id',
+        'user_id',
+        'location_id',
         'expense_date',
         'amount',
         'currency',
@@ -33,15 +36,18 @@ class FuelExpense extends Model
         ];
     }
 
-    public function car() {
+    public function car()
+    {
         return $this->belongsTo(Car::class, 'car_id');
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function location() {
+    public function location()
+    {
         return $this->belongsTo(Location::class, 'location_id');
     }
 }
