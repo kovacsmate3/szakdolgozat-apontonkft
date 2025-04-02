@@ -34,6 +34,24 @@ class AuthController extends Controller
             $user = User::where('username', $identifier)->first();
         }
 
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL) && !$user) {
+            return response()->json([
+                "status" => false,
+                "errors" => [
+                    "identifier" => ["A megadott email címmel nem található felhasználó."]
+                ]
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if (!filter_var($identifier, FILTER_VALIDATE_EMAIL) && !$user) {
+            return response()->json([
+                "status" => false,
+                "errors" => [
+                    "identifier" => ["A megadott felhasználónévvel nem található felhasználó."]
+                ]
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
         if (!$user) {
             return response()->json([
                 "status" => false,
