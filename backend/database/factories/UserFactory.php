@@ -26,8 +26,8 @@ class UserFactory extends Factory
         $firstName = fake()->firstName();
         $lastName  = fake()->lastName();
 
-        $baseUsername = Str::slug($firstName.' '.$lastName, '_');
-        $username = $this->faker->unique()->bothify($baseUsername.'##');
+        $baseUsername = Str::slug($firstName . ' ' . $lastName, '_');
+        $username = $this->faker->unique()->bothify($baseUsername . '##');
 
         $baseEmail = strtolower(substr($firstName, 0, 1) . $lastName);
 
@@ -36,13 +36,13 @@ class UserFactory extends Factory
             'firstname' => $firstName,
             'lastname' => $lastName,
             'birthdate' => fake()->date('Y-m-d', '2008-01-01'),
-            'email' => $baseEmail.'@'.fake()->safeEmailDomain(),
+            'email' => $baseEmail . '@' . fake()->safeEmailDomain(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'password_changed_at' => now(),
             'role_id' => null,
             'phonenumber' => fake()->unique()->phoneNumber(),
-            'remember_token' => Str::random(10),
+            'remember_token' => null,
         ];
     }
 
@@ -51,7 +51,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
