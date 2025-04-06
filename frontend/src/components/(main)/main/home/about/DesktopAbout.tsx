@@ -8,7 +8,7 @@ const DesktopAbout: React.FC = () => (
     <div className="grid grid-cols-2 gap-8 xl:gap-12 2xl:gap-16">
       <div className="grid grid-rows-2 gap-8 xl:gap-12 2xl:gap-16 h-full">
         <div className="flex flex-col justify-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-semibold mb-6 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-semibold mb-6 text-center">
             Történetünk
           </h2>
           <div className="max-w-3xl mx-auto">
@@ -27,7 +27,7 @@ const DesktopAbout: React.FC = () => (
         </div>
 
         <div className="flex flex-col justify-center">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-semibold mb-6 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl 2xl:text-5xl font-semibold mb-6 text-center">
             Szolgáltatásaink
           </h2>
           <div className="max-w-3xl mx-auto">
