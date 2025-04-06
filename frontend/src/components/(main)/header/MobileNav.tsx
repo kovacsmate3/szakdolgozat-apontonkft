@@ -51,7 +51,7 @@ export default function MobileNav() {
     <div className="md:hidden">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="cursor-pointer">
             <AlignJustify size={24} />
           </Button>
         </SheetTrigger>
