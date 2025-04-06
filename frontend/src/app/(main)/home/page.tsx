@@ -1,3 +1,5 @@
+import AboutSection from "@/components/(main)/main/home/AboutSection";
+import HeroSection from "@/components/(main)/main/home/HeroSection";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,12 +8,9 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="container">
-      <section className="py-24">
-        <div className="container">
-          <h1 className="text-3xl font-bold">File Conventions in NextJs</h1>
-        </div>
-      </section>
-    </main>
+    <>
+      <HeroSection />
+      <AboutSection />
+    </>
   );
 }
