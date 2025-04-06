@@ -48,7 +48,7 @@ export default function MobileNav() {
   };
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="cursor-pointer">
