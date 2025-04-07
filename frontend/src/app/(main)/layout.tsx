@@ -54,7 +54,7 @@ export default function RootLayout({
         >
           <ClientWrapper>
             <Header />
-            {children}
+            <main className="flex-1">{children}</main>
             <Footer />
             <TailwindIndicator />
           </ClientWrapper>

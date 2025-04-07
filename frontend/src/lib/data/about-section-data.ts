@@ -1,10 +1,4 @@
-export interface ImageData {
-  src: string;
-  alt: string;
-  title: string;
-  width: number;
-  height: number;
-}
+import { ImageData } from "../types";
 
 export const aboutImages: ImageData[] = [
   {
