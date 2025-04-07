@@ -18,3 +18,10 @@ export interface Reference {
   title: string;
   description: string;
 }
+
+export interface EquipmentItem {
+  name: string;
+  description?: string;
+  image: string;
+  alt: string;
+}
