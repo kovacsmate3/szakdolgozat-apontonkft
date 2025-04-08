@@ -25,3 +25,7 @@ export interface EquipmentItem {
   image: string;
   alt: string;
 }
+
+export interface EquipmentProps {
+  items: [EquipmentItem, EquipmentItem];
+}

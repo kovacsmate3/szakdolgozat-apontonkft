@@ -4,7 +4,7 @@ export const equipmentData: EquipmentItem[] = [
   {
     name: "Trimble X7",
     description:
-      "Trimble T10x táblagépünkkel vezérelve a képen látható lézerszkennert, a terepen el tudjuk végezni a pontfelhők illesztését. ",
+      "Trimble T10x táblagépünkkel vezérelve a képen látható lézerszkennert, már a terepen el tudjuk végezni a pontfelhők illesztését. ",
     image: "/images/(main)/capital-equipment/trimblex7.jpg",
     alt: "Trimble X7 lézerszkenner",
   },
