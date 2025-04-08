@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const PartnerSection = () => {
   return (
-    <div className="full-width-container mx-auto px-8 md:px-16 py-6 bg-gray-200 dark:bg-zinc-400/60">
+    <div className="full-width-container mx-auto px-8 md:px-16 pt-6 pb-12 bg-gray-200 dark:bg-zinc-400/60">
       <h1 className="text-center lg:text-left text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold mb-8">
         Partnereink
       </h1>

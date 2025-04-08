@@ -17,11 +17,11 @@ export default function ReferencesPage() {
 
   return (
     <div className="pt-19 bg-gray-200 dark:bg-zinc-400/60">
-      <div className="full-width-container mx-auto px-8 md:px-16">
+      <div className="full-width-container mx-auto px-8 md:px-16 pb-12">
         <h1 className="text-center lg:text-left text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold my-6">
           Projektjeink
         </h1>
-        <p className="text-justify lg:text-left text-lg md:text-xl mb-8">
+        <p className="text-justify text-lg md:text-xl mb-8">
           <b>
             Vállalatunk törekszik a megrendelők igénye szerint, a szakmai
             szabványok és szabályzatok előírásainak maradéktalan betartása

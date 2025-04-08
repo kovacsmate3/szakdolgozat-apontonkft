@@ -10,8 +10,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
-import { ImageData } from "@/lib/data/about-section-data";
 import { useRef } from "react";
+import { ImageData } from "@/lib/types";
 
 interface ImageCarouselProps {
   images: ImageData[];
