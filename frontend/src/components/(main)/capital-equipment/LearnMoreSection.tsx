@@ -15,7 +15,7 @@ const LearnMoreSection = () => {
 
         <span className="sm:ml-2 hidden sm:inline"> </span>
 
-        <span className="inline-flex items-center whitespace-nowrap group-hover:text-gray-300 transition-colors duration-300">
+        <span className="inline-flex items-center whitespace-nowrap group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors duration-300">
           <span className="underline">
             Épület teljes felmérése 3D lézerszkenneléssel
           </span>

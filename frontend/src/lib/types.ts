@@ -29,3 +29,10 @@ export interface EquipmentItem {
 export interface EquipmentProps {
   items: [EquipmentItem, EquipmentItem];
 }
+
+export interface CompanyOfficeData {
+  office: string;
+  manager: string;
+  email: string;
+  phone: string;
+}
