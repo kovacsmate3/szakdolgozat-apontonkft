@@ -18,7 +18,7 @@ const CompanyInfo = () => {
           allowFullScreen={true}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          className="rounded-lg shadow-md"
+          className="rounded-md shadow-md"
         ></iframe>
       </div>
     </div>

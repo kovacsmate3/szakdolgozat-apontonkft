@@ -67,7 +67,7 @@ export default function ContactForm() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vezetéknév</FormLabel>
+                      <FormLabel htmlFor="lastName">Vezetéknév</FormLabel>
                       <FormControl>
                         <Input
                           id="lastName"
@@ -87,7 +87,7 @@ export default function ContactForm() {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Keresztnév</FormLabel>
+                      <FormLabel htmlFor="firstName">Keresztnév</FormLabel>
                       <FormControl>
                         <Input
                           id="firstName"
@@ -110,7 +110,7 @@ export default function ContactForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>E-mail</FormLabel>
+                      <FormLabel htmlFor="email">E-mail</FormLabel>
                       <FormControl>
                         <Input
                           id="email"
@@ -130,7 +130,7 @@ export default function ContactForm() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefonszám</FormLabel>
+                      <FormLabel htmlFor="phone">Telefonszám</FormLabel>
                       <FormControl>
                         <Input
                           id="phone"
@@ -152,7 +152,7 @@ export default function ContactForm() {
                 name="reason"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Megkeresés célja</FormLabel>
+                    <FormLabel htmlFor="reason">Megkeresés célja</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -160,7 +160,7 @@ export default function ContactForm() {
                         className="flex flex-col space-y-1"
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
+                          <FormControl className="cursor-pointer">
                             <RadioGroupItem value="quotation" id="quotation" />
                           </FormControl>
                           <FormLabel
@@ -172,7 +172,7 @@ export default function ContactForm() {
                         </FormItem>
 
                         <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
+                          <FormControl className="cursor-pointer">
                             <RadioGroupItem
                               value="employment"
                               id="employment"
@@ -187,7 +187,7 @@ export default function ContactForm() {
                         </FormItem>
 
                         <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
+                          <FormControl className="cursor-pointer">
                             <RadioGroupItem value="other" id="other" />
                           </FormControl>
                           <FormLabel htmlFor="other" className="font-normal">
@@ -208,7 +208,7 @@ export default function ContactForm() {
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Üzenet</FormLabel>
+                    <FormLabel htmlFor="message">Üzenet</FormLabel>
                     <FormControl>
                       <Textarea
                         id="message"
@@ -229,7 +229,7 @@ export default function ContactForm() {
                 name="file"
                 render={({ field: { onChange, ref, name } }) => (
                   <FormItem>
-                    <FormLabel>Fájl feltöltése</FormLabel>
+                    <FormLabel htmlFor="file">Fájl feltöltése</FormLabel>
                     <FormControl>
                       <Input
                         id="file"
@@ -238,6 +238,7 @@ export default function ContactForm() {
                         name={name}
                         ref={ref}
                         onChange={(e) => onChange(e.target.files?.[0])}
+                        className="cursor-pointer"
                       />
                     </FormControl>
                     {watchedFile && (
@@ -262,6 +263,7 @@ export default function ContactForm() {
                         id="robot"
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        className="cursor-pointer"
                       />
                     </FormControl>
                     <FormLabel
@@ -275,7 +277,7 @@ export default function ContactForm() {
                 )}
               />
             </div>
-            <Button type="submit" className="ml-auto">
+            <Button type="submit" className="ml-auto cursor-pointer">
               Küldés
             </Button>
           </form>
