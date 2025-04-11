@@ -1,15 +1,16 @@
-import * as React from "react"
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react"
+import * as React from "react";
+import { Minus, Plus } from "lucide-react";
 
-import { SearchForm } from "@/components/search-form"
+import { SearchForm } from "@/components/search-form";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -19,10 +20,16 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import Logo from "./logo";
+import { NavUser } from "./nav-user";
 
-// This is sample data.
 const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
   navMain: [
     {
       title: "Getting Started",
@@ -39,7 +46,7 @@ const data = {
       ],
     },
     {
-      title: "Building Your Application",
+      title: "Munkanyilvántartás",
       url: "#",
       items: [
         {
@@ -94,73 +101,37 @@ const data = {
       ],
     },
     {
-      title: "API Reference",
-      url: "#",
+      title: "Útnyilvántartás - Adataim",
+      url: "/basic-data",
       items: [
         {
-          title: "Components",
-          url: "#",
+          title: "Székhely/telephelyek",
+          url: "/sites",
         },
         {
-          title: "File Conventions",
-          url: "#",
+          title: "Partnerek",
+          url: "/partners",
         },
         {
-          title: "Functions",
-          url: "#",
+          title: "Töltőállomások",
+          url: "/stations",
         },
         {
-          title: "next.config.js Options",
-          url: "#",
+          title: "Autók",
+          url: "/cars",
         },
         {
-          title: "CLI",
-          url: "#",
+          title: "Utazás célja szótár",
+          url: "/travel-purpose-dictionaries",
         },
         {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Community",
-      url: "#",
-      items: [
-        {
-          title: "Contribution Guide",
-          url: "#",
+          title: "NAV üzemanyagárak",
+          url: "/fuel-prices",
         },
       ],
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -169,13 +140,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GalleryVerticalEnd className="size-4" />
+                  <Logo />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Documentation</span>
-                  <span className="">v1.0.0</span>
+                  <span className="font-medium">A-Ponton Mérnökiroda Kft.</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -194,7 +164,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className="font-semibold">
                       {item.title}{" "}
                       <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
                       <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
@@ -222,7 +192,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={data.user} />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

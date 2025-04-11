@@ -66,7 +66,7 @@ const CompanyTable = () => {
                 <TableCell className="p-4 text-gray-600 dark:text-[color:oklch(0.708_0_0)]">
                   <a
                     href={`tel:${office.phone}`}
-                    className="hover:underline hover:text-blackdark:hover:text-white dark:hover:underline cursor-pointer"
+                    className="hover:underline hover:text-black dark:hover:text-white dark:hover:underline cursor-pointer"
                   >
                     {office.phone}
                   </a>

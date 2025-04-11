@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "@/stylesheets/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import "@/stylesheets/globals.css";
 import Header from "@/components/(main)/Header";
 import Footer from "@/components/(main)/Footer";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
