@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
             'lastname' => 'Kovács',
             'birthdate' => '1971-05-08',
             'phonenumber' => '+36209270324',
-            'email' => 'apontonks@gmail.com',
+            'email' => 'aponton.ks@gmail.com',
             'password' => Hash::make('password'),
             'password_changed_at' => now(),
             'role_id' => $adminRole ? $adminRole->id : null,

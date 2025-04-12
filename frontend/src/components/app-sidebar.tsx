@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Minus, Plus } from "lucide-react";
+import {
+  Eye,
+  Minus,
+  MoreHorizontal,
+  Plus,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 
 import { SearchForm } from "@/components/search-form";
 import {
@@ -14,6 +21,7 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -23,6 +31,15 @@ import {
 } from "@/components/ui/sidebar";
 import Logo from "./logo";
 import { NavUser } from "./nav-user";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { User } from "@/lib/types";
+import { usePathname } from "next/navigation";
 
 const data = {
   user: {
@@ -32,108 +49,128 @@ const data = {
   },
   navMain: [
     {
-      title: "Getting Started",
-      url: "#",
-      items: [
-        {
-          title: "Installation",
-          url: "#",
-        },
-        {
-          title: "Project Structure",
-          url: "#",
-        },
-      ],
+      title: "Kezdőlap",
+      url: "/dashboard",
+      isActive: true,
     },
     {
       title: "Munkanyilvántartás",
-      url: "#",
+      url: "/timesheet",
       items: [
         {
-          title: "Routing",
-          url: "#",
+          title: "Munkanapló",
+          url: "/timesheet/daily-log",
         },
         {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
+          title: "Projektek (munkajegyzék)",
+          url: "/timesheet/projects",
         },
         {
-          title: "Rendering",
-          url: "#",
-        },
-        {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
+          title: "Feladatok",
+          url: "/timesheet/tasks",
         },
       ],
     },
     {
-      title: "Útnyilvántartás - Adataim",
+      title: "Útnyilvántartás",
+      url: "/road-record",
+      items: [
+        {
+          title: "Havi utak",
+          url: "/road-record/monthly-trips",
+        },
+        {
+          title: "Tankolások / Töltések",
+          url: "/road-record/refueling",
+        },
+        {
+          title: "Útvonaltervezés",
+          url: "/road-record/route-planning",
+        },
+      ],
+    },
+    {
+      title: "Adataim",
       url: "/basic-data",
       items: [
         {
           title: "Székhely/telephelyek",
-          url: "/sites",
+          url: "/basic-data/sites",
         },
         {
           title: "Partnerek",
-          url: "/partners",
+          url: "/basic-data/partners",
         },
         {
           title: "Töltőállomások",
-          url: "/stations",
+          url: "/basic-data/stations",
         },
         {
           title: "Autók",
-          url: "/cars",
+          url: "/basic-data/cars",
         },
         {
           title: "Utazás célja szótár",
-          url: "/travel-purpose-dictionaries",
+          url: "/basic-data/travel-reasons",
         },
         {
           title: "NAV üzemanyagárak",
-          url: "/fuel-prices",
+          url: "/basic-data/fuel-prices",
+        },
+      ],
+    },
+    {
+      title: "Jogszabályok gyűjteménye",
+      url: "/laws",
+      items: [
+        {
+          title: "Földmérés",
+          url: "/laws/land-measurement",
+        },
+        {
+          title: "Ingatlan-nyilvántartás",
+          url: "/laws/property",
+        },
+        {
+          title: "Építésügy",
+          url: "/laws/construction",
+        },
+        {
+          title: "Földügy",
+          url: "/laws/land-affairs",
+        },
+        {
+          title: "Eljárási díjak",
+          url: "/laws/fees",
+        },
+        {
+          title: "További jogszabályok",
+          url: "/laws/other",
+        },
+      ],
+    },
+    {
+      title: "Adminisztráció",
+      url: "/admin",
+      items: [
+        { title: "Felhasználók", url: "/admin/users" },
+        { title: "Szerepkörök", url: "/admin/roles" },
+        {
+          title: "Jogosultságok",
+          url: "/admin/permissions",
         },
       ],
     },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  user?: User;
+}
+
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
+  const pathname = usePathname();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -156,44 +193,94 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item, index) => (
-              <Collapsible
-                key={item.title}
-                defaultOpen={index === 1}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="font-semibold">
-                      {item.title}{" "}
-                      <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                      <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+            {data.navMain.map((item, index) => {
+              const isActive = pathname === item.url;
+              if (!item.items?.length) {
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <a href={item.url} className="flex-1 truncate">
+                        {item.title}
+                      </a>
                     </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  {item.items?.length ? (
+                  </SidebarMenuItem>
+                );
+              }
+              return (
+                <Collapsible
+                  key={item.title}
+                  defaultOpen={index === 1}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="font-semibold cursor-pointer">
+                        {item.title}{" "}
+                        <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                        <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items.map((item) => (
-                          <SidebarMenuSubItem key={item.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={item.isActive}
-                            >
-                              <a href={item.url}>{item.title}</a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                        {item.items.map((item) => {
+                          const isActive = pathname === item.url;
+
+                          return (
+                            <SidebarMenuSubItem key={item.title}>
+                              <SidebarMenuSubButton asChild isActive={isActive}>
+                                <a href={item.url} className="flex-1 truncate">
+                                  {item.title}
+                                </a>
+                              </SidebarMenuSubButton>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <SidebarMenuAction showOnHover>
+                                    <MoreHorizontal className="size-4" />
+                                    <span className="sr-only">
+                                      További lehetőségek
+                                    </span>
+                                  </SidebarMenuAction>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  side="right"
+                                  align="start"
+                                  className="w-48 rounded-lg"
+                                >
+                                  <DropdownMenuItem>
+                                    <Eye className="text-muted-foreground" />
+                                    <span>Megtekintés</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <SquarePen className="text-muted-foreground" />
+                                    <span>Szerkesztés</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem>
+                                    <Trash2 className="text-muted-foreground" />
+                                    <span>Törlés</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                  ) : null}
-                </SidebarMenuItem>
-              </Collapsible>
-            ))}
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: user?.name ?? "Ismeretlen",
+            email: user?.email ?? "Nincs email",
+            avatar: user?.image ?? "/default-avatar.png",
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

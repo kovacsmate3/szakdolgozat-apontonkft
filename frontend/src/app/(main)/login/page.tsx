@@ -1,5 +1,4 @@
-import LoginForm from "@/components/(auth)/login/LoginForm";
-import AuthSimpleLayout from "@/layouts/auth/auth-layout";
+import LoginForm from "@/components/(main)/login/LoginForm";
 
 import { Metadata } from "next";
 
@@ -9,11 +8,12 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <AuthSimpleLayout
-      title="Lépj be a felhasználói fiókodba"
-      description="Add meg az email címedet vagy felhasználónevedet, illetve a jelszavadat a bejelentkezéshez"
-    >
-      <LoginForm />
-    </AuthSimpleLayout>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-200 dark:bg-zinc-400/60">
+      <div className="w-full max-w-md space-y-8">
+        <div className="mt-8">
+          <LoginForm />
+        </div>
+      </div>
+    </div>
   );
 }

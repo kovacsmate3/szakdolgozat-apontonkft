@@ -11,20 +11,6 @@ import { officeData } from "@/lib/data/contact-page-data";
 const CompanyTable = () => {
   return (
     <div className="w-full">
-      <div className="text-center font-bold text-black dark:text-white pb-2">
-        Az A-Ponton Mérnökiroda Kft. adatai
-        <details className="text-sm font-normal text-gray-600 dark:text-white/85 mt-1">
-          <summary className="cursor-pointer">
-            A táblázat tartalmának összefoglalása
-          </summary>
-          <p className="py-2 px-4 text-center">
-            Ezen 4×3-as táblázat tartalmazza az A-Ponton Mérnökiroda Kft.
-            legfontosabb elérhetőségi útvonalait: a cég irodáinak címét, az
-            irodavezetők nevét, telefonszámát és e-mail címét.
-          </p>
-        </details>
-      </div>
-
       <div className="overflow-x-auto border shadow-md">
         <Table className="min-w-[600px] border-2 border-black bg-gray-200 dark:bg-zinc-400/60">
           <TableHeader>
@@ -75,6 +61,19 @@ const CompanyTable = () => {
             ))}
           </TableBody>
         </Table>
+      </div>
+      <div className="text-center xs:text-sm text-base md:text-lg font-bold text-black dark:text-white pb-2">
+        Az A-Ponton Mérnökiroda Kft. adatai
+        <details className="xs:text-sm text-base md:text-lg font-normal text-gray-600 dark:text-white/85 mt-1">
+          <summary className="cursor-pointer">
+            A táblázat tartalmának összefoglalása
+          </summary>
+          <p className="py-2 px-4 text-center">
+            Ezen 4×3-as táblázat tartalmazza az A-Ponton Mérnökiroda Kft.
+            legfontosabb elérhetőségi útvonalait: a cég irodáinak címét, az
+            irodavezetők nevét, telefonszámát és e-mail címét.
+          </p>
+        </details>
       </div>
     </div>
   );

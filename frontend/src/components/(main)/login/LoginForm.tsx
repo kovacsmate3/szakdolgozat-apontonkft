@@ -1,184 +1,174 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
+import { signIn } from "next-auth/react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import InputError from "@/components/ui/input-error";
 import { Button } from "@/components/ui/button";
-import { LoaderCircle } from "lucide-react";
-import { FormEvent, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LoaderCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
-const validateEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-type LoginFormData = {
+interface LoginFormValues {
   identifier: string;
   password: string;
   remember: boolean;
-};
+}
 
-const LoginForm = () => {
-  const [data, setData] = useState<LoginFormData>({
-    identifier: "",
-    password: "",
-    remember: false,
+export default function LoginForm() {
+  const router = useRouter();
+  const form = useForm<LoginFormValues>({
+    defaultValues: {
+      identifier: "",
+      password: "",
+      remember: false,
+    },
   });
 
-  const router = useRouter();
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+    setError,
+  } = form;
 
-  const [processing, setProcessing] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const handleChange = (
-    field: keyof LoginFormData,
-    value: string | boolean
-  ) => {
-    setData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
+  const onSubmit = async (values: LoginFormValues) => {
+    if (!values.identifier) {
+      setError("identifier", {
+        type: "manual",
+        message: "Az email cím vagy felhasználónév megadása kötelező.",
       });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    let isValid = true;
-
-    if (!data.identifier) {
-      newErrors.identifier =
-        "Az email cím vagy felhasználónév megadása kötelező.";
-      isValid = false;
     } else if (
-      data.identifier.includes("@") &&
-      !validateEmail(data.identifier)
+      values.identifier.includes("@") &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.identifier)
     ) {
-      newErrors.identifier = "Érvénytelen email formátum.";
-      isValid = false;
-    }
-    if (!data.password) {
-      newErrors.password = "A jelszó megadása kötelező.";
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    setProcessing(true);
-
-    const isValid = validateForm();
-
-    if (!isValid) {
-      setProcessing(false);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+      setError("identifier", {
+        type: "manual",
+        message: "Érvénytelen email formátum.",
       });
+    }
 
-      const result = await res.json();
+    if (!values.password) {
+      setError("password", {
+        type: "manual",
+        message: "A jelszó megadása kötelező.",
+      });
+    }
 
-      if (!res.ok) {
-        if (result.errors) {
-          const serverErrors: { [key: string]: string } = {};
+    if (!values.identifier || !values.password) return;
 
-          if (result.errors.identifier) {
-            serverErrors.identifier = result.errors.identifier[0];
-          }
+    const res = await signIn("credentials", {
+      ...values,
+      redirect: false,
+      callbackUrl: "/dashboard",
+    });
 
-          if (result.errors.password) {
-            serverErrors.password = result.errors.password[0];
-          }
-
-          setErrors(serverErrors);
-        } else if (result.message) {
-          setErrors({ general: result.message });
-        }
-      } else {
-        localStorage.setItem("access_token", result.token);
-        localStorage.setItem("user", JSON.stringify(result.user));
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      console.error("Bejelentkezési hiba:", error);
-      setErrors((prev) => ({
-        ...prev,
-        general: "Hiba történt a bejelentkezés során.",
-      }));
-    } finally {
-      setProcessing(false);
+    if (res && res.error) {
+      setError("identifier", {
+        type: "manual",
+        message: "Hibás email/felhasználónév vagy jelszó.",
+      });
+      setError("password", {
+        type: "manual",
+        message: "Ellenőrizd a megadott adatokat.",
+      });
+    } else if (res && res.ok) {
+      router.push("/dashboard");
     }
   };
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={submit}>
-      <div className="grid gap-6">
-        <div className="grid gap-2">
-          <Label htmlFor="email">Email/Felhasználónév</Label>
-          <Input
-            id="identifier"
-            type="text"
-            tabIndex={1}
-            value={data.identifier}
-            onChange={(e) => handleChange("identifier", e.target.value)}
-            placeholder="email@example.com/username"
-            aria-invalid={!!errors.identifier}
-          />
-          <InputError message={errors.identifier} />
-        </div>
+    <Card className="w-full max-w-md mx-auto bg-white dark:bg-neutral-800 shadow-md">
+      <CardHeader>
+        <CardTitle>Lépj be a felhasználói fiókodba</CardTitle>
+        <CardDescription>
+          Add meg az email címedet vagy felhasználónevedet, illetve a
+          jelszavadat a bejelentkezéshez
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="identifier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="identifier">
+                    Email / Felhasználónév
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      id="identifier"
+                      type="text"
+                      placeholder="email@example.com / username"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="grid gap-2">
-          <Input
-            id="password"
-            type="password"
-            tabIndex={2}
-            value={data.password}
-            onChange={(e) => handleChange("password", e.target.value)}
-            placeholder="Jelszó"
-            aria-invalid={!!errors.password}
-          />
-          <InputError message={errors.password} />
-        </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="password">Jelszó</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Jelszó"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="flex items-center space-x-3">
-          <Checkbox
-            id="remember"
-            name="remember"
-            checked={data.remember}
-            onClick={() => handleChange("remember", !data.remember)}
-            tabIndex={3}
-          />
-          <Label htmlFor="remember">Emlékezz rám</Label>
-        </div>
-        <div className="grid gap-2">
-          <InputError message={errors.general} />
-        </div>
-        <Button
-          type="submit"
-          className="mt-4 w-full"
-          tabIndex={4}
-          disabled={processing}
-        >
-          {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-          Bejelentkezés
-        </Button>
-      </div>
-    </form>
+            <FormField
+              control={form.control}
+              name="remember"
+              render={({ field }) => (
+                <FormItem className="flex items-center space-x-2">
+                  <FormControl>
+                    <Checkbox
+                      id="remember"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel htmlFor="remember">Emlékezz rám</FormLabel>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting && (
+                <LoaderCircle className="h-4 w-4 animate-spin mr-2" />
+              )}
+              Bejelentkezés
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
-};
-
-export default LoginForm;
+}

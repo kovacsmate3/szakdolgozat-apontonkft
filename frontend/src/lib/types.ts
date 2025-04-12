@@ -36,3 +36,12 @@ export interface CompanyOfficeData {
   email: string;
   phone: string;
 }
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  role: string | null;
+  image?: string | null;
+};

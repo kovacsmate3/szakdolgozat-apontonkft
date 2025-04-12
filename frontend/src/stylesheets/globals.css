@@ -46,7 +46,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ThinIta.eot");
-  src: local("Helvetica Now Display Thin Ita"),
+  src:
+    local("Helvetica Now Display Thin Ita"),
     local("HelveticaNowDisplay-ThinIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ThinIta.eot?#iefix")
       format("embedded-opentype"),
@@ -63,7 +64,9 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Light.eot");
-  src: local("Helvetica Now Display Light"), local("HelveticaNowDisplay-Light"),
+  src:
+    local("Helvetica Now Display Light"),
+    local("HelveticaNowDisplay-Light"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Light.eot?#iefix")
       format("embedded-opentype"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Light.woff2")
@@ -79,7 +82,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-BoldIta.eot");
-  src: local("Helvetica Now Display Bold Ita"),
+  src:
+    local("Helvetica Now Display Bold Ita"),
     local("HelveticaNowDisplay-BoldIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-BoldIta.eot?#iefix")
       format("embedded-opentype"),
@@ -96,7 +100,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-RegIta.eot");
-  src: local("Helvetica Now Display Reg Ita"),
+  src:
+    local("Helvetica Now Display Reg Ita"),
     local("HelveticaNowDisplay-RegIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-RegIta.eot?#iefix")
       format("embedded-opentype"),
@@ -113,7 +118,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtLtIta.eot");
-  src: local("Helvetica Now Display ExtLt Ita"),
+  src:
+    local("Helvetica Now Display ExtLt Ita"),
     local("HelveticaNowDisplay-ExtLtIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtLtIta.eot?#iefix")
       format("embedded-opentype"),
@@ -130,7 +136,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-MedIta.eot");
-  src: local("Helvetica Now Display Med Ita"),
+  src:
+    local("Helvetica Now Display Med Ita"),
     local("HelveticaNowDisplay-MedIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-MedIta.eot?#iefix")
       format("embedded-opentype"),
@@ -147,7 +154,9 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtLt.eot");
-  src: local("Helvetica Now Display ExtLt"), local("HelveticaNowDisplay-ExtLt"),
+  src:
+    local("Helvetica Now Display ExtLt"),
+    local("HelveticaNowDisplay-ExtLt"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtLt.eot?#iefix")
       format("embedded-opentype"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtLt.woff2")
@@ -163,7 +172,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtBlk.eot");
-  src: local("Helvetica Now Display ExtBlk"),
+  src:
+    local("Helvetica Now Display ExtBlk"),
     local("HelveticaNowDisplay-ExtBlk"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtBlk.eot?#iefix")
       format("embedded-opentype"),
@@ -180,7 +190,9 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Bold.eot");
-  src: local("Helvetica Now Display Bold"), local("HelveticaNowDisplay-Bold"),
+  src:
+    local("Helvetica Now Display Bold"),
+    local("HelveticaNowDisplay-Bold"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Bold.eot?#iefix")
       format("embedded-opentype"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Bold.woff2")
@@ -196,7 +208,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtBdIta.eot");
-  src: local("Helvetica Now Display ExtBd Ita"),
+  src:
+    local("Helvetica Now Display ExtBd Ita"),
     local("HelveticaNowDisplay-ExtBdIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtBdIta.eot?#iefix")
       format("embedded-opentype"),
@@ -213,7 +226,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.eot");
-  src: local("Helvetica Now Display Regular"),
+  src:
+    local("Helvetica Now Display Regular"),
     local("HelveticaNowDisplay-Regular"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.eot?#iefix")
       format("embedded-opentype"),
@@ -230,7 +244,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtBlkIta.eot");
-  src: local("Helvetica Now Display ExBlk It"),
+  src:
+    local("Helvetica Now Display ExBlk It"),
     local("HelveticaNowDisplay-ExtBlkIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtBlkIta.eot?#iefix")
       format("embedded-opentype"),
@@ -247,7 +262,9 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Thin.eot");
-  src: local("Helvetica Now Display Thin"), local("HelveticaNowDisplay-Thin"),
+  src:
+    local("Helvetica Now Display Thin"),
+    local("HelveticaNowDisplay-Thin"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Thin.eot?#iefix")
       format("embedded-opentype"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Thin.woff2")
@@ -263,7 +280,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-LightIta.eot");
-  src: local("Helvetica Now Display Light Ita"),
+  src:
+    local("Helvetica Now Display Light Ita"),
     local("HelveticaNowDisplay-LightIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-LightIta.eot?#iefix")
       format("embedded-opentype"),
@@ -280,7 +298,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtraBold.eot");
-  src: local("Helvetica Now Display ExtBd"),
+  src:
+    local("Helvetica Now Display ExtBd"),
     local("HelveticaNowDisplay-ExtraBold"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-ExtraBold.eot?#iefix")
       format("embedded-opentype"),
@@ -297,7 +316,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Medium.eot");
-  src: local("Helvetica Now Display Medium"),
+  src:
+    local("Helvetica Now Display Medium"),
     local("HelveticaNowDisplay-Medium"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Medium.eot?#iefix")
       format("embedded-opentype"),
@@ -314,7 +334,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-HairlineI.eot");
-  src: local("Helvetica Now Display Hairline"),
+  src:
+    local("Helvetica Now Display Hairline"),
     local("HelveticaNowDisplay-HairlineI"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-HairlineI.eot?#iefix")
       format("embedded-opentype"),
@@ -331,7 +352,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-BlackIta.eot");
-  src: local("Helvetica Now Display Black Ita"),
+  src:
+    local("Helvetica Now Display Black Ita"),
     local("HelveticaNowDisplay-BlackIta"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-BlackIta.eot?#iefix")
       format("embedded-opentype"),
@@ -348,7 +370,9 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Black.eot");
-  src: local("Helvetica Now Display Black"), local("HelveticaNowDisplay-Black"),
+  src:
+    local("Helvetica Now Display Black"),
+    local("HelveticaNowDisplay-Black"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Black.eot?#iefix")
       format("embedded-opentype"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Black.woff2")
@@ -364,7 +388,8 @@
 @font-face {
   font-family: "Helvetica Now Display";
   src: url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Hairline.eot");
-  src: local("Helvetica Now Display Hairline"),
+  src:
+    local("Helvetica Now Display Hairline"),
     local("HelveticaNowDisplay-Hairline"),
     url("../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Hairline.eot?#iefix")
       format("embedded-opentype"),

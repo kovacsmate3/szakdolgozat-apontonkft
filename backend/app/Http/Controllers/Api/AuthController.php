@@ -73,7 +73,7 @@ class AuthController extends Controller
             "message" => "Sikeres bejelentkezés.",
             "user" => [
                 "id" => $user->id,
-                "name" => $user->firstname . ' ' . $user->lastname,
+                "name" => $user->lastname . ' ' . $user->firstname,
                 "email" => $user->email,
                 "username" => $user->username,
                 "role" => $user->role ? $user->role->slug : null,

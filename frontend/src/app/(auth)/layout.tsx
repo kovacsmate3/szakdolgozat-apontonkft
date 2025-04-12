@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/stylesheets/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
+import { NextAuthProvider } from "@/components/next-auth-provider";
+import { Toaster } from "sonner";
+import DashboardLayout from "@/layouts/dashboard-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "A-Ponton Kft.",
+  title: "Dashboard",
   description: "CRUD Based Next js App with Laravel",
   icons: {
     icon: [
@@ -49,8 +52,11 @@ export default function RootLayout({
           defaultTheme="system"
           disableTransitionOnChange
         >
-          {children}
-          <TailwindIndicator />
+          <NextAuthProvider>
+            <DashboardLayout>{children}</DashboardLayout>
+            <Toaster position="top-center" />
+            <TailwindIndicator />
+          </NextAuthProvider>
         </ThemeProvider>
       </body>
     </html>
