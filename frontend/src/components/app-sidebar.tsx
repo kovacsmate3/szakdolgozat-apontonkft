@@ -42,11 +42,6 @@ import { User } from "@/lib/types";
 import { usePathname } from "next/navigation";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Kezdőlap",
@@ -193,83 +188,96 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item, index) => {
-              const isActive = pathname === item.url;
-              if (!item.items?.length) {
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <a href={item.url} className="flex-1 truncate">
-                        {item.title}
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              }
-              return (
-                <Collapsible
-                  key={item.title}
-                  defaultOpen={index === 1}
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="font-semibold cursor-pointer">
-                        {item.title}{" "}
-                        <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                        <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+            {data.navMain
+              .filter((item) => {
+                if (item.url.startsWith("/admin") && user?.role !== "admin") {
+                  return false;
+                }
+                return true;
+              })
+              .map((item, index) => {
+                const isActive = pathname === item.url;
+                if (!item.items?.length) {
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <a href={item.url} className="flex-1 truncate">
+                          {item.title}
+                        </a>
                       </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.items.map((item) => {
-                          const isActive = pathname === item.url;
+                    </SidebarMenuItem>
+                  );
+                }
+                return (
+                  <Collapsible
+                    key={item.title}
+                    defaultOpen={index === 1}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="font-semibold cursor-pointer">
+                          {item.title}{" "}
+                          <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                          <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.items.map((item) => {
+                            const isActive = pathname === item.url;
 
-                          return (
-                            <SidebarMenuSubItem key={item.title}>
-                              <SidebarMenuSubButton asChild isActive={isActive}>
-                                <a href={item.url} className="flex-1 truncate">
-                                  {item.title}
-                                </a>
-                              </SidebarMenuSubButton>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <SidebarMenuAction showOnHover>
-                                    <MoreHorizontal className="size-4" />
-                                    <span className="sr-only">
-                                      További lehetőségek
-                                    </span>
-                                  </SidebarMenuAction>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  side="right"
-                                  align="start"
-                                  className="w-48 rounded-lg"
+                            return (
+                              <SidebarMenuSubItem key={item.title}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={isActive}
                                 >
-                                  <DropdownMenuItem>
-                                    <Eye className="text-muted-foreground" />
-                                    <span>Megtekintés</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <SquarePen className="text-muted-foreground" />
-                                    <span>Szerkesztés</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem>
-                                    <Trash2 className="text-muted-foreground" />
-                                    <span>Törlés</span>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              );
-            })}
+                                  <a
+                                    href={item.url}
+                                    className="flex-1 truncate"
+                                  >
+                                    {item.title}
+                                  </a>
+                                </SidebarMenuSubButton>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <SidebarMenuAction showOnHover>
+                                      <MoreHorizontal className="size-4" />
+                                      <span className="sr-only">
+                                        További lehetőségek
+                                      </span>
+                                    </SidebarMenuAction>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    side="right"
+                                    align="start"
+                                    className="w-48 rounded-lg"
+                                  >
+                                    <DropdownMenuItem>
+                                      <Eye className="text-muted-foreground" />
+                                      <span>Megtekintés</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      <SquarePen className="text-muted-foreground" />
+                                      <span>Szerkesztés</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>
+                                      <Trash2 className="text-muted-foreground" />
+                                      <span>Törlés</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                );
+              })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Validation\Rules;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use libphonenumber\PhoneNumberFormat;
@@ -19,6 +20,12 @@ class UserController extends Controller
      */
     public function index()
     {
+        $user = Auth::user();
+
+        if ($user->role->slug !== 'admin') {
+            return response()->json(['message' => 'Nincs jogosultságod a felhasználók lekérdezésére.'], 403);
+        }
+
         $users = User::with('role')->get();
         return response()->json($users, Response::HTTP_OK);
     }

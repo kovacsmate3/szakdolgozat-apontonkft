@@ -45,3 +45,28 @@ export type User = {
   role: string | null;
   image?: string | null;
 };
+
+export interface Role {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserData {
+  id: number;
+  role_id: number;
+  username: string;
+  firstname: string;
+  lastname: string;
+  birthdate: string;
+  phonenumber: string;
+  email: string;
+  email_verified_at: string | null;
+  password_changed_at: string;
+  created_at: string;
+  updated_at: string;
+  role: Role;
+}
