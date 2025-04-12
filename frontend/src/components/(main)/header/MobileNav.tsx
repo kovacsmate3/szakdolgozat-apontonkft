@@ -12,9 +12,12 @@ import {
 } from "@/components/ui/sheet";
 import { AlignJustify } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
+
+  const pathanme = usePathname();
 
   const menuItems = [
     { title: "Kezdőlap", href: "/home", number: "01" },
@@ -63,20 +66,28 @@ export default function MobileNav() {
             <SheetTitle></SheetTitle>
             <SheetDescription></SheetDescription>
           </SheetHeader>
-          {menuItems.map((item, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <Link
-                href={item.href}
-                className="text-2xl hover:text-primary font-medium"
-                onClick={handleLinkClick}
+          {menuItems.map((item, index) => {
+            const isActive = pathanme === item.href;
+
+            return (
+              <div
+                key={index}
+                className={`flex items-center justify-between p-4 rounded-lg hover:bg-gray-100 
+                  focus:ring-gray-50 dark:hover:bg-zinc-400/60 dark:focus:ring-zinc-400/80  ${isActive ? "bg-gray-200 dark:bg-zinc-500/60 hover:bg-gray-200 dark:hover:bg-zinc-500/60  " : ""}`}
               >
-                {item.title}
-              </Link>
-              <span className="text-lg text-muted-foreground font-light">
-                {item.number}
-              </span>
-            </div>
-          ))}
+                <Link
+                  href={item.href}
+                  className="text-2xl hover:text-primary font-medium"
+                  onClick={handleLinkClick}
+                >
+                  {item.title}
+                </Link>
+                <span className="text-lg text-black/70 dark:text-white/70 font-light">
+                  {item.number}
+                </span>
+              </div>
+            );
+          })}
         </SheetContent>
       </Sheet>
     </div>
