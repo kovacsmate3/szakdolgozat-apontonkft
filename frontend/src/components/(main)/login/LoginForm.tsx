@@ -86,6 +86,7 @@ export default function LoginForm() {
         message: "Ellenőrizd a megadott adatokat.",
       });
     } else if (res && res.ok) {
+      sessionStorage.setItem("justLoggedIn", "true");
       router.push("/dashboard");
     }
   };

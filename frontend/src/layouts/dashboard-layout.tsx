@@ -16,9 +16,32 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { navMain } from "@/lib/data/nav.config";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
+import { usePathname } from "next/navigation";
+
+function getBreadcrumbItems(pathname: string) {
+  const items: { title: string; url?: string }[] = [];
+
+  for (const mainItem of navMain) {
+    if (mainItem.url === pathname) {
+      items.push({ title: mainItem.title });
+      return items;
+    }
+
+    if (mainItem.items) {
+      const subItem = mainItem.items.find((sub) => sub.url === pathname);
+      if (subItem) {
+        items.push({ title: mainItem.title, url: mainItem.url });
+        items.push({ title: subItem.title });
+        return items;
+      }
+    }
+  }
+
+  items.push({ title: "Ismeretlen oldal" });
+  return items;
+}
 
 export default function DashboardLayout({
   children,
@@ -26,17 +49,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { data: session } = useSession();
-  const toastShownRef = useRef(false);
 
-  useEffect(() => {
-    if (session?.user && !toastShownRef.current) {
-      toast(`Üdv újra, ${session.user.name || "felhasználó"}!`, {
-        description: `Sikeres bejelentkezés (${session.user.email})`,
-      });
-
-      toastShownRef.current = true;
-    }
-  }, [session]);
+  const pathname = usePathname();
+  const breadcrumbItems = getBreadcrumbItems(pathname);
 
   return (
     <SidebarProvider>
@@ -50,15 +65,29 @@ export default function DashboardLayout({
           />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">
-                  Building Your Application
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-              </BreadcrumbItem>
+              {breadcrumbItems.map((item, index) => {
+                const isLast = index === breadcrumbItems.length - 1;
+
+                return (
+                  <div key={item.title} className="flex items-center">
+                    {index > 0 && (
+                      <BreadcrumbSeparator className="hidden md:block" />
+                    )}
+
+                    <BreadcrumbItem
+                      className={index === 0 ? "hidden md:block" : ""}
+                    >
+                      {isLast || !item.url ? (
+                        <BreadcrumbPage>{item.title}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink href={item.url}>
+                          {item.title}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </div>
+                );
+              })}
             </BreadcrumbList>
           </Breadcrumb>
           <div className="ml-auto">
