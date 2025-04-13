@@ -1,5 +1,6 @@
 "use client";
 
+import { DashboardHelpSection } from "@/components/(auth)/dashboard/DashboardHelpSection";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export default function DashboardHomePage() {
         <div className="bg-muted/50 aspect-video rounded-xl" />
       </div>
       <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+      <DashboardHelpSection />
     </>
   );
 }

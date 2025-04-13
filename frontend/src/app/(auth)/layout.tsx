@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Irányítópult",
   description: "CRUD Based Next js App with Laravel",
   icons: {
     icon: [
