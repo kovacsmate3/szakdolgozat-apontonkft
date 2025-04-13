@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { columns } from "@/components/(auth)/admin/users/columns";
+import { CreateUserDialog } from "@/components/(auth)/admin/users/CreateUserDialog";
 import { UserTable } from "@/components/(auth)/admin/users/UserTable";
 import { UserData } from "@/lib/types";
 
@@ -35,6 +36,10 @@ export default async function UsersPage() {
 
   return (
     <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Felhasználók</h1>
+        <CreateUserDialog />
+      </div>
       <UserTable columns={columns} data={users} />
     </div>
   );

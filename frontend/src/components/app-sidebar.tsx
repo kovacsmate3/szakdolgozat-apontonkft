@@ -202,7 +202,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive}>
                         <a href={item.url} className="flex-1 truncate">
-                          {item.title}
+                          <span className="font-semibold">{item.title}</span>
                         </a>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

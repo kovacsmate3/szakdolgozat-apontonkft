@@ -35,6 +35,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+
+        if ($user->role->slug !== 'admin') {
+            return response()->json(['message' => 'Kizárólag admin szerepkörrel lehet felhasználót létrehozni.'], 403);
+        }
+
         $minimumBirthdate = Carbon::now()->subYears(18)->format('Y-m-d');
 
         $validated = $request->validate(
