@@ -25,10 +25,10 @@ class CarSeeder extends Seeder
             'fuel_tank_capacity' => 54,
         ]);
 
-        /*
+
         Car::create([
-            'user_id' => ...,
-            'car_type' => 'furgon',
+            'user_id' => 1,
+            'car_type' => 'hatchback',
             'license_plate' => 'LVY-802',
             'manufacturer' => 'Renault',
             'model' => 'Clio',
@@ -37,6 +37,5 @@ class CarSeeder extends Seeder
             'capacity' => 1461,
             'fuel_tank_capacity' => 39,
         ]);
-        */
     }
 }
