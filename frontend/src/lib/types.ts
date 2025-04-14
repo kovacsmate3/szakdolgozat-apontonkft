@@ -107,3 +107,12 @@ export interface Car {
 export interface CarComponentProps {
   car: Car;
 }
+
+export interface FuelPrice {
+  id: number;
+  period: string;
+  petrol: number;
+  mixture: number;
+  diesel: number;
+  lp_gas: number;
+}

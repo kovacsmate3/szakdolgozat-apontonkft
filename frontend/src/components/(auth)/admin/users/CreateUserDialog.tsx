@@ -169,12 +169,14 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       onUserCreated?.();
       setOpen(false);
       form.reset();
-      toast.success("Felhasználó létrehozva", {
+      toast.success("Felhasználó sikeresen létrehozva", {
         duration: 4000,
-        description: `• Felhasználónév: ${data.user.username}
-• Név: ${data.user.lastname} ${data.user.firstname}
-• Email: ${data.user.email}
-• Szerepkör: ${data.user.role?.title ?? "Ismeretlen"}`,
+        description: (
+          <div className="space-y-1">
+            <p>Felhasználónév: {data.user.username}</p>
+            <p>Szerepkör: {data.user.role?.title ?? "Ismeretlen"}</p>
+          </div>
+        ),
       });
     } catch {
       toast.error("Hálózati hiba vagy váratlan probléma.");
@@ -186,7 +188,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
       <DialogTrigger asChild>
         <Button>+ Új felhasználó</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-3xl max-h-[95vh] overflow-y-auto p-12">
         <DialogHeader>
           <DialogTitle>Új felhasználó létrehozása</DialogTitle>
           <DialogDescription>Töltsd ki az alábbi adatokat</DialogDescription>

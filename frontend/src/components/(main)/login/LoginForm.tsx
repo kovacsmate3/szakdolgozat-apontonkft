@@ -116,6 +116,7 @@ export default function LoginForm() {
                       id="identifier"
                       type="text"
                       placeholder="email@example.com / username"
+                      autoComplete="username"
                       {...field}
                     />
                   </FormControl>
@@ -135,6 +136,7 @@ export default function LoginForm() {
                       id="password"
                       type="password"
                       placeholder="Jelszó"
+                      autoComplete="current-password"
                       {...field}
                     />
                   </FormControl>
