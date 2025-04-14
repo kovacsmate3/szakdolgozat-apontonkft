@@ -75,7 +75,9 @@ export default function DashboardLayout({
                     )}
 
                     <BreadcrumbItem
-                      className={index === 0 ? "hidden md:block" : ""}
+                      className={
+                        index === 0 ? "hidden md:block" : "hidden md:block ml-2"
+                      }
                     >
                       {isLast || !item.url ? (
                         <BreadcrumbPage>{item.title}</BreadcrumbPage>

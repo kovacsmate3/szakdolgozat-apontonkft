@@ -70,3 +70,40 @@ export interface UserData {
   updated_at: string;
   role: Role;
 }
+
+export interface Location {
+  id: number;
+  name: string;
+  location_type: string;
+  is_headquarter: number;
+}
+
+export interface Address {
+  id: number;
+  location_id: number | null;
+  country: string;
+  postalcode: number;
+  city: string;
+  road_name: string;
+  public_space_type: string;
+  building_number: string;
+  location: Location | null;
+}
+
+export interface Car {
+  id: number;
+  user_id: number;
+  car_type: string;
+  license_plate: string;
+  manufacturer: string;
+  model: string;
+  fuel_type: string;
+  standard_consumption: number;
+  capacity: number;
+  fuel_tank_capacity: number;
+  user: UserData;
+}
+
+export interface CarComponentProps {
+  car: Car;
+}
