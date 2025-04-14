@@ -116,7 +116,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CreateUserDialog() {
+interface CreateUserDialogProps {
+  onUserCreated?: () => void;
+}
+
+export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
   const { data: session } = useSession();
   const token = session?.access_token;
   const [open, setOpen] = useState(false);
@@ -162,15 +166,16 @@ export function CreateUserDialog() {
         return;
       }
 
-      form.reset();
+      onUserCreated?.();
       setOpen(false);
+      form.reset();
       toast.success("Felhasználó létrehozva", {
         duration: 4000,
-        description: `${data.user.lastname} ${data.user.firstname} (${data.user.username}) — ${data.user.email}\nSzerepkör: ${data.user.role?.title ?? "Ismeretlen"}`,
+        description: `• Felhasználónév: ${data.user.username}
+• Név: ${data.user.lastname} ${data.user.firstname}
+• Email: ${data.user.email}
+• Szerepkör: ${data.user.role?.title ?? "Ismeretlen"}`,
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 4200);
     } catch {
       toast.error("Hálózati hiba vagy váratlan probléma.");
     }

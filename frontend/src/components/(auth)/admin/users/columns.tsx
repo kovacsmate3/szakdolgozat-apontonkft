@@ -12,7 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import {
+  ArrowUpDown,
+  Eye,
+  MoreHorizontal,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
+import { MdContentCopy } from "react-icons/md";
 
 export const columns: ColumnDef<UserData>[] = [
   {
@@ -117,11 +124,22 @@ export const columns: ColumnDef<UserData>[] = [
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(user.email)}
             >
-              Email másolása
+              <MdContentCopy className="text-muted-foreground" />
+              <span>Email másolása</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Részletek megtekintése</DropdownMenuItem>
-            <DropdownMenuItem>Felhasználó szerkesztése</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Eye className="text-muted-foreground" />
+              <span>Megtekintés</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <SquarePen className="text-muted-foreground" />
+              <span>Szerkesztés</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Trash2 className="text-muted-foreground" />
+              <span>Törlés</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
