@@ -25,7 +25,13 @@ class FuelPriceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'period' => ['required', 'date', 'unique:fuel_prices'],
+            'period' => [
+                'required',
+                'date',
+                Rule::unique('fuel_prices')->where(function ($query) use ($request) {
+                    return $query->whereDate('period', $request->period);
+                }),
+            ],
             'petrol' => ['required', 'numeric', 'min:0'],
             'mixture' => ['required', 'numeric', 'min:0'],
             'diesel' => ['required', 'numeric', 'min:0'],

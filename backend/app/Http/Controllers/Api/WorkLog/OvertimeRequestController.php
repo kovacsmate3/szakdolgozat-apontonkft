@@ -151,7 +151,7 @@ class OvertimeRequestController extends Controller
         }
 
         $exists = OvertimeRequest::where('user_id', $validated['user_id'])
-            ->where('date', $validated['date'])
+            ->whereDate('date', $validated['date'])
             ->exists();
 
         if ($exists) {

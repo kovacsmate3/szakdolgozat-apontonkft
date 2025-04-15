@@ -18,7 +18,7 @@ class LawCategoryFactory extends Factory
     {
         return [
             'name' => fake()->unique()->word(),
-            'description' => fake()->sentences(5)
+            'description' => fake()->sentences(5, true)
         ];
     }
 }

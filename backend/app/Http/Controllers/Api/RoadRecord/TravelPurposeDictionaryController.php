@@ -156,7 +156,8 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        if ($travelPurpose->is_system && !Auth::user()->hasRole('admin')) {
+        $isAdmin = Auth::user()->role && Auth::user()->role->slug === 'admin';
+        if ($travelPurpose->is_system && !$isAdmin) {
             return response()->json([
                 'message' => 'Rendszerszintű utazási cél nem törölhető.'
             ], Response::HTTP_FORBIDDEN);

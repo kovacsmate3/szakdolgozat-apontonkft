@@ -17,7 +17,7 @@ class PermissionFactory extends Factory
     public function definition(): array
     {
         return [
-            'key' => fake()->unique()->word() + '.' + fake()->word(),
+            'key' => fake()->unique()->word() . '.' . fake()->word(),
             'module' => fake()->word(),
             'description' => fake()->realText(40, 2),
         ];

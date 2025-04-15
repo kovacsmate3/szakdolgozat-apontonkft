@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('fuel_prices', function (Blueprint $table) {
             $table->id();
-            $table->date('period');
+            $table->date('period')->unique();
             $table->float('petrol');
             $table->float('mixture');
             $table->float('diesel');
