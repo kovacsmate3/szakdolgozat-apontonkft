@@ -51,8 +51,6 @@ export interface Role {
   slug: string;
   title: string;
   description: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface UserData {
@@ -64,11 +62,18 @@ export interface UserData {
   birthdate: string;
   phonenumber: string;
   email: string;
-  email_verified_at: string | null;
-  password_changed_at: string;
-  created_at: string;
-  updated_at: string;
   role: Role;
+}
+
+export interface CreateUserPayload {
+  username: string;
+  firstname: string;
+  lastname: string;
+  birthdate: string;
+  phonenumber: string;
+  email: string;
+  password: string;
+  role_id: number;
 }
 
 export interface Location {

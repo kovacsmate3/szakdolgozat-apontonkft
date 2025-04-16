@@ -35,8 +35,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
-import { useSession } from "next-auth/react";
+import { parse, format } from "date-fns";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createUser } from "@/server/users";
+import { UserData } from "@/lib/types";
+import { ApiError } from "@/lib/errors";
 
 const formSchema = z.object({
   username: z
@@ -117,12 +120,10 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface CreateUserDialogProps {
-  onUserCreated?: () => void;
+  token: string;
 }
 
-export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
-  const { data: session } = useSession();
-  const token = session?.access_token;
+export function CreateUserDialog({ token }: CreateUserDialogProps) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<FormValues>({
@@ -139,36 +140,13 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...values, role_id: parseInt(values.role_id) }),
-      });
+  const queryClient = useQueryClient();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 422 && data.errors) {
-          Object.entries(data.errors).forEach(([field, messages]) => {
-            form.setError(field as keyof FormValues, {
-              type: "server",
-              message: (messages as string[])[0],
-            });
-          });
-        } else {
-          toast.error(data.message || "Hiba történt.");
-        }
-        return;
-      }
-
-      onUserCreated?.();
-      setOpen(false);
-      form.reset();
+  const createUserMutation = useMutation({
+    mutationKey: ["create-user", token],
+    mutationFn: createUser,
+    onSuccess: (data: { user: UserData }) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("Felhasználó sikeresen létrehozva", {
         duration: 4000,
         description: (
@@ -178,9 +156,31 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
           </div>
         ),
       });
-    } catch {
-      toast.error("Hálózati hiba vagy váratlan probléma.");
-    }
+      setOpen(false);
+      form.reset();
+    },
+    onError: (error: unknown, variables, context) => {
+      console.log("Elkapott hiba:", error);
+      console.log("variables:", variables);
+      console.log("context:", context);
+      if (error instanceof ApiError && error.data?.errors) {
+        Object.entries(error.data.errors).forEach(([field, messages]) => {
+          form.setError(field as keyof FormValues, {
+            type: "server",
+            message: (messages as string[])[0],
+          });
+        });
+      } else {
+        toast.error("Ismeretlen hiba történt.");
+      }
+    },
+  });
+
+  const onSubmit = (values: FormValues) => {
+    createUserMutation.mutate({
+      user: { ...values, role_id: parseInt(values.role_id) },
+      token: token || "",
+    });
   };
 
   return (
@@ -226,7 +226,11 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
                   <FormLabel>Születési dátum</FormLabel>
                   <FormControl>
                     <DatePicker
-                      value={field.value ? new Date(field.value) : undefined}
+                      value={
+                        field.value
+                          ? parse(field.value, "yyyy-MM-dd", new Date()) // ez a fontos
+                          : undefined
+                      }
                       onChange={(date) =>
                         field.onChange(date ? format(date, "yyyy-MM-dd") : "")
                       }
@@ -264,10 +268,7 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Szerepkör</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Válassz szerepkört..." />
@@ -276,8 +277,8 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Szerepkörök</SelectLabel>
-                        <SelectItem value="1">Admin</SelectItem>
-                        <SelectItem value="2">Webfejlesztő</SelectItem>
+                        <SelectItem value="1">Webfejlesztő</SelectItem>
+                        <SelectItem value="2">Admin</SelectItem>
                         <SelectItem value="3">Alkalmazott</SelectItem>
                       </SelectGroup>
                     </SelectContent>
@@ -288,7 +289,9 @@ export function CreateUserDialog({ onUserCreated }: CreateUserDialogProps) {
             />
 
             <DialogFooter>
-              <Button type="submit">Létrehozás</Button>
+              <Button type="submit" disabled={createUserMutation.isPending}>
+                {createUserMutation.isPending ? "Létrehozás..." : "Létrehozás"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

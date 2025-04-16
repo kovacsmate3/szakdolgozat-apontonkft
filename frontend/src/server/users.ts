@@ -1,0 +1,49 @@
+import { ApiError } from "@/lib/errors";
+import { CreateUserPayload, UserData } from "@/lib/types";
+
+export const getUsers = async ({
+  queryKey,
+}: {
+  queryKey: [string, string];
+}): Promise<UserData[]> => {
+  const [, token] = queryKey;
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Felhasználók betöltése sikertelen.");
+  }
+
+  return res.json();
+};
+
+export const createUser = async ({
+  user,
+  token,
+}: {
+  user: CreateUserPayload;
+  token: string;
+}): Promise<{ user: UserData }> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: JSON.stringify(user),
+  });
+
+  const data = await res.json();
+  console.log(data);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, data);
+  }
+
+  return data;
+};

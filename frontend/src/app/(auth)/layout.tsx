@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import DashboardLayout from "@/layouts/dashboard-layout";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NextAuthProvider } from "@/providers/next-auth-provider";
+import { TanstackProvider } from "@/providers/tanstack-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,18 +47,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          enableSystem
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-        >
-          <NextAuthProvider>
-            <DashboardLayout>{children}</DashboardLayout>
-            <Toaster position="top-center" />
-            <TailwindIndicator />
-          </NextAuthProvider>
-        </ThemeProvider>
+        <TanstackProvider>
+          <ThemeProvider
+            enableSystem
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+          >
+            <NextAuthProvider>
+              <DashboardLayout>{children}</DashboardLayout>
+              <Toaster position="top-center" />
+              <TailwindIndicator />
+            </NextAuthProvider>
+          </ThemeProvider>
+        </TanstackProvider>
       </body>
     </html>
   );
