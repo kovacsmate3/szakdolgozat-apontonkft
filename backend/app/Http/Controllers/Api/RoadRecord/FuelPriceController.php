@@ -29,7 +29,10 @@ class FuelPriceController extends Controller
                 'required',
                 'date',
                 Rule::unique('fuel_prices')->where(function ($query) use ($request) {
-                    return $query->whereDate('period', $request->period);
+                    $period = \Carbon\Carbon::parse($request->period);
+                    return $query
+                        ->whereYear('period', $period->year)
+                        ->whereMonth('period', $period->month);
                 }),
             ],
             'petrol' => ['required', 'numeric', 'min:0'],

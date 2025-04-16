@@ -194,12 +194,10 @@ class FuelPriceTest extends TestCase
     #[Test]
     public function test_cannot_create_duplicate_fuel_price_for_same_period(): void
     {
-        // Használj rögzített dátumot a teszt stabilitásához
-        $periodDate = '2024-12-25'; // Vagy bármilyen fix dátum
 
         // Először közvetlenül hozz létre egy rekordot
         FuelPrice::create([
-            'period' => $periodDate,
+            'period' => "2025-12-01",
             'petrol' => 624,
             'mixture' => 675,
             'diesel' => 638,
@@ -208,7 +206,7 @@ class FuelPriceTest extends TestCase
 
         // Második rekord API-n keresztül
         $secondData = [
-            'period' => $periodDate,
+            'period' => "2025-12-31",
             'petrol' => 645.50,
             'mixture' => 650.75,
             'diesel' => 639.20,
