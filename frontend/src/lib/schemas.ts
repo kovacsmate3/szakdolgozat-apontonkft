@@ -45,9 +45,14 @@ export const contactFormSchema = z.object({
     }),
   }),
 
-  message: z.string().min(10, {
-    message: "Az üzenetnek legalább 10 karakter hosszúnak kell lennie.",
-  }),
+  message: z
+    .string()
+    .min(10, {
+      message: "Az üzenetnek legalább 10 karakter hosszúnak kell lennie.",
+    })
+    .max(500, {
+      message: "Az üzenet legfeljebb 500 karakter hosszú lehet.",
+    }),
 
   robot: z.boolean().refine((val) => val === true, {
     message: "Kérjük, igazolja, hogy nem robot.",
@@ -65,4 +70,6 @@ export const contactFormSchema = z.object({
         "Csak PDF, Word, Excel, JPG vagy PNG fájlok feltöltése engedélyezett.",
     })
     .optional(),
+  base64File: z.string().optional(),
+  fileName: z.string().optional(),
 });

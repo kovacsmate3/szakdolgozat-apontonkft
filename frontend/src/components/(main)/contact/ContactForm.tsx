@@ -38,6 +38,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ContactForm() {
   const [submitStatus, setSubmitStatus] = useState({
     loading: false,
@@ -63,6 +72,11 @@ export default function ContactForm() {
   const watchedFile = form.watch("file");
 
   async function onSubmit(values: z.infer<typeof contactFormSchema>) {
+    let base64File: string | undefined;
+    if (values.file) {
+      base64File = await fileToBase64(values.file);
+    }
+
     try {
       setSubmitStatus({
         loading: true,
@@ -71,7 +85,11 @@ export default function ContactForm() {
         message: "",
       });
 
-      await send(values);
+      await send({
+        ...values,
+        base64File,
+        fileName: values.file?.name,
+      });
 
       setSubmitStatus({
         loading: false,
