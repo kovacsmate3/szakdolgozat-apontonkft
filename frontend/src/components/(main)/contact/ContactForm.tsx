@@ -22,12 +22,30 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 import { z } from "zod";
 import { contactFormSchema } from "@/lib/schemas";
 import { send } from "@/lib/email";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ContactForm() {
+  const [submitStatus, setSubmitStatus] = useState({
+    loading: false,
+    success: false,
+    error: false,
+    message: "",
+  });
+
   const form = useForm<z.infer<typeof contactFormSchema>>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -44,8 +62,35 @@ export default function ContactForm() {
 
   const watchedFile = form.watch("file");
 
-  function onSubmit(values: z.infer<typeof contactFormSchema>) {
-    send(values);
+  async function onSubmit(values: z.infer<typeof contactFormSchema>) {
+    try {
+      setSubmitStatus({
+        loading: true,
+        success: false,
+        error: false,
+        message: "",
+      });
+
+      await send(values);
+
+      setSubmitStatus({
+        loading: false,
+        success: true,
+        error: false,
+        message:
+          "Köszönjük!\n Üzenetét sikeresen elküldtük. Hamarosan felvesszük Önnel a kapcsolatot.",
+      });
+
+      form.reset();
+    } catch {
+      setSubmitStatus({
+        loading: false,
+        success: false,
+        error: true,
+        message:
+          "Sajnáljuk, de az üzenet küldése sikertelen volt. Kérjük, próbálja újra később.",
+      });
+    }
   }
 
   return (
@@ -58,6 +103,52 @@ export default function ContactForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <AlertDialog open={submitStatus.success}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                Sikeres küldés!
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {submitStatus.message}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction
+                onClick={() =>
+                  setSubmitStatus((prev) => ({ ...prev, success: false }))
+                }
+              >
+                Rendben
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={submitStatus.error}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                Hiba történt!
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {submitStatus.message}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction
+                onClick={() =>
+                  setSubmitStatus((prev) => ({ ...prev, error: false }))
+                }
+              >
+                Rendben
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -277,8 +368,19 @@ export default function ContactForm() {
                 )}
               />
             </div>
-            <Button type="submit" className="ml-auto cursor-pointer">
-              Küldés
+            <Button
+              type="submit"
+              className="ml-auto cursor-pointer"
+              disabled={submitStatus.loading}
+            >
+              {submitStatus.loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Küldés
+                  folyamatban...
+                </>
+              ) : (
+                "Küldés"
+              )}
             </Button>
           </form>
         </Form>
