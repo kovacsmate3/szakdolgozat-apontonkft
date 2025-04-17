@@ -165,7 +165,7 @@ class FuelPriceTest extends TestCase
 
         // Ellenőrzés
         $response->assertStatus(200)
-            ->assertJsonPath('message', "A(z) {$fuelPrice->period->format('Y-m-d')} időszak üzemanyagárai sikeresen törölve.");
+            ->assertJsonPath('message', 'A(z) ' . $fuelPrice->period->translatedFormat('Y. F') . ' időszak üzemanyagárai sikeresen törölve.');
 
         // Ellenőrizzük, hogy az adatbázisból valóban törlődött-e
         $this->assertDatabaseMissing('fuel_prices', ['id' => $fuelPrice->id]);
@@ -194,40 +194,29 @@ class FuelPriceTest extends TestCase
     #[Test]
     public function test_cannot_create_duplicate_fuel_price_for_same_period(): void
     {
-
-        // Először közvetlenül hozz létre egy rekordot
+        // Létrehozunk egy rekordot 2025 decemberére
         FuelPrice::create([
-            'period' => "2025-12-01",
+            'period' => "2025-12-01", // December
             'petrol' => 624,
             'mixture' => 675,
             'diesel' => 638,
             'lp_gas' => 384,
         ]);
 
-        // Második rekord API-n keresztül
+        // Most próbálunk egy második rekordot létrehozni ugyanarra a hónapra, más nappal
         $secondData = [
-            'period' => "2025-12-31",
+            'period' => "2025-12-31", // Ugyanaz a hónap
             'petrol' => 645.50,
             'mixture' => 650.75,
             'diesel' => 639.20,
             'lp_gas' => 310.00,
         ];
 
-        try {
-            $response = $this->postJson('/api/fuel-prices', $secondData);
+        // Most már csak a 422 a megfelelő válasz
+        $response = $this->postJson('/api/fuel-prices', $secondData);
 
-            // Ellenőrizzük a hibaüzenetet - vagy 422-es kódot, vagy 500-as hibát kapunk
-            // Mindkettő elfogadható a teszt szempontjából, mivel mindkettő azt jelenti,
-            // hogy a duplikált rekordot nem lehetett létrehozni
-            $this->assertTrue(
-                $response->status() == 422 || $response->status() == 500,
-                "Expected response status 422 or 500, got {$response->status()}"
-            );
-        } catch (\Exception $e) {
-            // Ha kivétel keletkezett, az is elfogadható - ez azt jelenti, hogy
-            // az adatbázis eldobta a kérést
-            $this->assertTrue(true);
-        }
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['period']);
     }
 
     #[Test]

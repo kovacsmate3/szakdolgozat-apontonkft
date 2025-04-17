@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\RoadRecord;
 
 use App\Http\Controllers\Controller;
 use App\Models\FuelPrice;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class FuelPriceController extends Controller
 {
@@ -28,12 +30,6 @@ class FuelPriceController extends Controller
             'period' => [
                 'required',
                 'date',
-                Rule::unique('fuel_prices')->where(function ($query) use ($request) {
-                    $period = \Carbon\Carbon::parse($request->period);
-                    return $query
-                        ->whereYear('period', $period->year)
-                        ->whereMonth('period', $period->month);
-                }),
             ],
             'petrol' => ['required', 'numeric', 'min:0'],
             'mixture' => ['required', 'numeric', 'min:0'],
@@ -42,7 +38,6 @@ class FuelPriceController extends Controller
         ], [
             'period.required' => 'Az időszak megadása kötelező.',
             'period.date' => 'Az időszak érvénytelen dátum formátumú.',
-            'period.unique' => 'Erre az időszakra már létezik üzemanyagár rekord.',
             'petrol.required' => 'A benzin árának megadása kötelező.',
             'petrol.numeric' => 'A benzin ára csak szám lehet.',
             'petrol.min' => 'A benzin ára nem lehet negatív.',
@@ -56,6 +51,21 @@ class FuelPriceController extends Controller
             'lp_gas.numeric' => 'Az LPG gáz ára csak szám lehet.',
             'lp_gas.min' => 'Az LPG gáz ára nem lehet negatív.',
         ]);
+
+        $periodDate = Carbon::parse($validated['period']);
+        $year = $periodDate->year;
+        $month = $periodDate->month;
+
+        // Megnézzük, van-e már ilyen év/hónap rekord
+        $exists = FuelPrice::whereYear('period', $year)
+            ->whereMonth('period', $month)
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'period' => 'Erre a hónapra már létezik üzemanyagár rekord.',
+            ]);
+        }
 
         $fuelPrice = FuelPrice::create($validated);
 
@@ -134,12 +144,15 @@ class FuelPriceController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $period = $fuelPrice->period->format('Y-m-d');
+        \Carbon\Carbon::setLocale('hu');
+
+        // Formázzuk a dátumot a magyar konvenció szerint
+        $formattedPeriod = $fuelPrice->period->translatedFormat('Y. F');
 
         $fuelPrice->delete();
 
         return response()->json([
-            'message' => "A(z) {$period} időszak üzemanyagárai sikeresen törölve."
+            'message' => "A(z) {$formattedPeriod} időszak üzemanyagárai sikeresen törölve."
         ], Response::HTTP_OK);
     }
 }
