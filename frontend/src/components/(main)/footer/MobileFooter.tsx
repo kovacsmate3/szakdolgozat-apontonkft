@@ -1,9 +1,13 @@
+"use client";
+
 import Logo from "@/components/logo";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FaEnvelope, FaFacebook, FaInstagram } from "react-icons/fa";
 import { FaLocationDot, FaPhone } from "react-icons/fa6";
 
 const MobileFooter = () => {
+  const pathname = usePathname();
   return (
     <div className="flex flex-col items-center gap-4 text-center text-gray-600 dark:text-gray-400">
       <div className="mb-2 text-center flex flex-col items-center">
@@ -42,24 +46,43 @@ const MobileFooter = () => {
           <h3 className="uppercase font-extrabold text-black dark:text-white">
             Navigáció
           </h3>
-          <Link href="/home" className="dark:hover:text-white hover:text-black">
+          <Link
+            href="/home"
+            className={`dark:hover:text-white hover:text-black ${
+              pathname === "/home"
+                ? "font-bold underline text-black dark:text-white"
+                : ""
+            }`}
+          >
             Kezdőlap
           </Link>
           <Link
             href="/references"
-            className="dark:hover:text-white hover:text-black"
+            className={`dark:hover:text-white hover:text-black ${
+              pathname === "/references"
+                ? "font-bold underline text-black dark:text-white"
+                : ""
+            }`}
           >
             Referenciáink
           </Link>
           <Link
             href="/capital-equipment"
-            className="dark:hover:text-white hover:text-black"
+            className={`dark:hover:text-white hover:text-black ${
+              pathname === "/capital-equipment"
+                ? "font-bold underline text-black dark:text-white"
+                : ""
+            }`}
           >
             Munkaeszközeink
           </Link>
           <Link
             href="/contact"
-            className="dark:hover:text-white hover:text-black"
+            className={`dark:hover:text-white hover:text-black ${
+              pathname === "/contact"
+                ? "font-bold underline text-black dark:text-white"
+                : ""
+            }`}
           >
             Kapcsolat
           </Link>
