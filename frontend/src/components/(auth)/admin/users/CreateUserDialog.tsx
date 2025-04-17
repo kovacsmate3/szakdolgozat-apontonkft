@@ -39,7 +39,7 @@ import { parse, format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createUser } from "@/server/users";
 import { UserData } from "@/lib/types";
-import { ApiError } from "@/lib/errors";
+import { UserApiError } from "@/lib/errors";
 
 const formSchema = z.object({
   username: z
@@ -163,7 +163,7 @@ export function CreateUserDialog({ token }: CreateUserDialogProps) {
       console.log("Elkapott hiba:", error);
       console.log("variables:", variables);
       console.log("context:", context);
-      if (error instanceof ApiError && error.data?.errors) {
+      if (error instanceof UserApiError && error.data?.errors) {
         Object.entries(error.data.errors).forEach(([field, messages]) => {
           form.setError(field as keyof FormValues, {
             type: "server",
