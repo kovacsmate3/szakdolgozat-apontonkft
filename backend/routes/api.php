@@ -84,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('fuel-expenses', FuelExpenseController::class);
     // TripController
     Route::apiResource('trips', TripController::class);
+    Route::post('trips/export', [TripController::class, 'export']);
     // ProjectController
     Route::apiResource('projects', ProjectController::class);
     // OvertimeRequestController

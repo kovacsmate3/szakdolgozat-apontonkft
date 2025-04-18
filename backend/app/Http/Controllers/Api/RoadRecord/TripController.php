@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api\RoadRecord;
 
 use App\Http\Controllers\Controller;
+use App\Models\FuelPrice;
+use App\Models\TravelPurposeDictionary;
 use App\Models\Trip;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 class TripController extends Controller
 {
@@ -333,5 +336,183 @@ class TripController extends Controller
         return response()->json([
             'message' => "$tripInfo sikeresen törölve."
         ], Response::HTTP_OK);
+    }
+
+    public function export(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role->slug !== 'admin') {
+            return response()->json([
+                'message' => 'Nincs jogosultsága az útinyilvántartás exportálásához.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        // ------ 1. Validáció car_id, year, month és egyedi hibaüzenetek ------
+        $messages = [
+            'car_id.required' => 'A jármű kiválasztása kötelező.',
+            'car_id.exists'   => 'A kiválasztott jármű nem létezik az adatbázisban.',
+            'year.required'   => 'Az év megadása kötelező.',
+            'year.integer'    => 'Az év csak szám lehet.',
+            'year.min'        => 'Az évnek legalább 2000-nek kell lennie.',
+            'year.max'        => 'Az év legfeljebb 2100 lehet.',
+            'month.required'  => 'A hónap megadása kötelező.',
+            'month.integer'   => 'A hónap csak szám lehet.',
+            'month.min'       => 'A hónap értéke 1 és 12 között lehet.',
+            'month.max'       => 'A hónap értéke 1 és 12 között lehet.',
+            'travel_purpose_id.exists' => 'A megadott utazási cél nem létezik.',
+        ];
+
+        $data = $request->validate([
+            'car_id' => 'required|exists:cars,id',
+            'year'   => 'required|integer|min:2000|max:2100',
+            'month'  => 'required|integer|min:1|max:12',
+            'travel_purpose_id' => 'nullable|exists:travel_purpose_dictionaries,id',
+        ], $messages);
+
+        // 2. Carbon‐számítás a hónapra
+        $start = \Carbon\Carbon::create($data['year'], $data['month'], 1)->startOfMonth();
+        $end   = $start->copy()->endOfMonth();
+
+        $fuelPriceRecord = FuelPrice::where('period', $start->format('Y-m-01'))->first();
+        if (!$fuelPriceRecord) {
+            return response()->json([
+                'message' => "Nincs üzemanyagár rekord a {$start->locale('hu')->isoFormat('YYYY. MMMMi')} időszakra. Kérjük, adjon meg üzemanyagárat erre a hónapra az exportálás előtt."
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // 3. Adatok lekérése csak erre a hónapra
+        $trips = Trip::with([
+            'startLocation.address',
+            'destinationLocation.address',
+            'destinationLocation.travelPurposes',
+            'car'
+        ])
+            ->where('car_id', $data['car_id'])
+            ->whereBetween('start_time', [$start, $end])
+            ->get();
+
+        if ($trips->isEmpty()) {
+            return response()->json([
+                'message' => 'Ebben a hónapban nincs utazási adat az adott járműhöz.'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // ------ 4. Sablon meglétének ellenőrzése ------
+        $templatePath = storage_path('templates/utnyilvantartas.docx');
+        if (!file_exists($templatePath)) {
+            return response()->json([
+                'error' => "Sablon nem található: {$templatePath}"
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+
+        // ------ 5. Sablon betöltése try/catch-ben ------
+        try {
+            $tpl = new TemplateProcessor($templatePath);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Hiba történt a sablon betöltésekor: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        // ------ 6. Egyszeri mezők kitöltése ------
+        $tpl->setValue('year',  $data['year']);
+        $tpl->setValue('month', $start->locale('hu')->isoFormat('MMMM')); // magyar hónapnév
+        $firstCar = $trips->first()->car;
+        $model = strtolower($firstCar->model);
+        $tpl->setValue('license_plate',  $firstCar->license_plate);
+        $tpl->setValue('manufacturer',  $firstCar->manufacturer);
+        $tpl->setValue('model',  $firstCar->model);
+        $tpl->setValue('standard_consumption',  $firstCar->standard_consumption);
+        $tpl->setValue('fuel_type',  $firstCar->fuel_type);
+
+        // ------ Összesítő értékek inicializálása ------
+        $totalDistance = 0;
+        $totalConsumption = 0;
+        $totalFuelCost = 0;
+
+        // Üzemanyagtípus leképezése az adatbázis mezőire
+        $fuelTypeMap = [
+            'dízel' => 'diesel',
+            'benzin' => 'petrol',
+            'LPG gáz' => 'lp_gas',
+            'keverék' => 'mixture'
+        ];
+
+        $fuelType = strtolower($firstCar->fuel_type);
+        $fuelTypeField = $fuelTypeMap[$fuelType] ?? $fuelType;
+
+        // Üzemanyagár elérése
+        $unitPrice = 0;
+        if ($fuelPriceRecord && isset($fuelPriceRecord->$fuelTypeField)) {
+            $unitPrice = $fuelPriceRecord->$fuelTypeField;
+        }
+
+        // ------ 7. Dinamikus sorok ------
+        $tpl->cloneRow('date', $trips->count());
+        foreach ($trips as $i => $trip) {
+            $index = $i + 1;
+            $tpl->setValue("date#{$index}", $trip->start_time->format('Y‑m‑d H:i:s'));
+            $tpl->setValue(
+                "start_location#{$index}",
+                $trip->startLocation->address->fullAddress()
+            );
+            $tpl->setValue(
+                "end_location#{$index}",
+                $trip->destinationLocation->address->fullAddress()
+            );
+
+            if (isset($data['travel_purpose_id'])) {
+                $travelPurpose = TravelPurposeDictionary::find($data['travel_purpose_id']);
+                $travelPurposeName = $travelPurpose ? $travelPurpose->travel_purpose : '';
+            } else {
+                $travelPurposes = $trip->destinationLocation->travelPurposes;
+
+                if ($travelPurposes->isEmpty()) {
+                    $travelPurposeName = '';
+                } else {
+                    $travelPurposeName = $travelPurposes->first()->travel_purpose;
+                }
+            }
+
+            $tpl->setValue("travel_purpose#{$index}", $travelPurposeName);
+
+            $tpl->setValue(
+                "location_name#{$index}",
+                $trip->destinationLocation->name
+            );
+
+            // Távolság és költség számítása a jelenlegi utazáshoz
+            $distance = $trip->actual_distance;
+
+            $tpl->setValue(
+                "distance#{$index}",
+                $distance
+            );
+
+            // Fogyasztás számítása (liter)
+            $consumption = $distance * ($firstCar->standard_consumption / 100);
+            // Becsült költség számítása (forint)
+            $estimated = $consumption * $unitPrice;
+
+            $tpl->setValue("estimated_fuel_cost#{$index}", number_format($estimated, 0, '', ' '));
+
+            // Összesítő adatok gyűjtése
+            $totalDistance += $distance;
+            $totalConsumption += $consumption;
+            $totalFuelCost += $estimated;
+        }
+
+        // ------ 8. Összesítő adatok beállítása ------
+        $tpl->setValue('total_distance', number_format($totalDistance, 1, ',', ''));
+        $tpl->setValue('total_consumption', number_format($totalConsumption, 2, ',', ''));
+        $tpl->setValue('total_fuel_cost', number_format($totalFuelCost, 0, ',', ' '));
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'utn_') . '.docx';
+        $tpl->saveAs($tmpFile);
+
+        return response()->download($tmpFile, "utnyilvantartas_{$model}_{$data['year']}_{$data['month']}.docx")
+            ->deleteFileAfterSend(true);
     }
 }
