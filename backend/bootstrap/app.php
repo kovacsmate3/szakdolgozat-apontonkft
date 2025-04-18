@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,6 +31,15 @@ return Application::configure(basePath: dirname(__DIR__))
                     'status' => false,
                     'message' => 'Bejelentkezés szükséges a művelet végrehajtásához.'
                 ], 401);
+            }
+        });
+
+        $exceptions->render(function (AuthorizationException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'A művelethez nincs jogosultsága.'
+                ], 403);
             }
         });
     })->create();

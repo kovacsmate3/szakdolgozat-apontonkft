@@ -34,7 +34,7 @@ class CarSeeder extends Seeder
             'model' => 'Clio',
             'fuel_type' => 'dízel',
             'standard_consumption' => 4.3,
-            'capacity' => 1461,
+            'capacity' => 1149,
             'fuel_tank_capacity' => 39,
         ]);
     }

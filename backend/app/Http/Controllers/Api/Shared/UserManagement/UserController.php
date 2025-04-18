@@ -138,6 +138,18 @@ class UserController extends Controller
      */
     public function show(Request $request, string $id)
     {
+        // Jogosultság ellenőrzés
+        $currentUser = $request->user();
+
+        // Ha nem admin, és másik felhasználó adatait próbálja lekérni
+        if (!$currentUser->role || $currentUser->role->slug !== 'admin') {
+            if ($currentUser->id != $id) {
+                return response()->json([
+                    'message' => 'Nincs jogosultsága más felhasználók adatainak megtekintéséhez.'
+                ], Response::HTTP_FORBIDDEN);
+            }
+        }
+
         $query = User::query();
 
         $with = ['role'];
@@ -178,6 +190,24 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // Jogosultság ellenőrzés
+        $currentUser = $request->user();
+
+        // Ha nem admin, és másik felhasználó adatait próbálja módosítani
+        if (!$currentUser->role || $currentUser->role->slug !== 'admin') {
+            if ($currentUser->id != $id) {
+                return response()->json([
+                    'message' => 'Nincs jogosultsága más felhasználók adatainak módosításához.'
+                ], Response::HTTP_FORBIDDEN);
+            }
+        }
+
+        if ((!$currentUser->role || $currentUser->role->slug !== 'admin') && $request->has('role_id')) {
+            return response()->json([
+                'message' => 'Nincs jogosultsága a szerepkör módosításához.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $user = User::find($id);
 
         if (!$user) {
@@ -280,6 +310,10 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
+        if (Auth::user()->role->slug !== 'admin') {
+            return response()->json(['message' => 'Kizárólag admin szerepkörrel lehet felhasználót törölni.'], 403);
+        }
+
         $user = User::find($id);
 
         if (!$user) {
