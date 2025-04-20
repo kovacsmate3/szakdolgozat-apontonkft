@@ -594,7 +594,7 @@ class TripController extends Controller
         $monthIndexes = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
 
         // Gépjármű adatok lekérése
-        $car = Car::findOrFail($data['car_id']);
+        $car = \App\Models\Car::findOrFail($data['car_id']);
 
         // Üzemanyagárak lekérése mind a 12 hónapra
         $fuelPrices = [];

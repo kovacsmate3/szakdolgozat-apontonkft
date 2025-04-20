@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Trip;
+use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -25,7 +26,7 @@ class TripSeeder extends Seeder
             8 => 7,
         ];
 
-        $trips = [
+        $existingTrips  = [
             [
                 'car_id' => 1,
                 'user_id' => 1,
@@ -174,8 +175,220 @@ class TripSeeder extends Seeder
         */
 
 
-        foreach ($trips as $trip) {
+        foreach ($existingTrips  as $trip) {
             Trip::create($trip);
+        }
+
+        // Get all business travel purpose IDs
+        $businessPurposeIds = \App\Models\TravelPurposeDictionary::where('type', 'Üzleti')
+            ->pluck('id')
+            ->toArray();
+
+        // Location mappings for realistic trips
+        $locationPairs = [
+            // Company offices to partners
+            [1, 4], // A-Ponton Kft. székhely to Épkar Zrt.
+            [1, 5], // A-Ponton Kft. székhely to SZÁM-SZIL Kft.
+            [3, 4], // A-Ponton Kft. iroda to Épkar Zrt.
+            [3, 5], // A-Ponton Kft. iroda to SZÁM-SZIL Kft.
+
+            // Return trips
+            [4, 1], // Épkar Zrt. to A-Ponton Kft. székhely
+            [5, 1], // SZÁM-SZIL Kft. to A-Ponton Kft. székhely
+            [4, 3], // Épkar Zrt. to A-Ponton Kft. iroda
+            [5, 3], // SZÁM-SZIL Kft. to A-Ponton Kft. iroda
+
+            // Between offices
+            [1, 3], // A-Ponton Kft. székhely to iroda
+            [3, 1], // A-Ponton Kft. iroda to székhely
+
+            // Practical errands
+            [1, 6], // A-Ponton Kft. székhely to Praktiker
+            [3, 6], // A-Ponton Kft. iroda to Praktiker
+            [1, 7], // A-Ponton Kft. székhely to Posta
+            [3, 7], // A-Ponton Kft. iroda to Posta
+
+            // Return from errands
+            [6, 1], // Praktiker to A-Ponton Kft. székhely
+            [6, 3], // Praktiker to A-Ponton Kft. iroda
+            [7, 1], // Posta to A-Ponton Kft. székhely
+            [7, 3], // Posta to A-Ponton Kft. iroda
+
+            // Fuel
+            [1, 2], // A-Ponton Kft. székhely to MOL
+            [3, 2], // A-Ponton Kft. iroda to MOL
+            [2, 1], // MOL to A-Ponton Kft. székhely
+            [2, 3], // MOL to A-Ponton Kft. iroda
+            [4, 2], // Épkar Zrt. to MOL
+            [5, 2], // SZÁM-SZIL Kft. to MOL
+            [2, 4], // MOL to Épkar Zrt.
+            [2, 5], // MOL to SZÁM-SZIL Kft.
+        ];
+
+        // Location to distances (approximate in km)
+        $locationDistances = [
+            // Office to partners
+            '1-4' => 38.1, // A-Ponton Kft. székhely to Épkar Zrt.
+            '1-5' => 30.9, // A-Ponton Kft. székhely to SZÁM-SZIL Kft.
+            '3-4' => 38.1, // A-Ponton Kft. iroda to Épkar Zrt.
+            '3-5' => 31.2, // A-Ponton Kft. iroda to SZÁM-SZIL Kft.
+
+            // Return trips
+            '4-1' => 38.1, // Épkar Zrt. to A-Ponton Kft. székhely
+            '5-1' => 30.9, // SZÁM-SZIL Kft. to A-Ponton Kft. székhely
+            '4-3' => 38.1, // Épkar Zrt. to A-Ponton Kft. iroda
+            '5-3' => 31.2, // SZÁM-SZIL Kft. to A-Ponton Kft. iroda
+
+            // Between offices
+            '1-3' => 6.5, // A-Ponton Kft. székhely to iroda
+            '3-1' => 6.5, // A-Ponton Kft. iroda to székhely
+
+            // Practical errands
+            '1-6' => 8.0, // A-Ponton Kft. székhely to Praktiker
+            '3-6' => 4.5, // A-Ponton Kft. iroda to Praktiker
+            '1-7' => 3.8, // A-Ponton Kft. székhely to Posta
+            '3-7' => 7.3, // A-Ponton Kft. iroda to Posta
+
+            // Return from errands
+            '6-1' => 8.0, // Praktiker to A-Ponton Kft. székhely
+            '6-3' => 4.5, // Praktiker to A-Ponton Kft. iroda
+            '7-1' => 3.8, // Posta to A-Ponton Kft. székhely
+            '7-3' => 7.3, // Posta to A-Ponton Kft. iroda
+
+            // Fuel
+            '1-2' => 5.9, // A-Ponton Kft. székhely to MOL
+            '3-2' => 4.3, // A-Ponton Kft. iroda to MOL
+            '2-1' => 5.9, // MOL to A-Ponton Kft. székhely
+            '2-3' => 4.3, // MOL to A-Ponton Kft. iroda
+            '4-2' => 45.1, // Épkar Zrt. to MOL
+            '5-2' => 35.3, // SZÁM-SZIL Kft. to MOL
+            '2-4' => 45.1, // MOL to Épkar Zrt.
+            '2-5' => 35.3, // MOL to SZÁM-SZIL Kft.
+        ];
+
+        // Start odometer reading for January 2024
+        $odometerReading = 80000;
+
+        // Users who drive cars
+        $validUsers = [1, 3, 4];
+
+        // Cars available
+        $cars = [1, 2];
+
+        // Create trips for each month from January to November 2024
+        for ($month = 1; $month <= 11; $month++) {
+            // How many trips to create this month (10-15)
+            $tripsThisMonth = rand(10, 15);
+
+            // Main user for this month's trips
+            $primaryUser = $validUsers[array_rand($validUsers)];
+
+            // Main car for this month's trips
+            $primaryCar = $cars[array_rand($cars)];
+
+            // Create trips for this month
+            for ($i = 0; $i < $tripsThisMonth; $i++) {
+                // Determine date and time
+                $day = rand(1, min(28, Carbon::create(2024, $month)->daysInMonth));
+                $hour = rand(7, 17); // Business hours
+                $minute = rand(0, 59);
+
+                $startTime = Carbon::create(2024, $month, $day, $hour, $minute);
+
+                // Select a location pair at random
+                $locationPair = $locationPairs[array_rand($locationPairs)];
+                $startLocationId = $locationPair[0];
+                $destLocationId = $locationPair[1];
+
+                // Get the appropriate distance for this route
+                $routeKey = "{$startLocationId}-{$destLocationId}";
+                $baseDistance = $locationDistances[$routeKey] ?? 10; // Default to 10km if not found
+
+                // Add some variation to the distance (-0.5 to +1.5 km)
+                $plannedDistance = $baseDistance + (rand(-5, 15) / 10);
+                $actualDistance = $plannedDistance + (rand(-10, 20) / 10);
+                if ($actualDistance < 1) $actualDistance = 1;
+
+                // Calculate a realistic trip duration based on distance
+                // Assuming average speed of 40-60 km/h in urban areas
+                $avgSpeed = rand(40, 60);
+                $durationMinutes = round(($actualDistance / $avgSpeed) * 60);
+                $durationMinutes = max(5, $durationMinutes); // Minimum 5 minutes
+
+                // Format planned and actual durations
+                $actualDurationMinutes = $durationMinutes + rand(-5, 10); // Some variation
+                if ($actualDurationMinutes < 3) $actualDurationMinutes = 3;
+
+                $plannedHours = floor($durationMinutes / 60);
+                $plannedMinutes = $durationMinutes % 60;
+                $plannedDuration = sprintf("%02d:%02d:00", $plannedHours, $plannedMinutes);
+
+                $actualHours = floor($actualDurationMinutes / 60);
+                $actualMinutes = $actualDurationMinutes % 60;
+                $actualDuration = sprintf("%02d:%02d:00", $actualHours, $actualMinutes);
+
+                // Calculate end time
+                $endTime = (clone $startTime)->addMinutes($actualDurationMinutes);
+
+                // Update odometer readings
+                $startOdometer = $odometerReading;
+                $endOdometer = $startOdometer + round($actualDistance);
+                $odometerReading = $endOdometer;
+
+                // Select a travel purpose appropriate for this location pair
+                $dictId = null;
+
+                // For MOL trips, use fueling purpose
+                if ($startLocationId == 2 || $destLocationId == 2) {
+                    $dictId = 13; // Üzemanyagfeltöltés/Tankolás
+                }
+                // For partner trips, use business meeting or geodesy
+                elseif (in_array($startLocationId, [4, 5]) || in_array($destLocationId, [4, 5])) {
+                    $dictId = in_array(rand(1, 10), [1, 2, 3]) ? 5 : 17; // Geodéziai felmérés or Üzleti tárgyalás
+                }
+                // For post office
+                elseif ($startLocationId == 7 || $destLocationId == 7) {
+                    $dictId = rand(0, 1) ? 15 : 16; // Letter sending or receiving
+                }
+                // For store
+                elseif ($startLocationId == 6 || $destLocationId == 6) {
+                    $dictId = 19; // Vásárlás (business shopping)
+                }
+                // For office trips
+                elseif (($startLocationId == 1 && $destLocationId == 3) ||
+                    ($startLocationId == 3 && $destLocationId == 1)
+                ) {
+                    $dictId = 6; // Irodai munka
+                }
+                // For other cases, select a random business purpose
+                else {
+                    // Filter to only business purposes
+                    $businessOnlyPurposes = array_filter($businessPurposeIds, function ($id) {
+                        return $id != 2 && $id != 7 && $id != 19; // Exclude non-business
+                    });
+                    $dictId = $businessOnlyPurposes[array_rand($businessOnlyPurposes)];
+                }
+
+                // Create the trip
+                Trip::create([
+                    'car_id' => $primaryCar,
+                    'user_id' => $primaryUser,
+                    'start_location_id' => $startLocationId,
+                    'destination_location_id' => $destLocationId,
+                    'start_time' => $startTime,
+                    'end_time' => $endTime,
+                    'planned_distance' => $plannedDistance,
+                    'actual_distance' => $actualDistance,
+                    'start_odometer' => $startOdometer,
+                    'end_odometer' => $endOdometer,
+                    'planned_duration' => $plannedDuration,
+                    'actual_duration' => $actualDuration,
+                    'dict_id' => $dictId,
+                ]);
+            }
+
+            // After each month, add some kilometers to simulate other usage
+            $odometerReading += rand(50, 200);
         }
     }
 }
