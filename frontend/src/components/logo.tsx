@@ -34,6 +34,7 @@ const Logo = ({ className = "" }: LogoProps) => {
     <Image
       src={logoSrc}
       alt="A-Ponton Kft. Logó"
+      title="A-Ponton Kft. Logó"
       width={46}
       height={46}
       className={className}

@@ -19,9 +19,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface LoginFormValues {
   identifier: string;
@@ -31,6 +32,8 @@ interface LoginFormValues {
 
 export default function LoginForm() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+
   const form = useForm<LoginFormValues>({
     defaultValues: {
       identifier: "",
@@ -132,13 +135,31 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel htmlFor="password">Jelszó</FormLabel>
                   <FormControl>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Jelszó"
-                      autoComplete="current-password"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Jelszó"
+                        autoComplete="current-password"
+                        {...field}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                        <span className="sr-only">
+                          Jelszó megjelenítése/elrejtése
+                        </span>
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

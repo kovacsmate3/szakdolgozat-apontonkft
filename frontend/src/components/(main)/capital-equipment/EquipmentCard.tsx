@@ -19,6 +19,7 @@ const EquipmentCard = ({
         <Image
           src={image}
           alt={alt}
+          title={alt}
           width={400}
           height={300}
           className="mx-auto max-w-full w-auto h-auto"

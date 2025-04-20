@@ -103,12 +103,14 @@ const DesktopFooter = () => {
           <a
             href="https://www.instagram.com/aponton_kft/"
             className="dark:hover:text-white hover:text-black"
+            title="A-Ponton Mérnökiroda Kft. Instagram oldala"
           >
             <FaInstagram size={24} />
           </a>
           <a
             href="https://www.facebook.com/A-Ponton-M%C3%A9rn%C3%B6kiroda-Kft-331914836900202"
             className="dark:hover:text-white hover:text-black"
+            title="A-Ponton Mérnökiroda Kft. Facebook oldala"
           >
             <FaFacebook size={24} />
           </a>

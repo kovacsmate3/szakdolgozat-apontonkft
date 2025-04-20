@@ -10,6 +10,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import { AlignJustify } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -53,11 +60,24 @@ export default function MobileNav() {
   return (
     <div className="lg:hidden">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="cursor-pointer">
-            <AlignJustify size={24} />
-          </Button>
-        </SheetTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="cursor-pointer"
+                >
+                  <AlignJustify size={24} />
+                </Button>
+              </SheetTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Navigációs menü</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <SheetContent
           side="top"
           className="p-4 bg-background text-foreground m-2"

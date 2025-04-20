@@ -20,6 +20,7 @@ const PartnerSection = () => {
               <Image
                 src={partner.imgSrc}
                 alt={partner.alt}
+                title={partner.alt}
                 width={150}
                 height={150}
                 className="border border-black dark:border-0 rounded-lg mb-4 object-contain h-28 w-28"

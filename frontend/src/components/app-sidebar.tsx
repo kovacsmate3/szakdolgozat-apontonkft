@@ -53,6 +53,7 @@ import { useTheme } from "next-themes";
 import { FaCar, FaHouse, FaUserShield, FaScaleBalanced } from "react-icons/fa6";
 import { MdEditOff, MdRealEstateAgent } from "react-icons/md";
 import { PiMapPinSimpleArea } from "react-icons/pi";
+import Link from "next/link";
 
 const data = {
   navMain: [
@@ -216,14 +217,14 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="">
+              <Link href="/dashboard">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Logo />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-medium">A-Ponton Mérnökiroda Kft.</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
