@@ -471,7 +471,7 @@ class TripController extends Controller
         $tpl->cloneRow('date', $businessTrips->count());
         foreach ($businessTrips as $i => $trip) {
             $index = $i + 1;
-            $tpl->setValue("date#{$index}", $trip->start_time->format('Y‑m‑d H:i:s'));
+            $tpl->setValue("date#{$index}", $trip->end_time->format('Y‑m‑d H:i'));
             $tpl->setValue(
                 "start_location#{$index}",
                 $trip->startLocation->address->fullAddress()
@@ -874,6 +874,9 @@ class TripController extends Controller
                     continue;
                 }
 
+                $originalF2 = $monthlySheet->getCell('F2')->getValue();
+                $monthlySheet->setCellValue('F2', $year . '. ' . $originalF2);
+
                 // Adatok feltöltése a táblázatba - a 8. sortól kezdődően
                 // Előző adatok törlése
                 for ($i = 0; $i < 40; $i++) {
@@ -893,7 +896,7 @@ class TripController extends Controller
                     $row = 8 + $i;
 
                     // Dátum
-                    $monthlySheet->setCellValue('B' . $row, $trip->end_time ? $trip->end_time->format('Y-m-d') : $trip->start_time->format('Y-m-d'));
+                    $monthlySheet->setCellValue('B' . $row, $trip->end_time ? $trip->end_time->format('Y-m-d H:i') : $trip->start_time->format('Y-m-d H:i'));
 
                     $fromAddress = '';
                     if ($trip->startLocation && $trip->startLocation->address) {
