@@ -77,6 +77,7 @@ class TripTest extends TestCase
     #[Test]
     public function test_user_can_list_trips()
     {
+        $travelPurpose = \App\Models\TravelPurposeDictionary::factory()->create();;
         // Create some test trips
         Trip::create([
             'car_id' => $this->car->id,
@@ -91,6 +92,7 @@ class TripTest extends TestCase
             'end_odometer' => 10026,
             'planned_duration' => '01:00:00',
             'actual_duration' => '01:05:00',
+            'dict_id' => $travelPurpose->id
         ]);
 
         Trip::create([
@@ -106,6 +108,7 @@ class TripTest extends TestCase
             'end_odometer' => 10051,
             'planned_duration' => '01:00:00',
             'actual_duration' => '00:30:00',
+            'dict_id' => $travelPurpose->id
         ]);
 
         $response = $this->actingAs($this->regularUser)
@@ -113,6 +116,32 @@ class TripTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonCount(2);
+    }
+
+    #[Test]
+    public function test_index_filtering_and_sorting_by_start_date()
+    {
+        $trip1 = Trip::create([
+            'car_id' => $this->car->id,
+            'user_id' => $this->regularUser->id,
+            'start_location_id' => $this->startLocation->id,
+            'destination_location_id' => $this->endLocation->id,
+            'start_time' => now()->subDays(2),
+            'end_time' => now()->subDays(2)->addHours(1),
+        ]);
+
+        $trip2 = Trip::create([
+            'car_id' => $this->car->id,
+            'user_id' => $this->regularUser->id,
+            'start_location_id' => $this->startLocation->id,
+            'destination_location_id' => $this->endLocation->id,
+            'start_time' => now()->subDay(),
+            'end_time' => now()->subDay()->addHours(1),
+        ]);
+
+        $response = $this->actingAs($this->regularUser)->getJson('/api/trips?start_date=' . now()->subDays(1)->toDateString());
+
+        $response->assertStatus(200)->assertJsonFragment(['id' => $trip2->id]);
     }
 
     #[Test]
@@ -171,6 +200,48 @@ class TripTest extends TestCase
                 'start_location_id',
                 'start_time',
             ]);
+    }
+
+    #[Test]
+    public function test_admin_can_create_trip_for_other_user()
+    {
+        $travelPurpose = \App\Models\TravelPurposeDictionary::factory()->create();;
+
+        $tripData = [
+            'car_id' => $this->car->id,
+            'user_id' => $this->regularUser->id,
+            'start_location_id' => $this->startLocation->id,
+            'destination_location_id' => $this->endLocation->id,
+            'start_time' => now()->subHours(2)->format('Y-m-d H:i:s'),
+            'end_time' => now()->subHour()->format('Y-m-d H:i:s'),
+            'planned_distance' => 20.5,
+            'actual_distance' => 21.3,
+            'start_odometer' => 10000,
+            'end_odometer' => 10021,
+            'planned_duration' => '01:00:00',
+            'actual_duration' => '01:10:00',
+            'dict_id' => $travelPurpose->id
+        ];
+
+        $response = $this->actingAs($this->adminUser)
+            ->postJson('/api/trips', $tripData);
+
+        $response->assertStatus(201)
+            ->assertJsonFragment(['message' => 'Az út sikeresen létrehozva.']);
+
+        $this->assertDatabaseHas('trips', [
+            'user_id' => $this->regularUser->id,
+            'dict_id' => $travelPurpose->id
+        ]);
+    }
+
+    #[Test]
+    public function test_trip_show_returns_not_found_for_invalid_id()
+    {
+        $response = $this->actingAs($this->regularUser)->getJson('/api/trips/999999');
+
+        $response->assertStatus(404)
+            ->assertJson(['message' => 'A megadott azonosítójú (ID: 999999) út nem található.']);
     }
 
     #[Test]
@@ -313,6 +384,27 @@ class TripTest extends TestCase
             'id' => $trip->id,
             'actual_distance' => 28.0
         ]);
+    }
+
+    #[Test]
+    public function test_trip_update_fails_if_same_start_and_destination()
+    {
+        $trip = Trip::create([
+            'car_id' => $this->car->id,
+            'user_id' => $this->regularUser->id,
+            'start_location_id' => $this->startLocation->id,
+            'destination_location_id' => $this->endLocation->id,
+            'start_time' => now()->subHours(2),
+            'end_time' => now()->subHour(),
+        ]);
+
+        $response = $this->actingAs($this->regularUser)
+            ->putJson("/api/trips/{$trip->id}", [
+                'destination_location_id' => $this->startLocation->id
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['destination_location_id']);
     }
 
     #[Test]

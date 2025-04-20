@@ -13,6 +13,18 @@ class TripSeeder extends Seeder
      */
     public function run(): void
     {
+
+        $locationToPurposeMap = [
+            1 => 6,
+            2 => 13,
+            3 => 6,
+            4 => 5,
+            5 => 18,
+            6 => 19,
+            7 => 15,
+            8 => 7,
+        ];
+
         $trips = [
             [
                 'car_id' => 1,
@@ -27,6 +39,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87738,
                 'planned_duration' => '01:00:00',
                 'actual_duration' => '00:54:00',
+                'dict_id' => 5,
             ],
             [
                 'car_id' => 1,
@@ -41,6 +54,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87769,
                 'planned_duration' => '00:45:00',
                 'actual_duration' => '00:45:00',
+                'dict_id' => 18,
             ],
             [
                 'car_id' => 1,
@@ -55,6 +69,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87800,
                 'planned_duration' => '00:40:00',
                 'actual_duration' => '00:40:00',
+                'dict_id' => 6,
             ],
             [
                 'car_id' => 1,
@@ -69,6 +84,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87838,
                 'planned_duration' => '00:58:00',
                 'actual_duration' => '00:58:00',
+                'dict_id' => 5,
             ],
             [
                 'car_id' => 1,
@@ -83,6 +99,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87883,
                 'planned_duration' => '01:10:00',
                 'actual_duration' => '01:10:29',
+                'dict_id' => 15,
             ],
             [
                 'car_id' => 1,
@@ -97,6 +114,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87887,
                 'planned_duration' => '00:10:00',
                 'actual_duration' => '00:09:58',
+                'dict_id' => 6,
             ],
             [
                 'car_id' => 1,
@@ -111,6 +129,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87896,
                 'planned_duration' => '00:14:50',
                 'actual_duration' => '00:20:12',
+                'dict_id' => 19,
             ],
             [
                 'car_id' => 1,
@@ -125,6 +144,7 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87900,
                 'planned_duration' => '00:4:12',
                 'actual_duration' => '00:05:40',
+                'dict_id' => 13,
             ],
             [
                 'car_id' => 1,
@@ -139,8 +159,20 @@ class TripSeeder extends Seeder
                 'end_odometer' => 87906,
                 'planned_duration' => '00:15:00',
                 'actual_duration' => '00:14:54',
+                'dict_id' => 6,
             ],
         ];
+
+        // Alternatív megoldás, ha a fenti manuális hozzárendelés helyett
+        // automatikusan szeretnénk hozzárendelni a purpose ID-ket
+        /*
+        $trips = array_map(function ($trip) use ($locationToPurposeMap) {
+            $destinationLocationId = $trip['destination_location_id'];
+            $trip['travel_purpose_id'] = $locationToPurposeMap[$destinationLocationId] ?? null;
+            return $trip;
+        }, $trips);
+        */
+
 
         foreach ($trips as $trip) {
             Trip::create($trip);

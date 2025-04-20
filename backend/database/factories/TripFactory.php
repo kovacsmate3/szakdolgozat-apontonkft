@@ -17,7 +17,7 @@ class TripFactory extends Factory
     public function definition(): array
     {
         $startTime = fake()->dateTimeBetween('-1 month', 'now');
-        $endTime = (clone $startTime)->modify('+'.rand(30, 300).' minutes');
+        $endTime = (clone $startTime)->modify('+' . rand(30, 300) . ' minutes');
 
         $startOdometer = fake()->numberBetween(10000, 200000);
         $endOdometer = $startOdometer + fake()->numberBetween(10, 300);
@@ -31,6 +31,7 @@ class TripFactory extends Factory
             'end_odometer' => $endOdometer,
             'planned_duration' => fake()->time('H:i:s', '3:00:00'),
             'actual_duration' => fake()->time('H:i:s', '4:00:00'),
+            'dict_id' => null,
         ];
     }
 }

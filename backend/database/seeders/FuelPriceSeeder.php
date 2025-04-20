@@ -42,6 +42,13 @@ class FuelPriceSeeder extends Seeder
                 'diesel'  => 640,
                 'lp_gas'  => 380,
             ],
+            [
+                'period'  => '2024-12-01',
+                'petrol'  => 608,
+                'mixture' => 659,
+                'diesel'  => 612,
+                'lp_gas'  => 368,
+            ],
         ];
 
         foreach ($prices as $price) {

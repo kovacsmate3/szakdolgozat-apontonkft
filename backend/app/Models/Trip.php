@@ -23,6 +23,7 @@ class Trip extends Model
         'end_odometer',
         'planned_duration',
         'actual_duration',
+        'dict_id',
     ];
 
     /**
@@ -62,5 +63,10 @@ class Trip extends Model
     public function destinationLocation()
     {
         return $this->belongsTo(Location::class, 'destination_location_id');
+    }
+
+    public function travelPurpose()
+    {
+        return $this->belongsTo(TravelPurposeDictionary::class, 'dict_id');
     }
 }

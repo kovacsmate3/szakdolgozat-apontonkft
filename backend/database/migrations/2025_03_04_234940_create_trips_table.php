@@ -37,6 +37,10 @@ return new class extends Migration
             $table->integer('end_odometer')->nullable();
             $table->time('planned_duration')->nullable();
             $table->time('actual_duration')->nullable();
+            $table->unsignedBigInteger('dict_id')->nullable();
+            $table->foreign('dict_id')
+                ->references('id')->on('travel_purpose_dictionaries')
+                ->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -17,7 +17,7 @@ class TravelPurposeDictionary extends Model
         'is_system',
     ];
 
-        /**
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -34,8 +34,13 @@ class TravelPurposeDictionary extends Model
         return $this->belongsToMany(
             Location::class,
             'location_purpose',
+            'travel_purpose_id',
             'location_id',
-            'travel_purpose_id'
         )->withTimestamps();
+    }
+
+    public function trips()
+    {
+        return $this->hasMany(Trip::class, 'dict_id');
     }
 }
