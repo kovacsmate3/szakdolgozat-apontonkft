@@ -206,6 +206,37 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const { theme } = useTheme();
   const pathname = usePathname();
 
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  const baseNav = React.useMemo(() => {
+    return data.navMain.filter((item) => {
+      if (item.url.startsWith("/admin") && user?.role !== "admin") {
+        return false;
+      }
+      return true;
+    });
+  }, [user?.role]);
+
+  const filteredNav = React.useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return baseNav;
+    return baseNav
+      .map((group) => {
+        const groupMatches = group.title.toLowerCase().includes(q);
+        const matchedItems = group.items?.filter((sub) =>
+          sub.title.toLowerCase().includes(q)
+        );
+        if (groupMatches) {
+          return { ...group };
+        }
+        if (matchedItems && matchedItems.length) {
+          return { ...group, items: matchedItems };
+        }
+        return null;
+      })
+      .filter((g): g is (typeof data.navMain)[0] => g !== null);
+  }, [searchQuery, baseNav]);
+
   const defaultAvatar =
     theme === "light"
       ? "/images/(auth)/default-avatar-light.png"
@@ -228,80 +259,70 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SearchForm />
+        <SearchForm onSearch={setSearchQuery} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain
-              .filter((item) => {
-                if (item.url.startsWith("/admin") && user?.role !== "admin") {
-                  return false;
-                }
-                return true;
-              })
-              .map((item, index) => {
-                const isActive = pathname === item.url;
-                if (!item.items?.length) {
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={isActive}>
-                        <a
-                          href={item.url}
-                          className="flex-1 truncate flex items-center gap-2"
-                        >
-                          {item.icon && <item.icon className="size-4" />}
-                          <span className="font-semibold">{item.title}</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                }
+            {filteredNav.map((item, index) => {
+              const isActive = pathname === item.url;
+              if (!item.items?.length) {
                 return (
-                  <Collapsible
-                    key={item.title}
-                    defaultOpen={index === 1}
-                    className="group/collapsible"
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton className="font-semibold cursor-pointer">
-                          {item.icon && <item.icon className="size-4" />}
-                          <span className="font-semibold">{item.title}</span>
-                          <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                          <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((item) => {
-                            const isActive = pathname === item.url;
-
-                            return (
-                              <SidebarMenuSubItem key={item.title}>
-                                <SidebarMenuSubButton
-                                  asChild
-                                  isActive={isActive}
-                                >
-                                  <a
-                                    href={item.url}
-                                    className="flex-1 truncate flex items-center gap-2"
-                                  >
-                                    {item.icon && (
-                                      <item.icon className="size-4" />
-                                    )}
-                                    <span>{item.title}</span>
-                                  </a>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            );
-                          })}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <a
+                        href={item.url}
+                        className="flex-1 truncate flex items-center gap-2"
+                      >
+                        {item.icon && <item.icon className="size-4" />}
+                        <span className="font-semibold">{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 );
-              })}
+              }
+              return (
+                <Collapsible
+                  key={item.title}
+                  defaultOpen={index === 1}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="font-semibold cursor-pointer">
+                        {item.icon && <item.icon className="size-4" />}
+                        <span className="font-semibold">{item.title}</span>
+                        <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                        <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items.map((item) => {
+                          const isActive = pathname === item.url;
+
+                          return (
+                            <SidebarMenuSubItem key={item.title}>
+                              <SidebarMenuSubButton asChild isActive={isActive}>
+                                <a
+                                  href={item.url}
+                                  className="flex-1 truncate flex items-center gap-2"
+                                >
+                                  {item.icon && (
+                                    <item.icon className="size-4" />
+                                  )}
+                                  <span>{item.title}</span>
+                                </a>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
