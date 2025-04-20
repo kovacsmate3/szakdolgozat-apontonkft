@@ -1,12 +1,14 @@
-import RoutePlannerMap from "@/components/(auth)/road-record/route-planning/RoutePlannerMap";
-import { MapProvider } from "@/providers/map-provider";
+import { auth } from "@/auth";
+import RoutePlanningPageClient from "./page.client";
 
-export default function RoutePlanningPage() {
-  return (
-    <MapProvider>
-      <main>
-        <RoutePlannerMap />
-      </main>
-    </MapProvider>
-  );
+export const dynamic = "force-dynamic";
+
+export default async function RoutePlanningPage() {
+  const session = await auth();
+
+  if (!session?.user?.access_token) {
+    return <div>Bejelentkezés szükséges.</div>;
+  }
+
+  return <RoutePlanningPageClient token={session.user.access_token} />;
 }

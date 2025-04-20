@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { getSession } from "next-auth/react";
+import { useRef, useState } from "react";
 import { GoogleMap, DirectionsRenderer } from "@react-google-maps/api";
 import {
   Select,
@@ -21,8 +20,11 @@ const containerStyle = {
   borderRadius: "12px",
 };
 
-const RoutePlannerMap = () => {
-  const [addresses, setAddresses] = useState<Address[]>([]);
+interface Props {
+  data: Address[];
+}
+
+const RoutePlannerMap = ({ data }: Props) => {
   const [startAddress, setStartAddress] = useState<string>();
   const [endAddress, setEndAddress] = useState<string>();
   const [sameAddressError, setSameAddressError] = useState(false);
@@ -51,37 +53,10 @@ const RoutePlannerMap = () => {
     return `${addr.country}, ${addr.postalcode} ${addr.city}, ${addr.road_name} ${addr.public_space_type} ${addr.building_number}`;
   };
 
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      const session = await getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        console.error("Nincs token!");
-        return;
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/addresses`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        console.error("Címek lekérése sikertelen.");
-        return;
-      }
-
-      const data = await res.json();
-      setAddresses(data);
-    };
-
-    fetchAddresses();
-  }, []);
-
-  useEffect(() => {
-    setSameAddressError(startAddress === endAddress && !!startAddress);
-  }, [startAddress, endAddress]);
+  // Figyeli a kezdő- és végpont változását, beállítja a hiba állapotot ha megegyeznek
+  const validateAddresses = (start?: string, end?: string) => {
+    setSameAddressError(!!start && !!end && start === end);
+  };
 
   const geocodeAddress = async (
     address: string
@@ -169,12 +144,17 @@ const RoutePlannerMap = () => {
             <Label htmlFor="start" className="mb-2 block text-left">
               Kiindulópont
             </Label>
-            <Select onValueChange={setStartAddress}>
+            <Select
+              onValueChange={(value) => {
+                setStartAddress(value);
+                validateAddresses(value, endAddress);
+              }}
+            >
               <SelectTrigger id="start" className="w-full">
                 <SelectValue placeholder="Válassz kiindulópontot" />
               </SelectTrigger>
               <SelectContent className="z-[100]">
-                {addresses.map((addr) => (
+                {data.map((addr) => (
                   <SelectItem key={addr.id} value={getFullAddressString(addr)}>
                     {formatAddressOption(addr)}
                   </SelectItem>
@@ -187,12 +167,17 @@ const RoutePlannerMap = () => {
             <Label htmlFor="end" className="mb-2 block text-left">
               Célállomás
             </Label>
-            <Select onValueChange={setEndAddress}>
+            <Select
+              onValueChange={(value) => {
+                setEndAddress(value);
+                validateAddresses(startAddress, value);
+              }}
+            >
               <SelectTrigger id="end" className="w-full">
                 <SelectValue placeholder="Válassz célállomást" />
               </SelectTrigger>
               <SelectContent className="z-[100]">
-                {addresses.map((addr) => (
+                {data.map((addr) => (
                   <SelectItem key={addr.id} value={getFullAddressString(addr)}>
                     {formatAddressOption(addr)}
                   </SelectItem>
