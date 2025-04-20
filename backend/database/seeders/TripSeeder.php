@@ -14,7 +14,7 @@ class TripSeeder extends Seeder
      */
     public function run(): void
     {
-
+        /*
         $locationToPurposeMap = [
             1 => 6,
             2 => 13,
@@ -25,6 +25,7 @@ class TripSeeder extends Seeder
             7 => 15,
             8 => 7,
         ];
+        */
 
         $existingTrips  = [
             [
@@ -266,57 +267,49 @@ class TripSeeder extends Seeder
             '2-5' => 35.3, // MOL to SZÁM-SZIL Kft.
         ];
 
-        // Start odometer reading for January 2024
+        // Kezdő kilométeróra állás
         $odometerReading = 80000;
 
-        // Users who drive cars
+        // Elérhető felhasználók és autók
         $validUsers = [1, 3, 4];
-
-        // Cars available
         $cars = [1, 2];
 
-        // Create trips for each month from January to November 2024
+        // Utak létrehozása havi bontásban
         for ($month = 1; $month <= 11; $month++) {
-            // How many trips to create this month (10-15)
+            // Havi utak száma
             $tripsThisMonth = rand(10, 15);
 
-            // Main user for this month's trips
+            // Elsődleges felhasználó és autó a hónapra
             $primaryUser = $validUsers[array_rand($validUsers)];
-
-            // Main car for this month's trips
             $primaryCar = $cars[array_rand($cars)];
 
-            // Create trips for this month
-            for ($i = 0; $i < $tripsThisMonth; $i++) {
-                // Determine date and time
-                $day = rand(1, min(28, Carbon::create(2024, $month)->daysInMonth));
-                $hour = rand(7, 17); // Business hours
-                $minute = rand(0, 59);
+            // 1. LÉPÉS: Havi utak generálása, időrendi sorrend nélkül
+            $monthlyTrips = [];
 
+            for ($i = 0; $i < $tripsThisMonth; $i++) {
+                // Dátum generálása
+                $day = rand(1, min(28, Carbon::create(2024, $month)->daysInMonth));
+                $hour = rand(7, 17);
+                $minute = rand(0, 59);
                 $startTime = Carbon::create(2024, $month, $day, $hour, $minute);
 
-                // Select a location pair at random
+                // Útvonal kiválasztása
                 $locationPair = $locationPairs[array_rand($locationPairs)];
                 $startLocationId = $locationPair[0];
                 $destLocationId = $locationPair[1];
 
-                // Get the appropriate distance for this route
+                // Távolság számítása
                 $routeKey = "{$startLocationId}-{$destLocationId}";
-                $baseDistance = $locationDistances[$routeKey] ?? 10; // Default to 10km if not found
-
-                // Add some variation to the distance (-0.5 to +1.5 km)
+                $baseDistance = $locationDistances[$routeKey] ?? 10;
                 $plannedDistance = $baseDistance + (rand(-5, 15) / 10);
                 $actualDistance = $plannedDistance + (rand(-10, 20) / 10);
                 if ($actualDistance < 1) $actualDistance = 1;
 
-                // Calculate a realistic trip duration based on distance
-                // Assuming average speed of 40-60 km/h in urban areas
+                // Időtartam számítása
                 $avgSpeed = rand(40, 60);
                 $durationMinutes = round(($actualDistance / $avgSpeed) * 60);
-                $durationMinutes = max(5, $durationMinutes); // Minimum 5 minutes
-
-                // Format planned and actual durations
-                $actualDurationMinutes = $durationMinutes + rand(-5, 10); // Some variation
+                $durationMinutes = max(5, $durationMinutes);
+                $actualDurationMinutes = $durationMinutes + rand(-5, 10);
                 if ($actualDurationMinutes < 3) $actualDurationMinutes = 3;
 
                 $plannedHours = floor($durationMinutes / 60);
@@ -327,50 +320,32 @@ class TripSeeder extends Seeder
                 $actualMinutes = $actualDurationMinutes % 60;
                 $actualDuration = sprintf("%02d:%02d:00", $actualHours, $actualMinutes);
 
-                // Calculate end time
+                // Végidő számítása
                 $endTime = (clone $startTime)->addMinutes($actualDurationMinutes);
 
-                // Update odometer readings
-                $startOdometer = $odometerReading;
-                $endOdometer = $startOdometer + round($actualDistance);
-                $odometerReading = $endOdometer;
-
-                // Select a travel purpose appropriate for this location pair
+                // Utazási cél kiválasztása
                 $dictId = null;
-
-                // For MOL trips, use fueling purpose
                 if ($startLocationId == 2 || $destLocationId == 2) {
                     $dictId = 13; // Üzemanyagfeltöltés/Tankolás
-                }
-                // For partner trips, use business meeting or geodesy
-                elseif (in_array($startLocationId, [4, 5]) || in_array($destLocationId, [4, 5])) {
+                } elseif (in_array($startLocationId, [4, 5]) || in_array($destLocationId, [4, 5])) {
                     $dictId = in_array(rand(1, 10), [1, 2, 3]) ? 5 : 17; // Geodéziai felmérés or Üzleti tárgyalás
-                }
-                // For post office
-                elseif ($startLocationId == 7 || $destLocationId == 7) {
+                } elseif ($startLocationId == 7 || $destLocationId == 7) {
                     $dictId = rand(0, 1) ? 15 : 16; // Letter sending or receiving
-                }
-                // For store
-                elseif ($startLocationId == 6 || $destLocationId == 6) {
-                    $dictId = 19; // Vásárlás (business shopping)
-                }
-                // For office trips
-                elseif (($startLocationId == 1 && $destLocationId == 3) ||
+                } elseif ($startLocationId == 6 || $destLocationId == 6) {
+                    $dictId = 19; // Vásárlás - magáncélú
+                } elseif (($startLocationId == 1 && $destLocationId == 3) ||
                     ($startLocationId == 3 && $destLocationId == 1)
                 ) {
                     $dictId = 6; // Irodai munka
-                }
-                // For other cases, select a random business purpose
-                else {
-                    // Filter to only business purposes
+                } else {
                     $businessOnlyPurposes = array_filter($businessPurposeIds, function ($id) {
                         return $id != 2 && $id != 7 && $id != 19; // Exclude non-business
                     });
                     $dictId = $businessOnlyPurposes[array_rand($businessOnlyPurposes)];
                 }
 
-                // Create the trip
-                Trip::create([
+                // Út hozzáadása a havi listához (kilométeróra állások nélkül)
+                $monthlyTrips[] = [
                     'car_id' => $primaryCar,
                     'user_id' => $primaryUser,
                     'start_location_id' => $startLocationId,
@@ -379,15 +354,28 @@ class TripSeeder extends Seeder
                     'end_time' => $endTime,
                     'planned_distance' => $plannedDistance,
                     'actual_distance' => $actualDistance,
-                    'start_odometer' => $startOdometer,
-                    'end_odometer' => $endOdometer,
                     'planned_duration' => $plannedDuration,
                     'actual_duration' => $actualDuration,
                     'dict_id' => $dictId,
-                ]);
+                ];
             }
 
-            // After each month, add some kilometers to simulate other usage
+            // 2. LÉPÉS: Utak rendezése időrendi sorrendbe
+            usort($monthlyTrips, function ($a, $b) {
+                return $a['start_time']->timestamp - $b['start_time']->timestamp;
+            });
+
+            // 3. LÉPÉS: Kilométeróra állások beállítása időrendi sorrendben és utak létrehozása
+            foreach ($monthlyTrips as $trip) {
+                $trip['start_odometer'] = $odometerReading;
+                $trip['end_odometer'] = $odometerReading + round($trip['actual_distance']);
+                $odometerReading = $trip['end_odometer'];
+
+                // Út létrehozása az adatbázisban
+                Trip::create($trip);
+            }
+
+            // Egyéb használat szimulálása a hónap végén
             $odometerReading += rand(50, 200);
         }
     }

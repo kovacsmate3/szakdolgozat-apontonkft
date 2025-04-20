@@ -91,7 +91,7 @@ class CarController extends Controller
 
         if ($request->has('include')) {
             $includes = explode(',', $request->input('include'));
-            $allowedIncludes = ['user'];
+            $allowedIncludes = ['user', 'trips'];
 
             foreach ($includes as $include) {
                 if (in_array($include, $allowedIncludes)) {

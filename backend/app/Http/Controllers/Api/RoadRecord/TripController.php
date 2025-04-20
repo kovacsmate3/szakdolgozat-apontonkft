@@ -343,7 +343,7 @@ class TripController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function export(Request $request)
+    public function exportToDoc(Request $request)
     {
         $user = $request->user();
 
@@ -393,7 +393,23 @@ class TripController extends Controller
         ])
             ->where('car_id', $data['car_id'])
             ->whereBetween('start_time', [$start, $end])
+            ->orderBy('start_time', 'asc')
             ->get();
+
+        // Naplózás az ÖSSZES útról - fejlesztői módban
+        if ($request->has('debug') && $request->input('debug') === 'true') {
+            \Log::info('========= ÖSSZES ÚT RÉSZLETEI =========');
+            foreach ($trips as $trip) {
+                $tripType = $trip->travelPurpose ? $trip->travelPurpose->type : 'Ismeretlen';
+                $purpose = $trip->travelPurpose ? $trip->travelPurpose->travel_purpose : 'Ismeretlen';
+
+                \Log::info("Dátum: {$trip->start_time->format('Y-m-d H:i:s')} | " .
+                    "Cél: {$purpose} | " .
+                    "Típus: {$tripType} | " .
+                    "Távolság: {$trip->actual_distance} km | " .
+                    "Kilométeróra: {$trip->end_odometer} km");
+            }
+        }
 
         // Csak azokat az utazásokat tartjuk meg, amelyekhez "Üzleti" típusú cél tartozik
         $businessTrips = $trips->filter(function ($trip) {
@@ -411,7 +427,7 @@ class TripController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $businessTrips = $businessTrips->values();
+        $businessTrips = $businessTrips->sortBy('start_time')->values();
 
         // ------ 4. Sablon meglétének ellenőrzése ------
         $templatePath = storage_path('templates/utnyilvantartas.docx');
@@ -516,7 +532,7 @@ class TripController extends Controller
             // Fogyasztás számítása (liter)
             $consumption = $distance * ($firstCar->standard_consumption / 100);
             // Becsült költség számítása (forint)
-            $estimated = $consumption * $unitPrice;
+            $estimated =  round($consumption * $unitPrice);
 
             $tpl->setValue("estimated_fuel_cost#{$index}", number_format($estimated, 0, '', ' '));
 
@@ -531,6 +547,21 @@ class TripController extends Controller
         $tpl->setValue('total_consumption', number_format($totalConsumption, 2, ',', ''));
         $tpl->setValue('total_fuel_cost', number_format($totalFuelCost, 0, ',', ' '));
 
+        // ------ Havi teljes megtett távolság számítása (km óra alapján) ------
+        $monthlyTotal = 0;
+        if ($trips->count() >= 1) {
+            $sortedTrips = $trips->sortBy('start_time')->values();
+            $firstOdometer = $sortedTrips->first()->start_odometer;
+            $lastOdometer = $sortedTrips->last()->end_odometer;
+
+            if (!is_null($firstOdometer) && !is_null($lastOdometer)) {
+                $monthlyTotal = $lastOdometer - $firstOdometer;
+            }
+        }
+
+        // Ha nem volt elég adat, akkor 0-t írunk be
+        $tpl->setValue('monthly_total', $monthlyTotal !== 0 ? number_format($monthlyTotal, 0, ',', ' ') : '—');
+
         $tmpFile = tempnam(sys_get_temp_dir(), 'utn_') . '.docx';
         $tpl->saveAs($tmpFile);
 
@@ -539,7 +570,7 @@ class TripController extends Controller
     }
 
     /*
-    public function exportToExistingExcel(Request $request)
+    public function exportToExcel(Request $request)
     {
         $user = $request->user();
 
@@ -783,5 +814,5 @@ class TripController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    */
+        */
 }
