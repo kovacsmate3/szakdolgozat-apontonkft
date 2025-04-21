@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, parse, subYears } from "date-fns";
+import { format, parse } from "date-fns";
 import { hu } from "date-fns/locale";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,32 +21,7 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { UserData } from "@/lib/types";
 import { updateUser } from "@/server/users";
-
-// Zod schema for personal info validation
-const personalInfoSchema = z.object({
-  lastname: z
-    .string({ required_error: "A vezetéknév megadása kötelező." })
-    .trim()
-    .min(1, "A vezetéknév megadása kötelező.")
-    .max(50, "A vezetéknév maximum 50 karakter hosszú lehet."),
-
-  firstname: z
-    .string({ required_error: "A keresztnév megadása kötelező." })
-    .trim()
-    .min(1, "A keresztnév megadása kötelező.")
-    .max(50, "A keresztnév maximum 50 karakter hosszú lehet."),
-
-  birthdate: z
-    .string({ required_error: "A születési dátum megadása kötelező." })
-    .refine(
-      (val) => {
-        const parsedDate = parse(val, "yyyy-MM-dd", new Date());
-        const minDate = subYears(new Date(), 18);
-        return !isNaN(parsedDate.getTime()) && parsedDate <= minDate;
-      },
-      { message: "A felhasználónak legalább 18 évesnek kell lennie." }
-    ),
-});
+import { personalInfoSchema } from "@/lib/schemas";
 
 interface AdminPersonalInfoFormProps {
   user: UserData;
@@ -76,6 +51,8 @@ export function AdminPersonalInfoForm({
     },
   });
 
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: (data: z.infer<typeof personalInfoSchema>) =>
       updateUser({
@@ -84,6 +61,7 @@ export function AdminPersonalInfoForm({
         token,
       }).then((response) => response.user),
     onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["user", user.id], updatedUser);
       toast.success("Személyes adatok sikeresen frissítve");
       setIsEditing(false);
       onUpdateSuccess?.(updatedUser);

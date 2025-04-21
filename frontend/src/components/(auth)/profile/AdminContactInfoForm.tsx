@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,29 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { UserData } from "@/lib/types";
 import { updateUser } from "@/server/users";
-
-// Hungarian phone number validation regex
-const hungarianPhoneRegex = /^(\+36|06)(20|30|70)\d{7}$/;
-
-// Zod schema for contact info validation
-const contactInfoSchema = z.object({
-  email: z
-    .string({ required_error: "Az email cím megadása kötelező." })
-    .trim()
-    .min(1, "Az email cím megadása kötelező.")
-    .max(255, "Az email cím maximum 255 karakter hosszú lehet.")
-    .email("Érvénytelen email cím formátum."),
-
-  phonenumber: z
-    .string({ required_error: "A telefonszám megadása kötelező." })
-    .trim()
-    .min(1, "A telefonszám megadása kötelező.")
-    .max(30, "A telefonszám maximum 30 karakter hosszú lehet.")
-    .regex(
-      hungarianPhoneRegex,
-      "Érvénytelen magyar telefonszám formátum. Használd a +36 vagy 06 előtagot, majd 20, 30 vagy 70 számot."
-    ),
-});
+import { contactInfoSchema } from "@/lib/schemas";
 
 interface AdminContactInfoFormProps {
   user: UserData;
@@ -63,6 +41,8 @@ export function AdminContactInfoForm({
     },
   });
 
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: (data: z.infer<typeof contactInfoSchema>) =>
       updateUser({
@@ -71,6 +51,7 @@ export function AdminContactInfoForm({
         token,
       }).then((response) => response.user),
     onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["user", user.id], updatedUser);
       toast.success("Kapcsolati adatok sikeresen frissítve");
       setIsEditing(false);
       onUpdateSuccess?.(updatedUser);
