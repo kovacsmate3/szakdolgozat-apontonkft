@@ -219,7 +219,7 @@ export default function ContactForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor="email">E-mail</FormLabel>
+                      <FormLabel htmlFor="email">E-mail cím</FormLabel>
                       <FormControl>
                         <Input
                           id="email"

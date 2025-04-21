@@ -28,25 +28,25 @@ const AdminNotification: React.FC<Readonly<AdminNotificationProps>> = ({
           textTransform: "uppercase",
         }}
       >
-        Új kapcsolatfelvételi űrlap kitöltése
+        Újabb megkeresés érkezett a weboldalról
       </h2>
     </div>
 
     <div style={{ marginBottom: "30px" }}>
-      <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "15px" }}>
+      <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "12px" }}>
         <strong>Név:</strong> {emailFormData.lastName} {emailFormData.firstName}
       </p>
-      <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "15px" }}>
+      <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "12px" }}>
         <strong>Email:</strong> {emailFormData.email}
       </p>
       {emailFormData.phone && (
         <p
-          style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "15px" }}
+          style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "12px" }}
         >
           <strong>Telefonszám:</strong> {emailFormData.phone}
         </p>
       )}
-      <p style={{ fontSize: "16px", lineHeight: "1.6", marginBottom: "15px" }}>
+      <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "12px" }}>
         <strong>Megkeresés célja:</strong>{" "}
         {emailFormData.reason === "quotation"
           ? "Ajánlatkérés"
@@ -58,8 +58,8 @@ const AdminNotification: React.FC<Readonly<AdminNotificationProps>> = ({
       <div
         style={{
           fontSize: "16px",
-          lineHeight: "1.6",
-          marginBottom: "15px",
+          lineHeight: "1.5",
+          marginBottom: "12px",
           border: "1px solid #dddddd",
           padding: "15px",
           borderRadius: "5px",

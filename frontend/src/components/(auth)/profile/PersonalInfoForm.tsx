@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import { hu } from "date-fns/locale";
 import { UserData } from "@/lib/types";
 
 interface PersonalInfoFormProps {
@@ -9,8 +10,11 @@ interface PersonalInfoFormProps {
 }
 
 export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
-  // Formázott születési dátum
-  const formattedBirthdate = format(new Date(user.birthdate), "yyyy. MMMM d.");
+  // Format birthdate for input and display
+  const parsedBirthdate = new Date(user.birthdate);
+  const displayFormattedBirthdate = format(parsedBirthdate, "yyyy. MMMM d.", {
+    locale: hu,
+  });
 
   return (
     <div className="space-y-6">
@@ -33,7 +37,7 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
       <div>
         <h3 className="text-sm font-medium mb-2">Születési dátum</h3>
         <p className="text-foreground p-2 border rounded-md bg-muted/50">
-          {formattedBirthdate}
+          {displayFormattedBirthdate}
         </p>
       </div>
 
