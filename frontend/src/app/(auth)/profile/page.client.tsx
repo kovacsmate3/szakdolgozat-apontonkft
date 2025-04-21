@@ -33,7 +33,7 @@ export default function ProfilePageClient({ token, userId, isAdmin }: Props) {
     return (
       <div className="container mx-auto py-10">
         <h1 className="text-2xl font-semibold mb-6">Profilom</h1>
-        <Card>
+        <Card className="w-full max-w-xl mx-auto">
           <CardHeader>
             <Skeleton className="h-8 w-64 mb-2" />
             <Skeleton className="h-4 w-full max-w-md" />
@@ -76,7 +76,7 @@ export default function ProfilePageClient({ token, userId, isAdmin }: Props) {
         </div>
       )}
 
-      <Tabs defaultValue="password" className="w-full">
+      <Tabs defaultValue="password" className="w-full max-w-xl mx-auto">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="personal">Személyes adatok</TabsTrigger>
           <TabsTrigger value="contact">Kapcsolati adatok</TabsTrigger>
@@ -108,8 +108,9 @@ export default function ProfilePageClient({ token, userId, isAdmin }: Props) {
             <CardHeader>
               <CardTitle>Kapcsolati adatok</CardTitle>
               <CardDescription>
-                A kapcsolati adataid megtekintése. Ezek az adatok nem
-                módosíthatók.
+                {isAdmin
+                  ? "A kapcsolati adataid szerkesztése"
+                  : "A kapcsolati adataid megtekintése. Ezek az adatok nem módosíthatók."}
               </CardDescription>
             </CardHeader>
             <CardContent>
