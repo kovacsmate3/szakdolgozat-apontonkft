@@ -1,14 +1,14 @@
 import { auth } from "@/auth";
-import PropertyRegistryLawsPageClient from "./page.client";
+import RolesPageClient from "./page.client";
 
 export const dynamic = "force-dynamic";
 
-export default async function PropertyRegistryLawsPage() {
+export default async function RolesPage() {
   const session = await auth();
 
   if (!session?.user?.access_token) {
     return <div>Betöltés folyamatban...</div>;
   }
 
-  return <PropertyRegistryLawsPageClient token={session.user.access_token} />;
+  return <RolesPageClient token={session.user.access_token} />;
 }

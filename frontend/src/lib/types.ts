@@ -135,3 +135,22 @@ export interface FuelPricePayload {
   diesel: number;
   lp_gas: number;
 }
+
+export enum LawCategories {
+  LAND_MEASUREMENT = 1,
+  PROPERTY_REGISTRY = 2,
+  CONSTRUCTION = 3,
+  LAND_AFFAIRS = 4,
+  FEES = 5,
+  OTHER_LAWS = 6,
+}
+
+export interface Law {
+  id: number;
+  title: string;
+  official_ref: string;
+  date_of_enactment: string | null;
+  is_active: boolean;
+  link: string;
+  category_id: number;
+}
