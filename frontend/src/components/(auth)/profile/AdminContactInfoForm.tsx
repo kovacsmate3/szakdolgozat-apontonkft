@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { UserData } from "@/lib/types";
 import { updateUser } from "@/server/users";
 import { contactInfoSchema } from "@/lib/schemas";
+import { useSession } from "next-auth/react";
 
 interface AdminContactInfoFormProps {
   user: UserData;
@@ -32,8 +33,8 @@ export function AdminContactInfoForm({
   onUpdateSuccess,
 }: AdminContactInfoFormProps) {
   const [isEditing, setIsEditing] = useState(false);
-  // Helyi állapot a megjelenített adatokhoz
-  const [displayedUser, setDisplayedUser] = useState(user);
+  const queryClient = useQueryClient();
+  const { update: updateSession } = useSession();
 
   const form = useForm<z.infer<typeof contactInfoSchema>>({
     resolver: zodResolver(contactInfoSchema),
@@ -48,10 +49,7 @@ export function AdminContactInfoForm({
       email: user.email,
       phonenumber: user.phonenumber,
     });
-    setDisplayedUser(user);
   }, [user, form]);
-
-  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (data: z.infer<typeof contactInfoSchema>) =>
@@ -61,9 +59,22 @@ export function AdminContactInfoForm({
         token,
       }).then((response) => response.user),
     onSuccess: (updatedUser) => {
+      // Update all queries with this user ID
       queryClient.setQueryData(["user", user.id], updatedUser);
-      setDisplayedUser(updatedUser);
+      queryClient.setQueryData(["user", user.id, token], updatedUser);
+
+      // Invalidate and refetch relevant queries
       queryClient.invalidateQueries({ queryKey: ["user", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["user", user.id, token] });
+
+      // Update the session with new user data
+      updateSession({
+        user: {
+          ...user,
+          email: updatedUser.email,
+          phonenumber: updatedUser.phonenumber,
+        },
+      });
       toast.success("Kapcsolati adatok sikeresen frissítve");
       setIsEditing(false);
       onUpdateSuccess?.(updatedUser);
@@ -93,90 +104,88 @@ export function AdminContactInfoForm({
     },
   });
 
-  function onSubmit(values: z.infer<typeof contactInfoSchema>) {
-    mutation.mutate(values);
-  }
+  // Külön függvény a form küldéséhez - csak akkor fut, ha explicit meghívjuk
+  const handleFormSubmit = () => {
+    form.handleSubmit((values) => {
+      mutation.mutate(values);
+    })();
+  };
+
+  // Ha szerkesztési módban vagyunk, akkor engedélyezzük a form küldését
+  const handleOnSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isEditing) {
+      handleFormSubmit();
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {!isEditing ? (
-        <>
-          <div>
-            <h3 className="text-sm font-medium mb-2">E-mail cím</h3>
-            <p className="text-foreground p-2 border rounded-md bg-muted/50">
-              {displayedUser.email}
-            </p>
-          </div>
+      <Form {...form}>
+        <form onSubmit={handleOnSubmit} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-mail cím</FormLabel>
+                <FormControl>
+                  <Input disabled={!isEditing} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          <div>
-            <h3 className="text-sm font-medium mb-2">Telefonszám</h3>
-            <p className="text-foreground p-2 border rounded-md bg-muted/50">
-              {displayedUser.phonenumber}
-            </p>
-          </div>
+          <FormField
+            control={form.control}
+            name="phonenumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefonszám</FormLabel>
+                <FormControl>
+                  <Input disabled={!isEditing} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
 
+      <div className="flex space-x-2">
+        {!isEditing ? (
           <Button
             type="button"
+            className="flex-1"
             onClick={() => setIsEditing(true)}
-            className="w-full"
           >
             Adatok szerkesztése
           </Button>
-        </>
-      ) : (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>E-mail cím</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phonenumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefonszám</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex space-x-2">
-              <Button
-                type="submit"
-                disabled={mutation.isPending}
-                className="flex-1"
-              >
-                {mutation.isPending ? "Mentés folyamatban..." : "Mentés"}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setIsEditing(false);
-                  form.reset();
-                }}
-                className="flex-1"
-              >
-                Mégsem
-              </Button>
-            </div>
-          </form>
-        </Form>
-      )}
+        ) : (
+          <>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={mutation.isPending}
+              onClick={handleFormSubmit}
+            >
+              {mutation.isPending ? "Mentés folyamatban..." : "Mentés"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={() => {
+                form.reset();
+                setIsEditing(false);
+              }}
+            >
+              Mégsem
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

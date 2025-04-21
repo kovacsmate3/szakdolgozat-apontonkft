@@ -26,12 +26,14 @@ interface DatePickerProps {
   onChange: (date: Date | undefined) => void;
   startYear?: number;
   endYear?: number;
+  disabled?: boolean;
 }
 export function DatePicker({
   value,
   onChange,
   startYear = getYear(new Date()) - 100,
   endYear = getYear(new Date()) + 100,
+  disabled = false,
 }: DatePickerProps) {
   const date = value ?? new Date();
 
@@ -72,6 +74,7 @@ export function DatePicker({
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
+          disabled={disabled}
           className={cn(
             "w-[250px] justify-start text-left font-normal",
             !date && "text-muted-foreground"
@@ -85,50 +88,52 @@ export function DatePicker({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <div className="flex justify-between p-2 gap-1">
-          <Select
-            onValueChange={handleYearChange}
-            value={getYear(date).toString()}
-          >
-            <SelectTrigger className="min-w-[80px] w-[40%]">
-              <SelectValue placeholder="Év" />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            onValueChange={handleMonthChange}
-            value={months[getMonth(date)]}
-          >
-            <SelectTrigger className="min-w-[140px] w-[60%]">
-              <SelectValue placeholder="Hónap" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map((month) => (
-                <SelectItem key={month} value={month}>
-                  {month}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {!disabled && (
+        <PopoverContent className="w-auto p-0">
+          <div className="flex justify-between p-2 gap-1">
+            <Select
+              onValueChange={handleYearChange}
+              value={getYear(date).toString()}
+            >
+              <SelectTrigger className="min-w-[80px] w-[40%]">
+                <SelectValue placeholder="Év" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={handleMonthChange}
+              value={months[getMonth(date)]}
+            >
+              <SelectTrigger className="min-w-[140px] w-[60%]">
+                <SelectValue placeholder="Hónap" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month} value={month}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleSelect}
-          initialFocus
-          month={date}
-          onMonthChange={onChange}
-          locale={hu}
-        />
-      </PopoverContent>
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={handleSelect}
+            initialFocus
+            month={date}
+            onMonthChange={onChange}
+            locale={hu}
+          />
+        </PopoverContent>
+      )}
     </Popover>
   );
 }

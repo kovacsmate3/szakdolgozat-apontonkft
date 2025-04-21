@@ -31,7 +31,7 @@ class LawSeeder extends Seeder
                     'link' => 'https://njt.hu/jogszabaly/2018-8-20-7R',
                 ],
                 [
-                    'title' => 'Mellékletek',
+                    'title' => '8/2018 AM rendelet mellékletei',
                     'official_ref' => 'Mellékletek',
                     'date_of_enactment' => null,
                     'is_active' => true,

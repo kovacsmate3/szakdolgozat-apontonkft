@@ -49,7 +49,6 @@ import Logo from "./logo";
 import { NavUser } from "./nav-user";
 import { User } from "@/lib/types";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import { FaCar, FaHouse, FaUserShield, FaScaleBalanced } from "react-icons/fa6";
 import { MdEditOff, MdRealEstateAgent } from "react-icons/md";
 import { PiMapPinSimpleArea } from "react-icons/pi";
@@ -203,7 +202,6 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
-  const { theme } = useTheme();
   const pathname = usePathname();
 
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -237,10 +235,6 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       .filter((g): g is (typeof data.navMain)[0] => g !== null);
   }, [searchQuery, baseNav]);
 
-  const defaultAvatar =
-    theme === "light"
-      ? "/images/(auth)/default-avatar-light.png"
-      : "/images/(auth)/default-avatar-dark.png";
 
   return (
     <Sidebar {...props}>
@@ -327,13 +321,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          user={{
-            name: user?.name ?? "Ismeretlen",
-            email: user?.email ?? "Nincs email",
-            avatar: user?.image ?? defaultAvatar,
-          }}
-        />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -16,6 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PasswordChangeForm } from "@/components/(auth)/profile/PasswordChangeForm";
 import { AdminPersonalInfoForm } from "@/components/(auth)/profile/AdminPersonalInfoForm";
 import { AdminContactInfoForm } from "@/components/(auth)/profile/AdminContactInfoForm";
+import { useSession } from "next-auth/react";
+import { UserData } from "@/lib/types";
 
 interface Props {
   token: string;
@@ -24,10 +26,39 @@ interface Props {
 }
 
 export default function ProfilePageClient({ token, userId, isAdmin }: Props) {
+  const queryClient = useQueryClient();
+  const { data: session, update: updateSession } = useSession();
+
   const { data: user, isLoading } = useQuery({
     queryKey: ["user", userId, token],
     queryFn: () => getUser({ userId, token }),
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0, // Always refetch data
   });
+
+  // Update handler for child components
+  const handleUpdateSuccess = (updatedUser: UserData) => {
+    // Update the cache with updated data
+    queryClient.setQueryData(["user", userId], updatedUser);
+    queryClient.setQueryData(["user", userId, token], updatedUser);
+
+    // Update all references to user in the app
+    queryClient.invalidateQueries({ queryKey: ["user"] });
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+
+    // Also update the session data so it's available globally
+    if (session?.user) {
+      // Ensure the session data is updated with the new user info
+      updateSession({
+        user: {
+          ...session.user,
+          name: `${updatedUser.firstname} ${updatedUser.lastname}`,
+          email: updatedUser.email,
+        },
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -95,7 +126,11 @@ export default function ProfilePageClient({ token, userId, isAdmin }: Props) {
             </CardHeader>
             <CardContent>
               {isAdmin ? (
-                <AdminPersonalInfoForm user={user} token={token} />
+                <AdminPersonalInfoForm
+                  user={user}
+                  token={token}
+                  onUpdateSuccess={handleUpdateSuccess}
+                />
               ) : (
                 <PersonalInfoForm user={user} token={token} />
               )}
@@ -115,7 +150,11 @@ export default function ProfilePageClient({ token, userId, isAdmin }: Props) {
             </CardHeader>
             <CardContent>
               {isAdmin ? (
-                <AdminContactInfoForm user={user} token={token} />
+                <AdminContactInfoForm
+                  user={user}
+                  token={token}
+                  onUpdateSuccess={handleUpdateSuccess}
+                />
               ) : (
                 <ContactInfoForm user={user} token={token} />
               )}
