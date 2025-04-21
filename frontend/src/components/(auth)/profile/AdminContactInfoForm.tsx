@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,6 +32,8 @@ export function AdminContactInfoForm({
   onUpdateSuccess,
 }: AdminContactInfoFormProps) {
   const [isEditing, setIsEditing] = useState(false);
+  // Helyi állapot a megjelenített adatokhoz
+  const [displayedUser, setDisplayedUser] = useState(user);
 
   const form = useForm<z.infer<typeof contactInfoSchema>>({
     resolver: zodResolver(contactInfoSchema),
@@ -40,6 +42,14 @@ export function AdminContactInfoForm({
       phonenumber: user.phonenumber,
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      email: user.email,
+      phonenumber: user.phonenumber,
+    });
+    setDisplayedUser(user);
+  }, [user, form]);
 
   const queryClient = useQueryClient();
 
@@ -52,6 +62,8 @@ export function AdminContactInfoForm({
       }).then((response) => response.user),
     onSuccess: (updatedUser) => {
       queryClient.setQueryData(["user", user.id], updatedUser);
+      setDisplayedUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: ["user", user.id] });
       toast.success("Kapcsolati adatok sikeresen frissítve");
       setIsEditing(false);
       onUpdateSuccess?.(updatedUser);
@@ -92,14 +104,14 @@ export function AdminContactInfoForm({
           <div>
             <h3 className="text-sm font-medium mb-2">E-mail cím</h3>
             <p className="text-foreground p-2 border rounded-md bg-muted/50">
-              {user.email}
+              {displayedUser.email}
             </p>
           </div>
 
           <div>
             <h3 className="text-sm font-medium mb-2">Telefonszám</h3>
             <p className="text-foreground p-2 border rounded-md bg-muted/50">
-              {user.phonenumber}
+              {displayedUser.phonenumber}
             </p>
           </div>
 

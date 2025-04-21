@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +36,9 @@ export function AdminPersonalInfoForm({
 }: AdminPersonalInfoFormProps) {
   const [isEditing, setIsEditing] = useState(false);
 
+  // Helyi állapot a megjelenített adatokhoz
+  const [displayedUser, setDisplayedUser] = useState(user);
+
   // Format birthdate for input and display
   const parsedBirthdate = new Date(user.birthdate);
   const displayFormattedBirthdate = format(parsedBirthdate, "yyyy. MMMM d.", {
@@ -51,6 +54,18 @@ export function AdminPersonalInfoForm({
     },
   });
 
+  useEffect(() => {
+    const birthdateDate = new Date(user.birthdate);
+
+    form.reset({
+      lastname: user.lastname,
+      firstname: user.firstname,
+      birthdate: format(birthdateDate, "yyyy-MM-dd"),
+    });
+
+    setDisplayedUser(user);
+  }, [user, form]);
+
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -61,7 +76,14 @@ export function AdminPersonalInfoForm({
         token,
       }).then((response) => response.user),
     onSuccess: (updatedUser) => {
+      // Frissítjük a cache-t
       queryClient.setQueryData(["user", user.id], updatedUser);
+
+      // Frissítjük a helyi állapotot is azonnal
+      setDisplayedUser(updatedUser);
+
+      // Invalidáljuk a query-t
+      queryClient.invalidateQueries({ queryKey: ["user", user.id] });
       toast.success("Személyes adatok sikeresen frissítve");
       setIsEditing(false);
       onUpdateSuccess?.(updatedUser);
@@ -103,14 +125,14 @@ export function AdminPersonalInfoForm({
             <div>
               <h3 className="text-sm font-medium mb-2">Vezetéknév</h3>
               <p className="text-foreground p-2 border rounded-md bg-muted/50">
-                {user.lastname}
+                {displayedUser.lastname}
               </p>
             </div>
 
             <div>
               <h3 className="text-sm font-medium mb-2">Keresztnév</h3>
               <p className="text-foreground p-2 border rounded-md bg-muted/50">
-                {user.firstname}
+                {displayedUser.firstname}
               </p>
             </div>
           </div>
