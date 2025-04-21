@@ -1,5 +1,5 @@
-import { UserApiError } from "@/lib/errors";
-import { CreateUserPayload, UserData } from "@/lib/types";
+import { PasswordChangeApiError, UserApiError } from "@/lib/errors";
+import { UserPayload, UserData, PasswordChangeData } from "@/lib/types";
 
 export const getUsers = async ({
   queryKey,
@@ -21,11 +21,34 @@ export const getUsers = async ({
   return res.json();
 };
 
+export const getUser = async ({
+  userId,
+  token,
+}: {
+  userId: string;
+  token: string;
+}): Promise<UserData> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Felhasználó betöltése sikertelen.");
+  }
+
+  return res.json();
+};
+
 export const createUser = async ({
   user,
   token,
 }: {
-  user: CreateUserPayload;
+  user: UserPayload;
   token: string;
 }): Promise<{ user: UserData }> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
@@ -48,13 +71,44 @@ export const createUser = async ({
   return data;
 };
 
+export const changePassword = async ({
+  userId,
+  data,
+  token,
+}: {
+  userId: number;
+  data: PasswordChangeData;
+  token: string;
+}): Promise<{ message: string }> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/password`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  const responseData = await res.json();
+
+  if (!res.ok) {
+    throw new PasswordChangeApiError(res.status, responseData);
+  }
+
+  return responseData;
+};
+
 export const updateUser = async ({
   id,
   user,
   token,
 }: {
   id: number;
-  user: Partial<CreateUserPayload>;
+  user: Partial<UserPayload>;
   token: string;
 }): Promise<{ user: UserData }> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
@@ -74,4 +128,24 @@ export const updateUser = async ({
   }
 
   return data;
+};
+
+export const deleteUser = async ({
+  id,
+  token,
+}: {
+  id: number;
+  token: string;
+}): Promise<void> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new UserApiError(res.status, data);
+  }
 };

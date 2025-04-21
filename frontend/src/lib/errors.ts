@@ -13,6 +13,7 @@ export class UserApiError extends Error {
     public data: UserValidationErrorResponse
   ) {
     super("API error");
+    this.name = "UserApiError";
   }
 }
 
@@ -29,5 +30,25 @@ export class FuelPriceApiError extends Error {
     public data: FuelPriceValidationErrorResponse
   ) {
     super("API error");
+    this.name = "FuelPriceApiError";
+  }
+}
+
+type PasswordChangeValidationErrorResponse = {
+  message: string;
+  errors?: {
+    current_password?: string[];
+    password?: string[];
+    password_confirmation?: string[];
+  };
+};
+
+export class PasswordChangeApiError extends Error {
+  constructor(
+    public status: number,
+    public data: PasswordChangeValidationErrorResponse
+  ) {
+    super("Password change error");
+    this.name = "PasswordChangeApiError";
   }
 }

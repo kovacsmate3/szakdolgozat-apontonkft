@@ -23,6 +23,11 @@ import { usePathname } from "next/navigation";
 function getBreadcrumbItems(pathname: string) {
   const items: { title: string; url?: string }[] = [];
 
+  if (pathname === "/profile") {
+    items.push({ title: "Profilom" });
+    return items;
+  }
+
   for (const mainItem of navMain) {
     if (mainItem.url === pathname) {
       items.push({ title: mainItem.title });

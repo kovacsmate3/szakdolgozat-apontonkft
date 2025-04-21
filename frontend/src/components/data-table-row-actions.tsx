@@ -14,13 +14,17 @@ import {
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
+  onEdit: (value: TData) => void;
+  onDelete: (value: TData) => void;
 }
 
-export function DataTableRowActions<
-  TData,
->({}: DataTableRowActionsProps<TData>) {
+export function DataTableRowActions<TData>({
+  row,
+  onEdit,
+  onDelete,
+}: DataTableRowActionsProps<TData>) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -32,11 +36,11 @@ export function DataTableRowActions<
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuLabel>Műveletek</DropdownMenuLabel>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onEdit(row.original)}>
           <SquarePen className="text-muted-foreground" />
           <span>Szerkesztés</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onDelete(row.original)}>
           <Trash2 className="text-muted-foreground" />
           <span>Törlés</span>
         </DropdownMenuItem>

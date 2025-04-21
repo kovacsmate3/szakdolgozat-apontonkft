@@ -65,7 +65,13 @@ export interface UserData {
   role: Role;
 }
 
-export interface CreateUserPayload {
+export interface PasswordChangeData {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface UserPayload {
   username: string;
   firstname: string;
   lastname: string;
@@ -115,6 +121,14 @@ export interface CarComponentProps {
 
 export interface FuelPrice {
   id: number;
+  period: string;
+  petrol: number;
+  mixture: number;
+  diesel: number;
+  lp_gas: number;
+}
+
+export interface FuelPricePayload {
   period: string;
   petrol: number;
   mixture: number;
