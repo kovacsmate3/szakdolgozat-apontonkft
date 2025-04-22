@@ -157,3 +157,33 @@ export interface Law {
   link: string;
   category_id: number;
 }
+
+export interface Trip {
+  id: number;
+  car_id: number;
+  user_id: number;
+  start_location_id: number;
+  destination_location_id: number;
+  start_time: string;
+  end_time: string | null;
+  planned_distance: number | null;
+  actual_distance: number | null;
+  start_odometer: number | null;
+  end_odometer: number | null;
+  planned_duration: string | null;
+  actual_duration: string | null;
+  dict_id: number | null;
+  car?: Car;
+  user?: UserData;
+  start_location?: Location;
+  destination_location?: Location;
+  travel_purpose?: TravelPurpose;
+}
+
+export interface TravelPurpose {
+  id: number;
+  travel_purpose: string;
+  type: string;
+  note: string | null;
+  is_system: boolean;
+}

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Address, Car, FuelPrice } from "./types";
+import { Address, Car, FuelPrice, Trip } from "./types";
 import { hu } from "date-fns/locale";
 
 export function formatHUF(value: unknown): string {
@@ -122,4 +122,50 @@ export function formatDurationHU(seconds: number): string {
   if (secs > 0 || parts.length === 0) parts.push(`${secs} másodperc`);
 
   return parts.join(" ");
+}
+
+/**
+ * Calculate the total distance of an array of trips
+ */
+export function calculateTotalDistance(trips: Trip[]): number {
+  return trips.reduce((total, trip) => {
+    // Use actual_distance if available, otherwise use planned_distance
+    const distance =
+      trip.actual_distance !== null
+        ? trip.actual_distance
+        : trip.end_odometer && trip.start_odometer
+          ? trip.end_odometer - trip.start_odometer
+          : trip.planned_distance || 0;
+
+    return total + distance;
+  }, 0);
+}
+
+/**
+ * Format a distance value with appropriate units
+ */
+export function formatDistance(distance: number | null | undefined): string {
+  if (distance === null || distance === undefined) return "-";
+  return `${distance.toLocaleString("hu-HU", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })} km`;
+}
+
+/**
+ * Format a date in Hungarian format
+ */
+export function formatDate(date: string | Date): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("hu-HU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function roundToTwoDecimals(value: number): number {
+  return Number(value.toFixed(2));
 }

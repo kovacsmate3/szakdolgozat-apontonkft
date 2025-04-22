@@ -840,7 +840,7 @@ class TripController extends Controller
                 if ($trips->isEmpty()) {
                     if ($isSingleMonth) {
                         return response()->json([
-                            'message' => 'Az adott hónapban nincs egyetlen üzleti célú utazás sem ehhez a járműhöz.'
+                            'message' => 'Ebben a hónapban nincs üzleti célú utazási adat az adott járműhöz.'
                         ], Response::HTTP_NOT_FOUND);
                     } else {
                         continue; // egész éves export esetén csak átugorjuk
