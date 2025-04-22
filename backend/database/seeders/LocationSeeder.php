@@ -53,6 +53,11 @@ class LocationSeeder extends Seeder
                 'name' => 'Piri Dávid lakóhely',
                 'location_type' => 'egyéb',
                 'is_headquarter' => false,
+            ],
+            [
+                'name' => 'Öcsémék otthona',
+                'location_type' => 'egyéb',
+                'is_headquarter' => false,
             ]
         ];
 

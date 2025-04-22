@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { GoogleMap, DirectionsRenderer } from "@react-google-maps/api";
 import {
   Select,
@@ -12,7 +12,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Address } from "@/lib/types";
+import { Address, Car, FuelPrice } from "@/lib/types";
+import {
+  calculateFuelCost,
+  formatDurationHU,
+  getFullAddress,
+  getFullAddressWithCountry,
+  getLatestFuelPrice,
+} from "@/lib/functions";
+import { GiPathDistance } from "react-icons/gi";
+import { FaCarSide, FaMapMarkerAlt } from "react-icons/fa";
+import { FuelCostSection } from "./FuelCostSection";
+import { MdOutlineTimer } from "react-icons/md";
 
 const containerStyle = {
   width: "100%",
@@ -21,10 +32,12 @@ const containerStyle = {
 };
 
 interface Props {
-  data: Address[];
+  addresses: Address[];
+  cars: Car[];
+  fuelPrices: FuelPrice[];
 }
 
-const RoutePlannerMap = ({ data }: Props) => {
+const RoutePlannerMap = ({ addresses, cars, fuelPrices }: Props) => {
   const [startAddress, setStartAddress] = useState<string>();
   const [endAddress, setEndAddress] = useState<string>();
   const [sameAddressError, setSameAddressError] = useState(false);
@@ -42,16 +55,29 @@ const RoutePlannerMap = ({ data }: Props) => {
     null
   );
 
-  const formatAddressOption = (address: Address): string => {
-    return (
-      address.location?.name ??
-      `${address.postalcode} ${address.city}, ${address.road_name} ${address.public_space_type} ${address.building_number}`
-    );
-  };
+  const [selectedCarId, setSelectedCarId] = useState<string>();
+  const [fuelCost, setFuelCost] = useState<number | null>(null);
 
-  const getFullAddressString = (addr: Address): string => {
-    return `${addr.country}, ${addr.postalcode} ${addr.city}, ${addr.road_name} ${addr.public_space_type} ${addr.building_number}`;
-  };
+  // Az aktuálisan aktív (kiszámított) állapot
+  const [activeCarId, setActiveCarId] = useState<string>();
+
+  // A legfrissebb üzemanyagár kiválasztása (legújabb dátumú)
+  const latestFuelPrice = useMemo(
+    () => getLatestFuelPrice(fuelPrices),
+    [fuelPrices]
+  );
+
+  // Kiválasztott autó adatai
+  const selectedCar = useMemo(() => {
+    if (!selectedCarId) return null;
+    return cars.find((car) => car.id.toString() === selectedCarId) || null;
+  }, [selectedCarId, cars]);
+
+  // Az aktív autó az, amelyikre a legutolsó számítás történt
+  const activeCar = useMemo(() => {
+    if (!activeCarId) return null;
+    return cars.find((car) => car.id.toString() === activeCarId) || null;
+  }, [activeCarId, cars]);
 
   // Figyeli a kezdő- és végpont változását, beállítja a hiba állapotot ha megegyeznek
   const validateAddresses = (start?: string, end?: string) => {
@@ -61,15 +87,20 @@ const RoutePlannerMap = ({ data }: Props) => {
   const geocodeAddress = async (
     address: string
   ): Promise<google.maps.LatLngLiteral | null> => {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-    );
-    const data = await res.json();
-    if (data.status === "OK" && data.results.length > 0) {
-      const loc = data.results[0].geometry.location;
-      return { lat: loc.lat, lng: loc.lng };
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await res.json();
+      if (data.status === "OK" && data.results.length > 0) {
+        const loc = data.results[0].geometry.location;
+        return { lat: loc.lat, lng: loc.lng };
+      }
+      return null;
+    } catch (error) {
+      console.error("Geocoding hiba:", error);
+      return null;
     }
-    return null;
   };
 
   const handleRoute = async () => {
@@ -112,19 +143,26 @@ const RoutePlannerMap = ({ data }: Props) => {
               ? leg.distance.value / 1000
               : null;
             const durationSeconds = leg.duration?.value || 0;
-            const hours = Math.floor(durationSeconds / 3600);
-            const minutes = Math.floor((durationSeconds % 3600) / 60);
-            const seconds = durationSeconds % 60;
 
-            const durationFormatted = `${hours.toString().padStart(2, "0")}:${minutes
-              .toString()
-              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+            const durationFormatted = formatDurationHU(durationSeconds);
 
             setDistanceKm(distanceKmValue);
             setDurationFormatted(durationFormatted);
 
-            console.log(`Távolság (km): ${distanceKmValue}`);
-            console.log(`Időtartam: ${durationFormatted}`);
+            // Frissítjük az aktív autót a jelenleg kiválasztott autóra
+            setActiveCarId(selectedCarId);
+
+            // Üzemanyagköltség számítása
+            if (distanceKmValue && selectedCar) {
+              const cost = calculateFuelCost(
+                distanceKmValue,
+                selectedCar,
+                latestFuelPrice
+              );
+              setFuelCost(cost);
+            } else {
+              setFuelCost(null);
+            }
           } else {
             console.error("Directions error:", status);
           }
@@ -141,6 +179,26 @@ const RoutePlannerMap = ({ data }: Props) => {
         {/* Bal oldal – vezérlés */}
         <div className="flex flex-col items-center space-y-4 text-center my-auto">
           <div className="w-full max-w-sm">
+            <Label htmlFor="car" className="mb-2 block text-left">
+              Autó kiválasztása
+            </Label>
+            <Select onValueChange={setSelectedCarId}>
+              <SelectTrigger id="car" className="w-full">
+                <SelectValue placeholder="Válassz autót" />
+              </SelectTrigger>
+              <SelectContent className="z-[100]">
+                {cars.map((car) => (
+                  <SelectItem key={car.id} value={car.id.toString()}>
+                    <span className="flex items-center gap-2">
+                      <FaCarSide className="text-muted-foreground" />
+                      {car.manufacturer} {car.model} ({car.license_plate})
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-full max-w-sm">
             <Label htmlFor="start" className="mb-2 block text-left">
               Kiindulópont
             </Label>
@@ -154,9 +212,15 @@ const RoutePlannerMap = ({ data }: Props) => {
                 <SelectValue placeholder="Válassz kiindulópontot" />
               </SelectTrigger>
               <SelectContent className="z-[100]">
-                {data.map((addr) => (
-                  <SelectItem key={addr.id} value={getFullAddressString(addr)}>
-                    {formatAddressOption(addr)}
+                {addresses.map((addr) => (
+                  <SelectItem
+                    key={addr.id}
+                    value={getFullAddressWithCountry(addr)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-muted-foreground" />
+                      {getFullAddress(addr)}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -177,9 +241,15 @@ const RoutePlannerMap = ({ data }: Props) => {
                 <SelectValue placeholder="Válassz célállomást" />
               </SelectTrigger>
               <SelectContent className="z-[100]">
-                {data.map((addr) => (
-                  <SelectItem key={addr.id} value={getFullAddressString(addr)}>
-                    {formatAddressOption(addr)}
+                {addresses.map((addr) => (
+                  <SelectItem
+                    key={addr.id}
+                    value={getFullAddressWithCountry(addr)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-muted-foreground" />
+                      {getFullAddress(addr)}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -190,7 +260,7 @@ const RoutePlannerMap = ({ data }: Props) => {
             onClick={handleRoute}
             disabled={!startAddress || !endAddress || sameAddressError}
           >
-            Útvonal megjelenítése
+            Tervezés
           </Button>
 
           {sameAddressError && (
@@ -200,18 +270,31 @@ const RoutePlannerMap = ({ data }: Props) => {
           )}
 
           {(distanceText || durationText) && (
-            <div className="p-4 rounded-md bg-muted text-sm text-foreground border mt-2 w-full max-w-sm text-center">
-              {distanceKm && (
-                <p>
-                  <strong>Távolság:</strong>{" "}
-                  {distanceKm && ` ${distanceKm.toFixed(2)} km`}
-                </p>
-              )}
-              {durationFormatted && (
-                <p>
-                  <strong>Becsült idő:</strong> {durationFormatted}
-                </p>
-              )}
+            <div className="p-4 rounded-md bg-muted text-foreground border mt-2 w-full max-w-sm text-center">
+              <div className="flex flex-col gap-2">
+                {distanceKm && (
+                  <p className="flex items-center justify-center gap-2">
+                    <GiPathDistance className="size-4" />
+                    <span>
+                      <strong>Távolság:</strong> {distanceKm.toFixed(2)} km
+                    </span>
+                  </p>
+                )}
+                {durationFormatted && (
+                  <p className="flex items-center justify-center gap-2">
+                    <MdOutlineTimer className="size-4" />
+                    <span>
+                      <strong>Becsült idő:</strong> {durationFormatted}
+                    </span>
+                  </p>
+                )}
+                {/* A költségbecslés kiszervezett komponensben */}
+                <FuelCostSection
+                  fuelCost={fuelCost}
+                  selectedCar={activeCar}
+                  latestFuelPrice={latestFuelPrice}
+                />
+              </div>
             </div>
           )}
         </div>

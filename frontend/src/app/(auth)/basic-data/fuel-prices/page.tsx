@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import FuelPricesPageClient from "./page.client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "NAV üzemanyagárak",
+};
 
 export default async function FuelPricesPage() {
   const session = await auth();

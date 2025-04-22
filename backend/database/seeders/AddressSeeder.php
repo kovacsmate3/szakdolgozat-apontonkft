@@ -130,7 +130,16 @@ class AddressSeeder extends Seeder
                 'road_name'   => 'Szőlő',
                 'public_space_type' => 'köz',
                 'building_number'   => '1.',
-            ]
+            ],
+            [
+                'location_id' => 9,
+                'country' => 'Magyarország',
+                'postalcode' => 6710,
+                'city' => 'Szeged',
+                'road_name' => 'Zsoldos',
+                'public_space_type' => 'köz',
+                'building_number' => '4.',
+            ],
         ];
 
         foreach ($addresses as $address) {
