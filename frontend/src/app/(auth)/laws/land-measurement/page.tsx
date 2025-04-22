@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import LandMeasurementLawsPageClient from "./page.client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Földmérés",
+};
 
 export default async function LandMeasurementLawsPage() {
   const session = await auth();

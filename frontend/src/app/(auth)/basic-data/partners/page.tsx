@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import PartnersPageClient from "./page.client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Partnerek",
+};
 
 export default async function PartnersPage() {
   const session = await auth();

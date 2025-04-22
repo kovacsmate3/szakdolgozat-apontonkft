@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import StationsPageClient from "./page.client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Töltőállomások",
+};
 
 export default async function StationsPage() {
   const session = await auth();

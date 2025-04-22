@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import SitesPageClient from "./page.client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Székhely/Telephelyek",
+};
 
 export default async function SitesPage() {
   const session = await auth();

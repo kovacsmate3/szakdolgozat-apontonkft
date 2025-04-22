@@ -1,7 +1,12 @@
 import { auth } from "@/auth";
 import ConstructionLawsPageClient from "./page.client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Építésügy",
+};
 
 export default async function LandMeasurementLawsPage() {
   const session = await auth();

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Law } from "@/lib/types";
+import { formatDateToHungarianLong } from "@/lib/functions";
 
 interface LawCardProps {
   law: Law;
@@ -31,7 +32,7 @@ export function LawCard({ law }: LawCardProps) {
         </p>
         <p className="text-xs text-muted-foreground h-4">
           {law.date_of_enactment
-            ? `Hatálybalépés: ${law.date_of_enactment}`
+            ? `Hatálybalépés: ${formatDateToHungarianLong(law.date_of_enactment)}`
             : "\u2013"}
         </p>
         <div className="flex justify-end">
