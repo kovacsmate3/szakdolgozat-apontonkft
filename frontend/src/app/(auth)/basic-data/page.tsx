@@ -1,63 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Building } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FaBook } from "react-icons/fa";
-import { FaCar } from "react-icons/fa6";
-import { GrGroup } from "react-icons/gr";
-import { TbGasStation } from "react-icons/tb";
-import { IoMdPricetags } from "react-icons/io";
-
-const dashboardSections = [
-  {
-    title: "Székhelyek és telephelyek",
-    description: "Cégünk telephelyeinek és székhelyeinek kezelése",
-    icon: Building,
-    href: "/basic-data/sites",
-  },
-  {
-    title: "Partnerek",
-    description: "Partnerek, egyéb és bolt típusú helyszínek",
-    icon: GrGroup,
-    href: "/basic-data/partners",
-  },
-  {
-    title: "Töltőállomások",
-    description: "Üzemanyagtöltő állomások nyilvántartása",
-    icon: TbGasStation,
-    href: "/basic-data/stations",
-  },
-
-  {
-    title: "Autók",
-    description: "Cég és magángépjárművek nyilvántartása",
-    icon: FaCar,
-    href: "/basic-data/cars",
-  },
-  {
-    title: "Utazás célja",
-    description: "Utazási célok szótára és kategóriái",
-    icon: FaBook,
-    href: "/basic-data/travel-reasons",
-  },
-  {
-    title: "NAV Üzemanyagárak",
-    description: "Hivatalos üzemanyagárak nyilvántartása",
-    icon: IoMdPricetags,
-    href: "/basic-data/fuel-prices",
-  },
-];
+import { FaListUl } from "react-icons/fa";
+import { basicDataDashboardSections } from "@/lib/data/basic-data-dashboard";
 
 export default function BasicDataDashboardPage() {
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Alapadatok kezelése</h1>
+      <div className="flex items-center gap-3 mb-8">
+        <FaListUl className="size-8 text-primary" />
+        <h1 className="text-3xl font-bold">Adataim</h1>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {dashboardSections.map((section) => (
+        {basicDataDashboardSections.map((section) => (
           <Card
             key={section.title}
             className="hover:shadow-lg transition-shadow"
