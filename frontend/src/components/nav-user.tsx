@@ -67,7 +67,7 @@ export function NavUser() {
 
   // Biztonságos hozzáférés a friss adatokhoz
   const userName = freshUserData
-    ? `${freshUserData.firstname} ${freshUserData.lastname}`.trim()
+    ? `${freshUserData.lastname} ${freshUserData.firstname}`.trim()
     : session.user.name || "Ismeretlen";
 
   const userEmail = freshUserData?.email || session.user.email || "Nincs email";

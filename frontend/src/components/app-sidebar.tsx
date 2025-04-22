@@ -95,7 +95,7 @@ const data = {
           icon: BiTrip,
         },
         {
-          title: "Tankolások / Töltések",
+          title: "Tankolások/Töltések",
           url: "/road-record/refueling",
           icon: FaGasPump,
         },
@@ -112,7 +112,7 @@ const data = {
       icon: FaListUl,
       items: [
         {
-          title: "Székhely/telephelyek",
+          title: "Székhely/Telephelyek",
           url: "/basic-data/sites",
           icon: Building,
         },
@@ -235,7 +235,6 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       .filter((g): g is (typeof data.navMain)[0] => g !== null);
   }, [searchQuery, baseNav]);
 
-
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -264,13 +263,13 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive}>
-                      <a
+                      <Link
                         href={item.url}
                         className="flex-1 truncate flex items-center gap-2"
                       >
                         {item.icon && <item.icon className="size-4" />}
                         <span className="font-semibold">{item.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -298,7 +297,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                           return (
                             <SidebarMenuSubItem key={item.title}>
                               <SidebarMenuSubButton asChild isActive={isActive}>
-                                <a
+                                <Link
                                   href={item.url}
                                   className="flex-1 truncate flex items-center gap-2"
                                 >
@@ -306,7 +305,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                                     <item.icon className="size-4" />
                                   )}
                                   <span>{item.title}</span>
-                                </a>
+                                </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           );

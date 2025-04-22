@@ -289,3 +289,23 @@ export const contactInfoSchema = z.object({
       "Érvénytelen magyar telefonszám formátum. (+36 vagy 06, majd érvényes körzetszám és 7 számjegy)"
     ),
 });
+
+// Először definiáljuk az alap objektum sémát refine nélkül
+export const passwordChangeBaseSchema = z.object({
+  current_password: z.string().min(1, "A jelenlegi jelszó megadása kötelező."),
+  password: z.string().min(1, "Az új jelszó megadása kötelező."),
+  password_confirmation: z
+    .string()
+    .min(1, "Az új jelszó megerősítése kötelező."),
+});
+
+// Majd hozzáadjuk a refine szabályokat
+export const passwordChangeFormSchema = passwordChangeBaseSchema
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Az új jelszó és a megerősítés nem egyezik meg.",
+    path: ["password_confirmation"],
+  })
+  .refine((data) => data.current_password !== data.password, {
+    message: "Az új jelszó nem lehet azonos a jelenlegi jelszóval.",
+    path: ["password"],
+  });

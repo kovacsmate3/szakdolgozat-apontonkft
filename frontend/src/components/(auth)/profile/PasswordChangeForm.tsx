@@ -18,37 +18,33 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordChangeApiError } from "@/lib/errors";
 import { PasswordChangeData } from "@/lib/types";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import {
+  passwordChangeBaseSchema,
+  passwordChangeFormSchema,
+} from "@/lib/schemas";
 
 interface PasswordChangeFormProps {
   userId: number;
   token: string;
 }
 
-// Először definiáljuk az alap objektum sémát refine nélkül
-const baseSchema = z.object({
-  current_password: z.string().min(1, "A jelenlegi jelszó megadása kötelező."),
-  password: z.string().min(1, "Az új jelszó megadása kötelező."),
-  password_confirmation: z
-    .string()
-    .min(1, "Az új jelszó megerősítése kötelező."),
-});
-
-// Majd hozzáadjuk a refine szabályokat
-const formSchema = baseSchema
-  .refine((data) => data.password === data.password_confirmation, {
-    message: "Az új jelszó és a megerősítés nem egyezik meg.",
-    path: ["password_confirmation"],
-  })
-  .refine((data) => data.current_password !== data.password, {
-    message: "Az új jelszó nem lehet azonos a jelenlegi jelszóval.",
-    path: ["password"],
-  });
-
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof passwordChangeFormSchema>;
 
 export function PasswordChangeForm({ userId, token }: PasswordChangeFormProps) {
+  const [showPasswordFields, setShowPasswordFields] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
+  const togglePasswordVisibility = (field: keyof typeof showPasswordFields) => {
+    setShowPasswordFields((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(passwordChangeFormSchema),
     defaultValues: {
       current_password: "",
       password: "",
@@ -74,7 +70,7 @@ export function PasswordChangeForm({ userId, token }: PasswordChangeFormProps) {
           // Szerver oldali validációs hibák kezelése
           Object.entries(error.data.errors).forEach(([field, messages]) => {
             // Most már a baseSchema.shape létezik, mert ez egy egyszerű ZodObject
-            if (field in baseSchema.shape) {
+            if (field in passwordChangeBaseSchema.shape) {
               form.setError(field as keyof FormValues, {
                 type: "server",
                 message: (messages as string[])[0],
@@ -113,7 +109,28 @@ export function PasswordChangeForm({ userId, token }: PasswordChangeFormProps) {
             <FormItem>
               <FormLabel>Jelenlegi jelszó</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <div className="relative">
+                  <Input
+                    type={showPasswordFields.current ? "text" : "password"}
+                    {...field}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("current")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPasswordFields.current ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                    <span className="sr-only">
+                      Jelszó megjelenítése/elrejtése
+                    </span>
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -127,7 +144,28 @@ export function PasswordChangeForm({ userId, token }: PasswordChangeFormProps) {
             <FormItem>
               <FormLabel>Új jelszó</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <div className="relative">
+                  <Input
+                    type={showPasswordFields.new ? "text" : "password"}
+                    {...field}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("new")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPasswordFields.new ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                    <span className="sr-only">
+                      Jelszó megjelenítése/elrejtése
+                    </span>
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -141,7 +179,28 @@ export function PasswordChangeForm({ userId, token }: PasswordChangeFormProps) {
             <FormItem>
               <FormLabel>Új jelszó megerősítése</FormLabel>
               <FormControl>
-                <Input type="password" {...field} />
+                <div className="relative">
+                  <Input
+                    type={showPasswordFields.confirm ? "text" : "password"}
+                    {...field}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("confirm")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPasswordFields.confirm ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                    <span className="sr-only">
+                      Jelszó megjelenítése/elrejtése
+                    </span>
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

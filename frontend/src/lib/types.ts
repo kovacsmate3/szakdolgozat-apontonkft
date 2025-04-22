@@ -86,7 +86,8 @@ export interface Location {
   id: number;
   name: string;
   location_type: string;
-  is_headquarter: number;
+  is_headquarter: boolean;
+  address?: Address;
 }
 
 export interface Address {
@@ -99,6 +100,8 @@ export interface Address {
   public_space_type: string;
   building_number: string;
   location: Location | null;
+
+  fullAddress?(): string;
 }
 
 export interface Car {

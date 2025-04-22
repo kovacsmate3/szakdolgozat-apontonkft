@@ -14,9 +14,17 @@ class LocationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Location::query();
-        if ($request->has('location_type')) {
-            $query->where('location_type', $request->input('location_type'));
+        $query = Location::with('address');
+        if ($request->filled('location_type')) {
+            // ha paraméterként tömböt kapunk, használjuk azt, egyébként bontsuk fel vesszőknél
+            $types = $request->input('location_type');
+            if (!is_array($types)) {
+                $types = explode(',', $types);
+            }
+            // trimeljük meg a whitespace‑eket, és töröljük ki az üres elemeket
+            $types = array_filter(array_map('trim', $types));
+
+            $query->whereIn('location_type', $types);
         }
 
         if ($request->has('search')) {
