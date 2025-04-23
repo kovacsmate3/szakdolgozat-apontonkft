@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateUserDialog } from "@/components/(auth)/admin/users/CreateUserDialog";
+import { UserForm } from "@/components/(auth)/admin/users/UserForm";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +20,7 @@ export default function UsersPageClient({ token }: Props) {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Felhasználók</h1>
-        <CreateUserDialog token={token} />
+        <UserForm token={token} />
       </div>
       {isLoading ? (
         <p>Felhasználók betöltése...</p>

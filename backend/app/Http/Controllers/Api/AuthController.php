@@ -66,6 +66,8 @@ class AuthController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
+        $user->tokens()->delete();
+
         $token = $user->createToken("access_token")->plainTextToken;
 
         return response()->json([

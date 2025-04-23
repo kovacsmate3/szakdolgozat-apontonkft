@@ -39,6 +39,7 @@ export const columns: ColumnDef<UserData>[] = [
       />
     ),
     enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "lastname",
