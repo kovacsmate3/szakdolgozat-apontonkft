@@ -220,118 +220,131 @@ export function FuelPriceForm({
 
   const buttonText = initialData ? "Mentés" : "Új üzemanyagár";
 
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>{buttonText}</Button>
-      </DialogTrigger>
-      <DialogContent className="w-full max-w-3xl max-h-[95vh] overflow-y-auto p-12">
-        <DialogHeader>
-          <DialogTitle>{dialogTitle}</DialogTitle>
-          <DialogDescription>{dialogDescription}</DialogDescription>
-        </DialogHeader>
+  const dialogContent = (
+    <DialogContent className="w-full max-w-3xl max-h-[95vh] overflow-y-auto p-12">
+      <DialogHeader>
+        <DialogTitle>{dialogTitle}</DialogTitle>
+        <DialogDescription>{dialogDescription}</DialogDescription>
+      </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="period"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Időszak</FormLabel>
+                <FormControl>
+                  <DatePicker
+                    value={field.value ? new Date(field.value) : undefined}
+                    onChange={(date) =>
+                      field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="period"
+              name="petrol"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Időszak</FormLabel>
+                  <FormLabel>Benzin ára (Ft)</FormLabel>
                   <FormControl>
-                    <DatePicker
-                      value={field.value ? new Date(field.value) : undefined}
-                      onChange={(date) =>
-                        field.onChange(date ? format(date, "yyyy-MM-dd") : "")
-                      }
-                    />
+                    <Input type="number" step="0.01" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="petrol"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Benzin ára (Ft)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="mixture"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Keverék ára (Ft)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="diesel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dízel ára (Ft)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lp_gas"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>LPG autógáz ára (Ft)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <DialogFooter>
-              {initialData && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsOpen(false)}
-                  className="mr-2"
-                >
-                  Mégsem
-                </Button>
+            <FormField
+              control={form.control}
+              name="mixture"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Keverék ára (Ft)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="diesel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dízel ára (Ft)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lp_gas"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LPG autógáz ára (Ft)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <DialogFooter>
+            {initialData && (
               <Button
-                type="submit"
-                disabled={isPending || !form.formState.isValid}
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="mr-2"
               >
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {initialData ? "Frissítés" : "Mentés"}
+                Mégsem
               </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+            )}
+            <Button
+              type="submit"
+              disabled={isPending || !form.formState.isValid}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {buttonText}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
   );
+
+  if (isControlled) {
+    return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        {dialogContent}
+      </Dialog>
+    );
+  } else {
+    // Nem kontrollált mód (létrehozáshoz, gombbal)
+    return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button>+ Új üzemanyagár</Button>
+        </DialogTrigger>
+        {dialogContent}
+      </Dialog>
+    );
+  }
 }

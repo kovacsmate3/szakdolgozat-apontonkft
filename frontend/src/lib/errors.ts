@@ -52,3 +52,28 @@ export class PasswordChangeApiError extends Error {
     this.name = "PasswordChangeApiError";
   }
 }
+
+type CarValidationErrorResponse = {
+  message: string;
+  errors: {
+    user_id?: string[];
+    car_type?: string[];
+    license_plate?: string[];
+    manufacturer?: string[];
+    model?: string[];
+    fuel_type?: string[];
+    standard_consumption?: string[];
+    capacity?: string[];
+    fuel_tank_capacity?: string[];
+  };
+};
+
+export class CarApiError extends Error {
+  constructor(
+    public status: number,
+    public data: CarValidationErrorResponse
+  ) {
+    super("Car API error");
+    this.name = "CarApiError";
+  }
+}

@@ -1,59 +1,28 @@
-// app/(dashboard)/basic-data/cars/page.tsx
+import { auth } from "@/auth";
+import CarsPageClient from "./page.client";
+import { Metadata } from "next";
 
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
-import { getSession } from "next-auth/react";
-import { Car } from "@/lib/types";
-import CarCard from "@/components/(auth)/basic-data/cars/CarCard";
+export const metadata: Metadata = {
+  title: "Járművek",
+};
 
-export default function CarsPage() {
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function CarsPage() {
+  const session = await auth();
 
-  useEffect(() => {
-    const fetchCars = async () => {
-      const session = await getSession();
-      const token = session?.access_token;
-
-      if (!token) {
-        console.error("Nincs érvényes token.");
-        return;
-      }
-
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cars`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error("Sikertelen lekérés");
-
-        const data = await res.json();
-        setCars(data);
-      } catch (err) {
-        console.error("Hiba a lekérés során:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCars();
-  }, []);
-
-  if (loading) {
-    return <p className="text-center mt-6">Autók betöltése...</p>;
+  if (!session?.user?.access_token) {
+    return <div>Bejelentkezés szükséges.</div>;
   }
 
+  const isAdmin = session.user.role === "admin";
+  const userId = parseInt(session.user.id);
+
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Autók</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cars.map((car) => (
-          <CarCard key={car.id} car={car} />
-        ))}
-      </div>
-    </main>
+    <CarsPageClient
+      token={session.user.access_token}
+      isAdmin={isAdmin}
+      userId={userId}
+    />
   );
 }

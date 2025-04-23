@@ -357,3 +357,73 @@ export const fuelPriceFormSchema = z.object({
   diesel: z.coerce.number().min(0, "A dízel ára nem lehet negatív."),
   lp_gas: z.coerce.number().min(0, "Az LPG ára nem lehet negatív."),
 });
+
+export const carFormSchema = z.object({
+  user_id: z.string({
+    required_error: "A felhasználó kiválasztása kötelező.",
+  }),
+  car_type: z
+    .string({ required_error: "A jármű típusának megadása kötelező." })
+    .min(1, "A jármű típusának megadása kötelező.")
+    .max(30, "A jármű típusa maximum 30 karakter hosszú lehet."),
+  license_plate: z
+    .string({ required_error: "A rendszám megadása kötelező." })
+    .min(1, "A rendszám megadása kötelező.")
+    .max(20, "A rendszám maximum 20 karakter hosszú lehet.")
+    .refine(
+      (val) => {
+        const oldFormat = /^[A-Z]{3}-\d{3}$/.test(val);
+        const newFormat = /^([A-Z]{2})-([A-Z]{2})-(\d{1,3})$/.exec(val);
+
+        if (oldFormat) return true;
+        if (newFormat) {
+          const [part1, digits] = newFormat;
+          const vowels = "AEIOU";
+          const isAllVowels =
+            vowels.includes(part1[0]) && vowels.includes(part1[1]);
+          const isAllConsonants =
+            !vowels.includes(part1[0]) && !vowels.includes(part1[1]);
+          return (
+            (isAllVowels || isAllConsonants) && +digits >= 1 && +digits <= 999
+          );
+        }
+        return false;
+      },
+      {
+        message:
+          "A rendszám formátuma érvénytelen. Példa: ABC-123 vagy AA-BB-123 (első betűpár: 2 magán- vagy 2 mássalhangzó)",
+      }
+    ),
+  manufacturer: z
+    .string({ required_error: "A gyártó megadása kötelező." })
+    .min(1, "A gyártó megadása kötelező.")
+    .max(100, "A gyártó neve maximum 100 karakter hosszú lehet."),
+  model: z
+    .string({ required_error: "A modell megadása kötelező." })
+    .min(1, "A modell megadása kötelező.")
+    .max(100, "A modell maximum 100 karakter hosszú lehet."),
+  fuel_type: z
+    .string({ required_error: "Az üzemanyag típus megadása kötelező." })
+    .min(1, "Az üzemanyag típus megadása kötelező.")
+    .max(50, "Az üzemanyag típus maximum 50 karakter hosszú lehet."),
+  standard_consumption: z
+    .string({ required_error: "A normál fogyasztás megadása kötelező." })
+    .min(1, "A normál fogyasztás megadása kötelező.")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
+      message: "A normál fogyasztás nem lehet negatív érték.",
+    }),
+  capacity: z
+    .string({ required_error: "A hengerűrtartalom megadása kötelező." })
+    .min(1, "A hengerűrtartalom megadása kötelező.")
+    .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
+      message: "A hengerűrtartalom pozitív egész szám kell legyen.",
+    }),
+  fuel_tank_capacity: z
+    .string({
+      required_error: "Az üzemanyagtartály kapacitás megadása kötelező.",
+    })
+    .min(1, "Az üzemanyagtartály kapacitás megadása kötelező.")
+    .refine((val) => !isNaN(parseInt(val)) && parseInt(val) > 0, {
+      message: "Az üzemanyagtartály kapacitás pozitív egész szám kell legyen.",
+    }),
+});

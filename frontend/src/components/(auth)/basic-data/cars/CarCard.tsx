@@ -5,16 +5,33 @@ import { CarComponentProps } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { FaGasPump, FaTachometerAlt } from "react-icons/fa";
 import { useTheme } from "next-themes";
-import { SquarePen } from "lucide-react";
+import { SquarePen, Trash2 } from "lucide-react";
 
-const CarCard = ({ car }: CarComponentProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+interface ExtendedCarComponentProps extends CarComponentProps {
+  token: string;
+  isAdmin: boolean;
+  currentUserId: number;
+  onEdit: (car: CarComponentProps["car"]) => void;
+  onDelete: (car: CarComponentProps["car"]) => void;
+}
+
+const CarCard = ({
+  car,
+  isAdmin,
+  currentUserId,
+  onEdit,
+  onDelete,
+}: ExtendedCarComponentProps) => {
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { resolvedTheme } = useTheme();
 
   const imageSrc =
     resolvedTheme === "dark"
       ? "/images/(auth)/basic-data/cars/car-placeholder-light.png"
       : "/images/(auth)/basic-data/cars/car-placeholder-dark.png";
+
+  // Ellenőrizzük, hogy a felhasználó jogosult-e a szerkesztésre/törlésre
+  const canModify = isAdmin || car.user_id === currentUserId;
 
   return (
     <div className="group p-4 rounded-lg border bg-background shadow-sm">
@@ -25,20 +42,31 @@ const CarCard = ({ car }: CarComponentProps) => {
           </h2>
           <p className="text-muted-foreground text-sm">{car.license_plate}</p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
-          onClick={() => {
-            console.log("Szerkesztés megnyitása:", car);
-          }}
-        >
-          <SquarePen className="h-4 w-4" />
-          <span className="sr-only">Szerkesztés</span>
-        </Button>
+        {canModify && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+              onClick={() => onEdit(car)}
+            >
+              <SquarePen className="h-4 w-4" />
+              <span className="sr-only">Szerkesztés</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive/80"
+              onClick={() => onDelete(car)}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Törlés</span>
+            </Button>
+          </div>
+        )}
       </div>
 
-      <div className="relative w-full h-40 my-2 rounded-md bg-muted overflow-hidden   ">
+      <div className="relative w-full h-40 my-2 rounded-md bg-muted overflow-hidden">
         <Image
           src={imageSrc}
           alt={`${car.manufacturer} ${car.model}`}
@@ -63,15 +91,15 @@ const CarCard = ({ car }: CarComponentProps) => {
       </div>
 
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsDetailsOpen(true)}
         className="mt-3 w-full py-2 rounded-md"
       >
         Részletek
       </Button>
 
       <CarDetails
-        isOpen={isOpen}
-        closeModal={() => setIsOpen(false)}
+        isOpen={isDetailsOpen}
+        closeModal={() => setIsDetailsOpen(false)}
         car={car}
       />
     </div>
