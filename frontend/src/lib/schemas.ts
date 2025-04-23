@@ -154,7 +154,7 @@ const allowedAreaCodes = [
 
 const phoneRegex = new RegExp(`^(\\+36|06)(${allowedAreaCodes})\\d{7}$`);
 
-export const userFormSchema = z.object({
+export const userCreateSchema = z.object({
   username: z
     .string({ required_error: "A felhasználónév megadása kötelező." })
     .min(1, "A felhasználónév megadása kötelező.")
@@ -236,6 +236,46 @@ export const userFormSchema = z.object({
   role_id: z.enum(["1", "2", "3"], {
     required_error: "A szerepkör kiválasztása kötelező.",
   }),
+});
+
+export const userEditSchema = userCreateSchema.extend({
+  password: z
+    .string()
+    .min(1, "A jelszó megadása kötelező.")
+    .superRefine((val, ctx) => {
+      if (!val || val.length === 0) return;
+      if (val.length < 8) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A jelszónak legalább 8 karakter hosszúnak kell lennie.",
+        });
+      }
+      if (!/[a-z]/.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A jelszónak tartalmaznia kell kisbetűt is.",
+        });
+      }
+      if (!/[A-Z]/.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A jelszónak tartalmaznia kell nagybetűt is.",
+        });
+      }
+      if (!/\d/.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A jelszónak tartalmaznia kell legalább egy számot.",
+        });
+      }
+      if (!/[^a-zA-Z0-9]/.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "A jelszónak tartalmaznia kell legalább egy speciális karaktert.",
+        });
+      }
+    }),
 });
 
 export const personalInfoSchema = z.object({

@@ -167,7 +167,7 @@ export function ExportTripsDialog({
 
         {cars.length === 0 ? (
           <Card className="mt-4 border-amber-200 bg-amber-50">
-            <CardContent className="pt-4 flex items-start gap-2">
+            <CardContent className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
               <div className="text-sm text-amber-700">
                 Nincs elérhető jármű az exportáláshoz ebben a hónapban.
@@ -275,7 +275,7 @@ export function ExportTripsDialog({
 
                 {error && (
                   <Card className="bg-red-50 border-red-200">
-                    <CardContent className="pt-4 flex items-start gap-2">
+                    <CardContent className="flex items-start gap-2">
                       <AlertCircle className="h-4 w-4 text-red-500 mt-0.5" />
                       <div className="text-sm text-red-700">{error}</div>
                     </CardContent>

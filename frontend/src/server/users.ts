@@ -136,11 +136,12 @@ export const deleteUser = async ({
 }: {
   id: number;
   token: string;
-}): Promise<void> => {
+}): Promise<{ message: string }> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
+      Accept: "application/json",
     },
   });
 
@@ -148,4 +149,10 @@ export const deleteUser = async ({
     const data = await res.json();
     throw new UserApiError(res.status, data);
   }
+
+  // Force a proper return type
+  const data = await res.json();
+  return {
+    message: data.message || "Felhasználó sikeresen törölve.",
+  };
 };

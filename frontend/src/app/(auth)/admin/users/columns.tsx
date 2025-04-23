@@ -18,7 +18,15 @@ import { DataTableColumnHeader } from "@/components/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import { format, parseISO } from "date-fns";
 
-export const columns: ColumnDef<UserData>[] = [
+interface UsersColumnsProps {
+  onEdit: (user: UserData) => void;
+  onDelete: (user: UserData) => void;
+}
+
+export const getUsersColumns = ({
+  onEdit,
+  onDelete,
+}: UsersColumnsProps): ColumnDef<UserData>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -114,7 +122,7 @@ export const columns: ColumnDef<UserData>[] = [
     cell: ({ row }) => {
       const user = row.original;
       return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Menü megnyitása</span>
@@ -130,11 +138,11 @@ export const columns: ColumnDef<UserData>[] = [
               <span>Email másolása</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(user)}>
               <SquarePen className="text-muted-foreground" />
               <span>Szerkesztés</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDelete(user)}>
               <Trash2 className="text-muted-foreground" />
               <span>Törlés</span>
             </DropdownMenuItem>
