@@ -349,3 +349,11 @@ export const passwordChangeFormSchema = passwordChangeBaseSchema
     message: "Az új jelszó nem lehet azonos a jelenlegi jelszóval.",
     path: ["password"],
   });
+
+export const fuelPriceFormSchema = z.object({
+  period: z.string().nonempty("Az időszak megadása kötelező."),
+  petrol: z.coerce.number().min(0, "A benzin ára nem lehet negatív."),
+  mixture: z.coerce.number().min(0, "A keverék ára nem lehet negatív."),
+  diesel: z.coerce.number().min(0, "A dízel ára nem lehet negatív."),
+  lp_gas: z.coerce.number().min(0, "Az LPG ára nem lehet negatív."),
+});

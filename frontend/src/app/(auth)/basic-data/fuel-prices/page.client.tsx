@@ -1,10 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { FuelPriceForm } from "@/components/(auth)/basic-data/fuel-prices/FuelPriceForm";
+import { getFuelPricesColumns } from "./columns";
+import { deleteFuelPrice, getFuelPrices } from "@/server/fuel-prices";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DataTable } from "@/components/data-table";
+import { useCallback, useMemo, useState } from "react";
 import { FuelPrice } from "@/lib/types";
-import { FuelPriceTable } from "@/components/(auth)/basic-data/fuel-prices/FuelPriceTable";
-import { CreateFuelPriceDialog } from "@/components/(auth)/basic-data/fuel-prices/CreateFuelPriceDialog";
-import { columns } from "@/components/(auth)/basic-data/fuel-prices/columns";
+import { toast } from "sonner";
+import { DeleteDialog } from "@/components/delete-dialog";
+import { formatPeriodToHungarianMonth } from "@/lib/functions";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   token: string;
@@ -12,41 +18,65 @@ interface Props {
 }
 
 export default function FuelPricesPageClient({ token, isAdmin }: Props) {
-  const [fuel_prices, setFuelPrices] = useState<FuelPrice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [fuelPriceToDelete, setFuelPriceToDelete] = useState<FuelPrice | null>(
+    null
+  );
+  const [fuelPriceToEdit, setFuelPriceToEdit] = useState<FuelPrice | null>(
+    null
+  );
+  const [formOpen, setFormOpen] = useState(false);
 
-  console.log(token);
+  const { data, isFetching } = useQuery({
+    queryKey: ["fuel-prices", token],
+    queryFn: getFuelPrices,
+  });
 
-  const fetchFuelPrices = useCallback(async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/fuel-prices`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteFuelPrice({ id, token }),
+    onSuccess: (data) => {
+      // Invalidate and refetch the fuel prices query
+      queryClient.invalidateQueries({ queryKey: ["fuel-prices", token] });
+      toast.success(`Sikeres törlés!`, {
+        duration: 4000,
+        description: data.message || "Az üzemanyagár sikeresen törölve.",
+      });
+      setFuelPriceToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Delete error:", error);
+      toast.error(`Hiba történt`, {
+        description: "Az üzemanyagár törlése sikertelen.",
+        duration: 4000,
+      });
+      setFuelPriceToDelete(null);
+    },
+  });
 
-      if (!res.ok)
-        throw new Error("Nem sikerült lekérni a NAV üzemanyagárakat.");
+  const onEdit = useCallback((fuelPrice: FuelPrice) => {
+    setFuelPriceToEdit(fuelPrice);
+    setFormOpen(true);
+  }, []);
 
-      const data = await res.json();
-      setFuelPrices(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+  const onDelete = useCallback((fuelPrice: FuelPrice) => {
+    setFuelPriceToDelete(fuelPrice);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (fuelPriceToDelete?.id) {
+      deleteMutation.mutate(fuelPriceToDelete.id);
     }
-  }, [token]);
+  }, [fuelPriceToDelete, deleteMutation]);
 
-  useEffect(() => {
-    fetchFuelPrices();
-  }, [fetchFuelPrices]);
+  const onCreateFuelPrice = useCallback(() => {
+    setFuelPriceToEdit(null); // Nincs szerkesztendő üzemanyagár
+    setFormOpen(true); // Megnyitjuk a dialógust
+  }, []);
 
-  const handleFuelPriceCreated = () => {
-    fetchFuelPrices();
-  };
+  const columns = useMemo(
+    () => getFuelPricesColumns({ onEdit, onDelete, isAdmin }),
+    [onEdit, onDelete, isAdmin]
+  );
 
   return (
     <div className="container mx-auto py-10">
@@ -54,14 +84,36 @@ export default function FuelPricesPageClient({ token, isAdmin }: Props) {
         <h1 className="text-2xl font-semibold">NAV üzemanyagárak</h1>
         {/* Csak admin felhasználóknak jelenítjük meg a gombot */}
         {isAdmin && (
-          <CreateFuelPriceDialog onFuelPriceCreated={handleFuelPriceCreated} />
+          <Button onClick={onCreateFuelPrice}>+ Új üzemanyagár</Button>
         )}
       </div>
-      {loading ? (
-        <p>Betöltés...</p>
+      {isFetching ? (
+        <p>NAV üzemanyagárak betöltése...</p>
       ) : (
-        <FuelPriceTable columns={columns} data={fuel_prices} />
+        <DataTable columns={columns} data={data || []} filterColumn="period" />
       )}
+
+      {/* Delete confirmation dialog */}
+      <DeleteDialog
+        isOpen={!!fuelPriceToDelete}
+        onOpenChange={(open) => {
+          if (!open) setFuelPriceToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Üzemanyagár törlése"
+        description={
+          fuelPriceToDelete
+            ? `Biztosan törölni szeretnéd a(z) ${formatPeriodToHungarianMonth(fuelPriceToDelete.period)} időszak üzemanyagárait?`
+            : "Ez a művelet nem visszavonható."
+        }
+      />
+      {/* Üzemanyagár form komponens */}
+      <FuelPriceForm
+        token={token}
+        initialData={fuelPriceToEdit}
+        isOpen={formOpen}
+        onOpenChange={setFormOpen}
+      />
     </div>
   );
 }
