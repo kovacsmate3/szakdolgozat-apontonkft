@@ -75,6 +75,14 @@ class User extends Authenticatable
         return $this->hasMany(Trip::class, 'user_id');
     }
 
+    /**
+     * A felhasználóhoz tartozó utazási célok
+     */
+    public function travelPurposes()
+    {
+        return $this->hasMany(TravelPurposeDictionary::class, 'user_id');
+    }
+
     public function leaveRequests()
     {
         return $this->hasMany(LeaveRequest::class, 'user_id');

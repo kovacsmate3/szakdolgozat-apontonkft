@@ -17,6 +17,17 @@ class TravelPurposeDictionaryController extends Controller
     {
         $query = TravelPurposeDictionary::query();
 
+        // Ha nem admin, akkor csak a sajátjait és a rendszerszintűeket láthatja
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
+
+        if (!$isAdmin) {
+            $query->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->orWhere('is_system', true);
+            });
+        }
+
         if ($request->has('type')) {
             $query->where('type', $request->input('type'));
         }
@@ -31,6 +42,11 @@ class TravelPurposeDictionaryController extends Controller
 
         if ($request->has('is_system')) {
             $query->where('is_system', $request->boolean('is_system'));
+        }
+
+        // Ha a felhasználó sajátjait kérjük csak
+        if ($request->has('my_records') && $request->boolean('my_records')) {
+            $query->where('user_id', $user->id);
         }
 
         $sortBy = $request->input('sort_by', 'travel_purpose');
@@ -50,12 +66,24 @@ class TravelPurposeDictionaryController extends Controller
      */
     public function store(Request $request)
     {
+
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
+
+        // Ellenőrizzük, hogy nem admin felhasználó próbál-e rendszerszintű rekordot létrehozni
+        if (!$isAdmin && $request->has('is_system') && $request->boolean('is_system')) {
+            return response()->json([
+                'message' => 'Csak adminisztrátor hozhat létre rendszerszintű utazási célt.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $validated = $request->validate(
             [
                 'travel_purpose' => ['required', 'string', 'max:100'],
                 'type' => ['required', 'string', 'max:50'],
                 'note' => ['nullable', 'string'],
-                'is_system' => ['sometimes', 'boolean']
+                'is_system' => ['sometimes', 'boolean'],
+                'user_id' => ['sometimes', 'exists:users,id'],
             ],
             [
                 'travel_purpose.required' => 'Az utazás céljának megadása kötelező.',
@@ -69,8 +97,13 @@ class TravelPurposeDictionaryController extends Controller
                 'note.string' => 'A megjegyzés csak szöveg formátumú lehet.',
 
                 'is_system.boolean' => 'A rendszerszintű jelölés csak igaz vagy hamis értéket vehet fel.',
+                'user_id.exists' => 'A megadott felhasználó nem létezik.',
             ]
         );
+
+        if (!$isAdmin || !isset($validated['user_id'])) {
+            $validated['user_id'] = $user->id;
+        }
 
         $travelPurpose = TravelPurposeDictionary::create($validated);
 
@@ -93,6 +126,12 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
+        if (!$this->canViewRecord($travelPurpose)) {
+            return response()->json([
+                'message' => 'Nincs jogosultsága megtekinteni ezt az utazási célt.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         return response()->json($travelPurpose, Response::HTTP_OK);
     }
 
@@ -109,18 +148,23 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        if ($travelPurpose->is_system && !Auth::user()->hasRole('admin')) {
+        // Ellenőrizzük a módosítási jogosultságot
+        if (!$this->canEditRecord($travelPurpose)) {
             return response()->json([
-                'message' => 'Rendszerszintű utazási cél nem módosítható.'
+                'message' => 'Nincs jogosultsága módosítani ezt az utazási célt.'
             ], Response::HTTP_FORBIDDEN);
         }
+
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
 
         $validated = $request->validate(
             [
                 'travel_purpose' => ['sometimes', 'string', 'max:100'],
                 'type' => ['sometimes', 'string', 'max:50'],
                 'note' => ['sometimes', 'nullable', 'string'],
-                'is_system' => ['sometimes', 'boolean']
+                'is_system' => ['sometimes', 'boolean'],
+                'user_id' => ['sometimes', 'exists:users,id'],
             ],
             [
                 'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
@@ -132,8 +176,19 @@ class TravelPurposeDictionaryController extends Controller
                 'note.string' => 'A megjegyzés csak szöveg formátumú lehet.',
 
                 'is_system.boolean' => 'A rendszerszintű jelölés csak igaz vagy hamis értéket vehet fel.',
+                'user_id.exists' => 'A megadott felhasználó nem létezik.',
             ]
         );
+
+        // Csak admin módosíthatja a user_id-t
+        if (!$isAdmin && isset($validated['user_id'])) {
+            unset($validated['user_id']);
+        }
+
+        // Csak admin tehet egy rekordot rendszerszintűvé
+        if (!$isAdmin && isset($validated['is_system']) && $validated['is_system']) {
+            unset($validated['is_system']);
+        }
 
         $travelPurpose->update($validated);
 
@@ -156,10 +211,10 @@ class TravelPurposeDictionaryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $isAdmin = Auth::user()->role && Auth::user()->role->slug === 'admin';
-        if ($travelPurpose->is_system && !$isAdmin) {
+        // Ellenőrizzük a törlési jogosultságot
+        if (!$this->canDeleteRecord($travelPurpose)) {
             return response()->json([
-                'message' => 'Rendszerszintű utazási cél nem törölhető.'
+                'message' => 'Nincs jogosultsága törölni ezt az utazási célt.'
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -168,5 +223,66 @@ class TravelPurposeDictionaryController extends Controller
         return response()->json([
             'message' => "'{$travelPurpose->travel_purpose}' utazási cél sikeresen törölve."
         ], Response::HTTP_OK);
+    }
+
+    /**
+     * Ellenőrzi, hogy a felhasználó megtekintheti-e a rekordot
+     */
+    private function canViewRecord(TravelPurposeDictionary $travelPurpose): bool
+    {
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
+
+        // Admin mindent láthat
+        if ($isAdmin) {
+            return true;
+        }
+
+        // Nem admin csak a saját vagy rendszerszintű rekordokat láthatja
+        return $travelPurpose->user_id === $user->id || $travelPurpose->is_system;
+    }
+
+    /**
+     * Ellenőrzi, hogy a felhasználó szerkesztheti-e a rekordot
+     */
+    private function canEditRecord(TravelPurposeDictionary $travelPurpose): bool
+    {
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
+
+        // Admin bármit szerkeszthet
+        if ($isAdmin) {
+            return true;
+        }
+
+        // Rendszerszintű rekordokat csak admin szerkeszthet
+        if ($travelPurpose->is_system) {
+            return false;
+        }
+
+        // Nem admin csak a saját nem rendszerszintű rekordjait szerkesztheti
+        return $travelPurpose->user_id === $user->id;
+    }
+
+    /**
+     * Ellenőrzi, hogy a felhasználó törölheti-e a rekordot
+     */
+    private function canDeleteRecord(TravelPurposeDictionary $travelPurpose): bool
+    {
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
+
+        // Admin bármit törölhet
+        if ($isAdmin) {
+            return true;
+        }
+
+        // Rendszerszintű rekordokat csak admin törölhet
+        if ($travelPurpose->is_system) {
+            return false;
+        }
+
+        // Nem admin csak a saját nem rendszerszintű rekordjait törölheti
+        return $travelPurpose->user_id === $user->id;
     }
 }

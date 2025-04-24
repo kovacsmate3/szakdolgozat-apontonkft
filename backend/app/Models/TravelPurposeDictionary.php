@@ -15,6 +15,7 @@ class TravelPurposeDictionary extends Model
         'type',
         'note',
         'is_system',
+        'user_id',
     ];
 
     /**
@@ -27,6 +28,14 @@ class TravelPurposeDictionary extends Model
         return [
             'is_system' => 'boolean'
         ];
+    }
+
+    /**
+     * A felhasználó, aki létrehozta az utazási célt
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function locations()
