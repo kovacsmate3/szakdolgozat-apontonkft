@@ -5,60 +5,38 @@ import { hu } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trip } from "@/lib/types";
+import { getFuelExpenses } from "@/server/fuel-expenses";
+import { FuelExpense } from "@/lib/types";
 import { ChevronLeft, ChevronRight, FileText, Plus } from "lucide-react";
-import { getTrips } from "@/server/trips";
-import { getCars } from "@/server/cars";
-import { ExportTripsDialog } from "@/components/(auth)/road-record/monthly-trips/ExportTripsDialog";
-import { useQuery } from "@tanstack/react-query";
 import { useCalendar } from "@/hooks/use-calendar";
-import { TripsCalendar } from "@/components/(auth)/road-record/monthly-trips/TripsCalendar";
+import { FuelExpensesCalendar } from "@/components/(auth)/road-record/refueling/FuelExpensesCalendar";
 
 interface Props {
   token: string;
 }
 
-export default function MonthlyTripsPageClient({ token }: Props) {
+export default function MonthlyFuelExpensesPageClient({ token }: Props) {
   const {
     selectedDate,
     selectedView,
     selectedDay,
-    dataByDay: tripsByDay,
+    dataByDay: expensesByDay,
     isLoading,
     isError,
-    error,
     navigateToPreviousMonth,
     navigateToNextMonth,
     handleDayClick,
     navigateBackToMonth,
-    exportDialogOpen,
-    setExportDialogOpen,
-    handleExportClick,
-  } = useCalendar<Trip>({
+  } = useCalendar<FuelExpense>({
     token,
-    fetchData: getTrips,
-    keyExtractor: (trip) => new Date(trip.start_time),
+    fetchData: getFuelExpenses,
+    keyExtractor: (expense) => new Date(expense.expense_date),
   });
-
-  // Fetch all available cars
-  const {
-    data: cars,
-    isLoading: isLoadingCars,
-    isError: isErrorCars,
-  } = useQuery({
-    queryKey: ["cars", token],
-    queryFn: getCars,
-  });
-
-  // For better error handling
-  if (isError) {
-    console.error("Error loading trips:", error);
-  }
 
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Havi utak</h1>
+        <h1 className="text-2xl font-semibold">Tankolások/Töltések</h1>
 
         <div className="flex flex-wrap gap-1 sm:gap-2">
           <Button
@@ -67,19 +45,16 @@ export default function MonthlyTripsPageClient({ token }: Props) {
             className="flex items-center gap-1 sm:gap-2 cursor-pointer"
           >
             <Plus className="h-4 w-4" />
-            Új utazás
+            Új tankolás
           </Button>
-          {!isLoadingCars && !isErrorCars && cars && cars.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={handleExportClick}
-              size="sm"
-              className="flex items-center gap-1 sm:gap-2 cursor-pointer"
-            >
-              <FileText className="h-4 w-4" />
-              Exportálás
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 sm:gap-2 cursor-pointer"
+          >
+            <FileText className="h-4 w-4" />
+            Exportálás
+          </Button>
         </div>
       </div>
 
@@ -144,27 +119,15 @@ export default function MonthlyTripsPageClient({ token }: Props) {
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <TripsCalendar
+            <FuelExpensesCalendar
               selectedDate={selectedDate}
-              tripsByDay={tripsByDay}
+              expensesByDay={expensesByDay}
               onDayClick={handleDayClick}
               view={selectedView}
               selectedDay={selectedDay}
             />
           </CardContent>
         </Card>
-      )}
-
-      {/* Export párbeszédablak */}
-      {exportDialogOpen && (
-        <ExportTripsDialog
-          open={exportDialogOpen}
-          onOpenChange={setExportDialogOpen}
-          token={token}
-          cars={cars || []}
-          year={selectedDate.getFullYear()}
-          month={selectedDate.getMonth() + 1}
-        />
       )}
     </div>
   );

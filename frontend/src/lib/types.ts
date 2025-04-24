@@ -188,3 +188,20 @@ export interface TravelPurposeDictionary {
   is_system: boolean;
   user_id?: number;
 }
+
+export interface FuelExpense {
+  id: number;
+  car_id: number;
+  user_id: number;
+  location_id: number;
+  trip_id: number | null;
+  expense_date: string;
+  amount: number;
+  currency: string;
+  fuel_quantity: number;
+  odometer: number;
+  car?: Car;
+  user?: UserData;
+  location?: Location;
+  trip?: Trip;
+}

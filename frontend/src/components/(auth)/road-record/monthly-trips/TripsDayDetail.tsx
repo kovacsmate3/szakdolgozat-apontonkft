@@ -26,12 +26,12 @@ import {
 import { calculateTotalDistance, roundToTwoDecimals } from "@/lib/functions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-interface DayDetailProps {
+interface TripsDayDetailProps {
   day: Date;
   trips: Trip[];
 }
 
-export function DayDetail({ day, trips }: DayDetailProps) {
+export function TripsDayDetail({ day, trips }: TripsDayDetailProps) {
   const totalDistance = calculateTotalDistance(trips);
 
   // Sort trips by start time

@@ -1,34 +1,35 @@
 "use client";
 
 import { getDay, isToday, startOfMonth, isSameMonth } from "date-fns";
-import { Trip } from "@/lib/types";
-import { DayDetail } from "./DayDetail";
-import { DayCell } from "./DayCell";
 import { cn } from "@/lib/utils";
 
-interface CalendarViewProps {
+interface CalendarProps<T> {
   selectedDate: Date;
-  tripsByDay: { [key: number]: Trip[] };
+  dataByDay: { [key: number]: T[] };
+  renderDayCell: (
+    day: Date,
+    items: T[],
+    isToday: boolean,
+    isCurrentMonth: boolean
+  ) => React.ReactNode;
+  renderDayDetail: (day: Date, items: T[]) => React.ReactNode;
   onDayClick: (day: Date) => void;
   view: "month" | "day";
   selectedDay: Date | null;
 }
 
-export function CalendarView({
+export function Calendar<T>({
   selectedDate,
-  tripsByDay,
+  dataByDay,
+  renderDayCell,
+  renderDayDetail,
   onDayClick,
   view,
   selectedDay,
-}: CalendarViewProps) {
-  // 1) If we're in “day” mode, just show the detail panel:
+}: CalendarProps<T>) {
+  // 1) If we're in "day" mode, just show the detail panel:
   if (view === "day" && selectedDay) {
-    return (
-      <DayDetail
-        day={selectedDay}
-        trips={tripsByDay[selectedDay.getDate()] || []}
-      />
-    );
+    return renderDayDetail(selectedDay, dataByDay[selectedDay.getDate()] || []);
   }
 
   // 2) Otherwise, build the month grid:
@@ -109,7 +110,7 @@ export function CalendarView({
           const dayNum = cell.getDate();
           const isCurrent = isSameMonth(cell, selectedDate);
           const today = isToday(cell);
-          const trips = tripsByDay[dayNum] || [];
+          const items = dataByDay[dayNum] || [];
 
           return (
             <div
@@ -119,14 +120,9 @@ export function CalendarView({
                 Math.floor(idx / 7) === Math.floor((days.length - 1) / 7) &&
                   "border-b"
               )}
+              onClick={() => onDayClick(cell)}
             >
-              <DayCell
-                day={cell}
-                trips={trips}
-                isToday={today}
-                onClick={() => onDayClick(cell)}
-                isCurrentMonth={isCurrent}
-              />
+              {renderDayCell(cell, items, today, isCurrent)}
             </div>
           );
         })}

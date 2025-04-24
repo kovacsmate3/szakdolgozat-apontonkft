@@ -1,39 +1,44 @@
 "use client";
 
-import { Trip } from "@/lib/types";
+import { FuelExpense } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { calculateTotalDistance, roundToTwoDecimals } from "@/lib/functions";
-import { Car } from "lucide-react";
-import { FaRoad } from "react-icons/fa";
+import { roundToTwoDecimals } from "@/lib/functions";
+import { Droplets } from "lucide-react";
+import { GiCash } from "react-icons/gi";
 
-interface DayCellProps {
+interface FuelExpenseDayCellProps {
   day: Date;
-  trips: Trip[];
+  expenses: FuelExpense[];
   isToday: boolean;
-  onClick: () => void;
   isCurrentMonth: boolean;
 }
 
-export function DayCell({
+export function FuelExpenseDayCell({
   day,
-  trips,
+  expenses,
   isToday,
-  onClick,
   isCurrentMonth,
-}: DayCellProps) {
+}: FuelExpenseDayCellProps) {
   const dayNumber = day.getDate();
-  const rawDistance = calculateTotalDistance(trips);
-  const totalDistance = roundToTwoDecimals(rawDistance);
-  const tripCount = trips.length;
+  const expenseCount = expenses.length;
   const isWeekend = [0, 6].includes(day.getDay());
 
-  const displayTrips = trips.slice(0, 2);
-  const hasMoreTrips = trips.length > 2;
+  // Számítsd ki az összes tankolt üzemanyag mennyiséget és költséget
+  const totalFuelQuantity = expenses.reduce(
+    (total, expense) => total + expense.fuel_quantity,
+    0
+  );
+  const totalAmount = expenses.reduce(
+    (total, expense) => total + expense.amount,
+    0
+  );
+
+  const displayExpenses = expenses.slice(0, 2);
+  const hasMoreExpenses = expenses.length > 2;
 
   return (
     <div
-      onClick={onClick}
       className={cn(
         "p-2 h-36 overflow-y-auto relative cursor-pointer transition-colors",
         !isCurrentMonth && "opacity-60 disabled:pointer-events-none",
@@ -43,7 +48,7 @@ export function DayCell({
           : "hover:bg-muted/50 dark:hover:bg-muted-dark/50"
       )}
     >
-      {/* Day number + total km */}
+      {/* Day number + expense count */}
       <div className="flex justify-between items-center mb-2 border-b">
         <Button
           variant={isToday ? "default" : "ghost"}
@@ -56,43 +61,49 @@ export function DayCell({
         >
           {dayNumber}
         </Button>
-        {tripCount > 0 && (
+        {expenseCount > 0 && (
           <span className="hidden md:inline text-xs text-muted-foreground font-medium">
-            {tripCount} út — {totalDistance} km
+            {expenseCount} tankolás
           </span>
         )}
       </div>
+
       {/* XS‑es összefoglaló ikon+darabszám */}
-      {tripCount > 0 && (
+      {expenseCount > 0 && (
         <>
           <div className="flex md:hidden items-center gap-1">
-            <Car className="size-4 text-muted-foreground" />
-            <span className="text-xs font-medium">{tripCount}</span>
+            <Droplets className="size-4 text-muted-foreground" />
+            <span className="text-xs font-medium">
+              {roundToTwoDecimals(totalFuelQuantity)} L
+            </span>
           </div>
           <div className="flex md:hidden items-center gap-1">
-            <FaRoad className="size-4 text-muted-foreground" />
-            <span className="text-xs font-medium">{totalDistance} km</span>
+            <GiCash className="size-4 text-muted-foreground" />
+            <span className="text-xs font-medium">{totalAmount} Ft</span>
           </div>
         </>
       )}
-      {/* Locations preview */}
+
+      {/* Expense details for larger screens */}
       <div className="hidden md:block space-y-1">
-        {displayTrips.map((trip) => (
-          <div key={trip.id} className="truncate text-xs font-medium">
-            {trip.start_location?.name || "?"} →{" "}
-            {trip.destination_location?.name || "?"}
+        {displayExpenses.map((expense) => (
+          <div key={expense.id} className="truncate text-xs font-medium">
+            {expense.location?.name || "?"}: {expense.fuel_quantity} L (
+            {expense.amount} Ft)
           </div>
         ))}
-        {hasMoreTrips && (
+        {hasMoreExpenses && (
           <div className="text-xs text-muted-foreground truncate">
-            +{tripCount - 2} további…
+            +{expenseCount - 2} további…
           </div>
         )}
 
-        {/* No trips message */}
-        {tripCount === 0 && isCurrentMonth && (
+        {/* No expenses message */}
+        {expenseCount === 0 && isCurrentMonth && (
           <div className="h-full flex items-center justify-center">
-            <span className="text-xs text-muted-foreground">Nincs utazás</span>
+            <span className="text-xs text-muted-foreground">
+              Nincs tankolás
+            </span>
           </div>
         )}
       </div>
