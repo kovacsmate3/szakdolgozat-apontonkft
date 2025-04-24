@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import PartnersPageClient from "./page.client";
+import LocationsPageClient from "@/components/(auth)/basic-data/LocationsPageClient";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -15,5 +15,25 @@ export default async function PartnersPage() {
     return <div>Betöltés folyamatban...</div>;
   }
 
-  return <PartnersPageClient token={session.user.access_token} />;
+  const isAdmin = session.user.role === "admin";
+  const userId = parseInt(session.user.id);
+
+  // Szűrési lehetőségek a partnerekhez
+  const selectOptions = [
+    { value: "partner,egyéb,bolt", label: "Összes együttműködés" },
+    { value: "partner", label: "Partner" },
+    { value: "egyéb", label: "Egyéb" },
+    { value: "bolt", label: "Bolt" },
+  ];
+
+  return (
+    <LocationsPageClient
+      token={session.user.access_token}
+      isAdmin={isAdmin}
+      userId={userId}
+      locationType="partner,egyéb,bolt"
+      title="Partnerek"
+      selectOptions={selectOptions}
+    />
+  );
 }

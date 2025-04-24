@@ -96,3 +96,28 @@ export class TravelPurposeDictionaryApiError extends Error {
     this.name = "TravelPurposeDictionaryApiError";
   }
 }
+
+type LocationValidationErrorResponse = {
+  message: string;
+  errors: {
+    name?: string[];
+    location_type?: string[];
+    is_headquarter?: string[];
+    country?: string[];
+    postalcode?: string[];
+    city?: string[];
+    road_name?: string[];
+    public_space_type?: string[];
+    building_number?: string[];
+  };
+};
+
+export class LocationApiError extends Error {
+  constructor(
+    public status: number,
+    public data: LocationValidationErrorResponse
+  ) {
+    super("Location API error");
+    this.name = "LocationApiError";
+  }
+}

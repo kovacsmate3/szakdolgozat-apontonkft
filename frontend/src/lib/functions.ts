@@ -169,3 +169,26 @@ export function formatDate(date: string | Date): string {
 export function roundToTwoDecimals(value: number): number {
   return Number(value.toFixed(2));
 }
+
+// Helyszín típus olvasható címkéjének lekérése
+export function getLocationTypeLabel(type: string): string {
+  switch (type.toLowerCase()) {
+    case "telephely":
+      return "telephely";
+    case "partner":
+      return "partner";
+    case "töltőállomás":
+      return "töltőállomás";
+    case "bolt":
+      return "bolt";
+    case "egyéb":
+      return "egyéb helyszín";
+    default:
+      return "helyszín";
+  }
+}
+
+export function capitalize(str: string): string {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

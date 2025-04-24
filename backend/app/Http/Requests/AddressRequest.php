@@ -209,16 +209,16 @@ class AddressRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'country' => ['string', 'max:100'],
-            'postalcode' => ['integer'],
-            'city' => ['string', 'max:100'],
-            'road_name' => ['string', 'max:100'],
+            'country' => ['string', 'max:100', 'regex:/^[A-Za-zÀ-ÿ\s\-\.]+$/u'],
+            'postalcode' => ['integer', 'regex:/^[0-9]{4}$/'],
+            'city' => ['string', 'max:100', 'regex:/^[A-Za-zÀ-ÿ\s\-\.]+$/u'],
+            'road_name' => ['string', 'max:100', 'regex:/^[A-Za-zÀ-ÿ0-9\s\-\.]+$/u'],
             'public_space_type'  => [
                 'string',
                 'max:50',
                 Rule::in($this->publicSpaceTypes()),
             ],
-            'building_number' => ['string', 'max:50'],
+            'building_number' => ['string', 'max:50', 'regex:/^[0-9]+(?:[\/-][0-9A-Za-z]+)*\.$/',],
         ];
 
         // Ha létrehozási kérés, minden mező kötelező
@@ -253,20 +253,25 @@ class AddressRequest extends FormRequest
             'country.required' => 'Az ország megadása kötelező.',
             'country.string' => 'Az ország csak szöveg formátumú lehet.',
             'country.max' => 'Az ország neve maximum 100 karakter hosszú lehet.',
+            'country.regex' => 'Az ország neve csak betűket, szóközöket és kötőjeleket tartalmazhat.',
             'postalcode.required' => 'Az irányítószám megadása kötelező.',
             'postalcode.integer' => 'Az irányítószám csak szám lehet.',
+            'postalcode.regex' => 'Az irányítószámnak 4 számjegyből kell állnia.',
             'city.required' => 'A város megadása kötelező.',
             'city.string' => 'A város csak szöveg formátumú lehet.',
             'city.max' => 'A város neve maximum 100 karakter hosszú lehet.',
+            'city.regex' => 'A város neve csak betűket, szóközöket és kötőjeleket tartalmazhat.',
             'road_name.required' => 'A közterület nevének megadása kötelező.',
             'road_name.string' => 'A közterület neve csak szöveg formátumú lehet.',
             'road_name.max' => 'A közterület neve maximum 100 karakter hosszú lehet.',
             'public_space_type.required' => 'A közterület jellegének megadása kötelező.',
             'public_space_type.string' => 'A közterület jellege csak szöveg formátumú lehet.',
             'public_space_type.max' => 'A közterület jellege maximum 50 karakter hosszú lehet.',
+            'road_name.regex' => 'A közterület neve csak betűket, számokat, szóközöket és kötőjeleket tartalmazhat.',
             'building_number.required' => 'A házszám megadása kötelező.',
             'building_number.string' => 'A házszám csak szöveg formátumú lehet.',
             'building_number.max' => 'A házszám maximum 50 karakter hosszú lehet.',
+            'building_number.regex' => 'A házszám formátuma érvénytelen. A házszámnak számmal kell kezdődnie és ponttal végződnie (pl. 1., 3/A., 5-7.).',
         ];
 
         $msgs['public_space_type.in'] = 'A közterület jellege nem megfelelő érték.';

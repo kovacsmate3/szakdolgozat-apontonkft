@@ -10,6 +10,7 @@ use App\Services\AddressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LocationController extends Controller
 {
@@ -74,8 +75,31 @@ class LocationController extends Controller
         // Címadatok kinyerése a validált adatokból
         $addressData = $addressRequest->validated();
 
-        // Helyszín létrehozása címmel együtt
-        $location = $this->addressService->createLocationWithAddress($locationData, $addressData);
+        // Ellenőrizzük, hogy létezik-e már ugyanilyen cím
+        $duplicateAddress = \App\Models\Address::where('country', $addressData['country'])
+            ->where('postalcode', $addressData['postalcode'])
+            ->where('city', $addressData['city'])
+            ->where('road_name', $addressData['road_name'])
+            ->where('public_space_type', $addressData['public_space_type'])
+            ->where('building_number', $addressData['building_number'])
+            ->exists();
+
+        if ($duplicateAddress) {
+            return response()->json([
+                'message' => 'Ez a cím már szerepel az adatbázisban.'
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        // Tranzakcióval biztosítjuk az atomicitást
+        $location = DB::transaction(function () use ($locationData, $addressData) {
+            // Ha székhelyként hozza létre, akkor minden más helyszín székhely státuszát levesszük
+            if (isset($locationData['is_headquarter']) && $locationData['is_headquarter']) {
+                Location::where('is_headquarter', true)->update(['is_headquarter' => false]);
+            }
+
+            // Helyszín létrehozása címmel együtt
+            return $this->addressService->createLocationWithAddress($locationData, $addressData);
+        });
 
         return response()->json([
             'message' => 'A helyszín sikeresen létrehozva.',
@@ -150,12 +174,44 @@ class LocationController extends Controller
         // Címadatok kinyerése ha vannak
         $addressData = $addressRequest->safe()->all();
 
-        // Helyszín frissítése címmel együtt
-        $location = $this->addressService->updateLocationWithAddress($location, $locationData, $addressData);
+        // Csak akkor ellenőrizzük a címet, ha van címadat
+        if (!empty($addressData)) {
+            $query = \App\Models\Address::query()
+                ->where('country', $addressData['country'])
+                ->where('postalcode', $addressData['postalcode'])
+                ->where('city', $addressData['city'])
+                ->where('road_name', $addressData['road_name'])
+                ->where('public_space_type', $addressData['public_space_type'])
+                ->where('building_number', $addressData['building_number']);
+
+            // Ne ellenőrizzük a saját címét
+            if ($location->address) {
+                $query->where('id', '!=', $location->address->id);
+            }
+
+            if ($query->exists()) {
+                return response()->json([
+                    'message' => 'Ez a cím már szerepel az adatbázisban.'
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
+        // Tranzakcióval biztosítjuk az atomicitást
+        $updatedLocation = DB::transaction(function () use ($location, $locationData, $addressData) {
+            // Ha székhelyként állítja be, akkor minden más helyszín székhely státuszát levesszük
+            if (isset($locationData['is_headquarter']) && $locationData['is_headquarter']) {
+                Location::where('is_headquarter', true)
+                    ->where('id', '!=', $location->id)
+                    ->update(['is_headquarter' => false]);
+            }
+
+            // Helyszín frissítése címmel együtt
+            return $this->addressService->updateLocationWithAddress($location, $locationData, $addressData);
+        });
 
         return response()->json([
             'message' => 'A helyszín adatai sikeresen frissítve lettek.',
-            'location' => $location
+            'location' => $updatedLocation
         ], Response::HTTP_OK);
     }
 
@@ -178,6 +234,12 @@ class LocationController extends Controller
         if ($location->user_id != $user->id && !$isAdmin) {
             return response()->json([
                 'message' => 'A helyszín törlésére nincs jogosultsága.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($location->is_headquarter) {
+            return response()->json([
+                'message' => 'A székhelyet nem lehet törölni, amíg nincs kijelölve másik székhely. Kérjük, először jelöljön ki egy másik helyszínt székhelyként, majd próbálja újra a törlést.'
             ], Response::HTTP_FORBIDDEN);
         }
 

@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import StationsPageClient from "./page.client";
+import LocationsPageClient from "@/components/(auth)/basic-data/LocationsPageClient";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -15,5 +15,16 @@ export default async function StationsPage() {
     return <div>Betöltés folyamatban...</div>;
   }
 
-  return <StationsPageClient token={session.user.access_token} />;
+  const isAdmin = session.user.role === "admin";
+  const userId = parseInt(session.user.id);
+
+  return (
+    <LocationsPageClient
+      token={session.user.access_token}
+      isAdmin={isAdmin}
+      userId={userId}
+      locationType="töltőállomás"
+      title="Töltőállomások"
+    />
+  );
 }

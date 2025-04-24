@@ -87,6 +87,7 @@ export interface Location {
   name: string;
   location_type: string;
   is_headquarter: boolean;
+  user_id?: number;
   address?: Address;
 }
 

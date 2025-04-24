@@ -1,44 +1,47 @@
 import { parse, subYears } from "date-fns";
 import { z } from "zod";
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ACCEPTED_FILE_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "image/jpeg",
-  "image/png",
-];
+import { publicSpaceTypes } from "./data/location-pages-data";
+import {
+  ACCEPTED_FILE_TYPES,
+  firstNameRegex,
+  lastNameRegex,
+  MAX_FILE_SIZE,
+  phoneRegex,
+} from "./constants";
 
 export const contactFormSchema = z.object({
   firstName: z
     .string()
     .min(2, { message: "A keresztnév legalább 2 karakter hosszú kell legyen." })
     .max(50, { message: "A keresztnév legfeljebb 50 karakter lehet." })
-    .regex(/^[A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű\s'-]+$/, {
-      message: "A keresztnév csak betűket és szóközöket tartalmazhat.",
+    .regex(firstNameRegex, {
+      message:
+        "A keresztnévnek nagybetűvel kell kezdődnie, és csak betűket, szóközt vagy pontot tartalmazhat.",
     }),
 
   lastName: z
     .string()
     .min(2, { message: "A vezetéknév legalább 2 karakter hosszú kell legyen." })
     .max(50, { message: "A vezetéknév legfeljebb 50 karakter lehet." })
-    .regex(/^[A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű\s'-]+$/, {
-      message: "A vezetéknév csak betűket és szóközöket tartalmazhat.",
+    .regex(lastNameRegex, {
+      message:
+        "A vezetéknévnek nagybetűvel kell kezdődnie, és csak betűket, szóközt, kötőjelet vagy pontot tartalmazhat.",
     }),
 
   email: z
     .string()
-    .email({ message: "Kérjük, érvényes e-mail címet adjon meg." }),
+    .min(1, "Az email cím megadása kötelező.")
+    .email("Érvénytelen email cím formátum.")
+    .max(255, "Az email cím maximum 255 karakter hosszú lehet."),
 
   phone: z
     .string()
-    .regex(/^\+?[0-9\s\-()]{7,20}$/, {
-      message: "Kérjük, érvényes telefonszámot adjon meg.",
-    })
-    .or(z.literal("")),
+    .min(1, "A telefonszám megadása kötelező.")
+    .max(30, "A telefonszám maximum 30 karakter hosszú lehet.")
+    .regex(phoneRegex, {
+      message:
+        "Érvénytelen magyar telefonszám formátum. (+36 vagy 06, majd érvényes körzetszám és 7 számjegy)",
+    }),
 
   reason: z.enum(["quotation", "employment", "other"], {
     errorMap: () => ({
@@ -74,85 +77,6 @@ export const contactFormSchema = z.object({
   base64File: z.string().optional(),
   fileName: z.string().optional(),
 });
-
-// Vezetéknév: nagybetűvel kezdődik, utána betűk, szóköz, kötőjel és pont jöhet
-const lastNameRegex = /^\p{Lu}[\p{L}\s.-]*$/u;
-// Keresztnév: nagybetűvel kezdődik, utána betűk, szóköz és pont jöhet (kötőjel NEM)
-const firstNameRegex = /^\p{Lu}[\p{L}\s.]*$/u;
-
-const allowedAreaCodes = [
-  "1",
-  "20",
-  "21",
-  "22",
-  "23",
-  "24",
-  "25",
-  "26",
-  "27",
-  "28",
-  "29",
-  "30",
-  "31",
-  "32",
-  "33",
-  "34",
-  "35",
-  "36",
-  "37",
-  "40",
-  "42",
-  "44",
-  "45",
-  "46",
-  "47",
-  "48",
-  "49",
-  "50",
-  "51",
-  "52",
-  "53",
-  "54",
-  "55",
-  "56",
-  "57",
-  "59",
-  "60",
-  "61",
-  "62",
-  "63",
-  "66",
-  "68",
-  "69",
-  "70",
-  "71",
-  "72",
-  "73",
-  "74",
-  "75",
-  "76",
-  "77",
-  "78",
-  "79",
-  "80",
-  "82",
-  "83",
-  "84",
-  "85",
-  "87",
-  "88",
-  "89",
-  "90",
-  "91",
-  "92",
-  "93",
-  "94",
-  "95",
-  "96",
-  "99",
-].join("|");
-
-const phoneRegex = new RegExp(`^(\\+36|06)(${allowedAreaCodes})\\d{7}$`);
 
 export const userCreateSchema = z.object({
   username: z
@@ -443,4 +367,65 @@ export const travelPurposeDictionaryFormSchema = z.object({
     .optional()
     .nullable(),
   is_system: z.boolean().optional(),
+});
+
+export const locationFormSchema = z.object({
+  name: z
+    .string({ required_error: "A helyszín nevének megadása kötelező." })
+    .min(1, "A helyszín nevének megadása kötelező.")
+    .max(255, "A helyszín neve maximum 255 karakter hosszú lehet."),
+  location_type: z
+    .string({ required_error: "A helyszín típusának megadása kötelező." })
+    .min(1, "A helyszín típusának megadása kötelező.")
+    .refine(
+      (val) =>
+        ["partner", "töltőállomás", "bolt", "egyéb", "telephely"].includes(val),
+      "A helyszín típusa csak partner, töltőállomás, bolt vagy egyéb lehet."
+    ),
+  is_headquarter: z.boolean().default(false),
+  country: z
+    .string({ required_error: "Az ország megadása kötelező." })
+    .min(1, "Az ország megadása kötelező.")
+    .max(100, "Az ország neve maximum 100 karakter hosszú lehet.")
+    .refine((val) => /^[A-Za-zÀ-ÿ\s\-\.]+$/u.test(val), {
+      message:
+        "Az ország neve csak betűket, szóközöket és kötőjeleket tartalmazhat.",
+    }),
+  postalcode: z
+    .string({ required_error: "Az irányítószám megadása kötelező." })
+    .min(1, "Az irányítószám megadása kötelező.")
+    .refine((val) => /^\d{4}$/.test(val), {
+      message: "Az irányítószám pontosan 4 számjegyből kell álljon.",
+    }),
+  city: z
+    .string({ required_error: "A város megadása kötelező." })
+    .min(1, "A város megadása kötelező.")
+    .max(100, "A város neve maximum 100 karakter hosszú lehet.")
+    .refine((val) => /^[A-Za-zÀ-ÿ\s\-\.]+$/u.test(val), {
+      message:
+        "A város neve csak betűket, szóközöket és kötőjeleket tartalmazhat.",
+    }),
+  road_name: z
+    .string({ required_error: "A közterület nevének megadása kötelező." })
+    .min(1, "A közterület nevének megadása kötelező.")
+    .max(100, "A közterület neve maximum 100 karakter hosszú lehet.")
+    .refine((val) => /^[A-Za-zÀ-ÿ0-9\s\-\.]+$/u.test(val), {
+      message:
+        "A közterület neve csak betűket, számokat, szóközöket és kötőjeleket tartalmazhat.",
+    }),
+  public_space_type: z
+    .string({ required_error: "A közterület jellegének megadása kötelező." })
+    .min(1, "A közterület jellegének megadása kötelező.")
+    .max(50, "A közterület jellege maximum 50 karakter hosszú lehet.")
+    .refine((val) => publicSpaceTypes.includes(val), {
+      message: "A közterület jellege nem megfelelő érték.",
+    }),
+  building_number: z
+    .string({ required_error: "A házszám megadása kötelező." })
+    .min(1, "A házszám megadása kötelező.")
+    .max(50, "A házszám maximum 50 karakter hosszú lehet.")
+    .refine((val) => /^[0-9]+(?:[\/-][0-9A-Za-z]+)*\.$/.test(val), {
+      message:
+        "A házszám formátuma érvénytelen. A házszámnak számmal kell kezdődnie és ponttal végződnie (pl. 1., 3/A., 5-7.).",
+    }),
 });
