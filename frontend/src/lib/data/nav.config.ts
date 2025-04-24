@@ -6,24 +6,24 @@ import {
   HandCoins,
   Ellipsis,
   Users,
-  CalendarCheck2,
-  FolderOpenDot,
+  //CalendarCheck2,
+  //FolderOpenDot,
 } from "lucide-react";
 import {
-  FaBusinessTime,
+  //FaBusinessTime,
   FaGasPump,
   FaListUl,
   FaRoad,
-  FaTasks,
+  //FaTasks,
   FaBook,
 } from "react-icons/fa";
 import { VscGraph } from "react-icons/vsc";
 import { GrGroup } from "react-icons/gr";
 import { BiTrip } from "react-icons/bi";
 import { IoMdPricetags } from "react-icons/io";
-import { TbGasStation, TbLockAccess } from "react-icons/tb";
+import { TbGasStation /*TbLockAccess*/ } from "react-icons/tb";
 import { FaCar, FaUserShield, FaScaleBalanced } from "react-icons/fa6";
-import { MdEditOff, MdRealEstateAgent } from "react-icons/md";
+import { /*MdEditOff,*/ MdRealEstateAgent } from "react-icons/md";
 import { PiMapPinSimpleArea } from "react-icons/pi";
 
 export const navMain = [
@@ -33,6 +33,7 @@ export const navMain = [
     icon: VscGraph,
     isActive: true,
   },
+  /*
   {
     title: "Munkanyilvántartás",
     url: "/timesheet",
@@ -55,6 +56,7 @@ export const navMain = [
       },
     ],
   },
+  */
   {
     title: "Útnyilvántartás",
     url: "/road-record",
@@ -104,7 +106,7 @@ export const navMain = [
       },
       {
         title: "Utazás célja szótár",
-        url: "/basic-data/travel-reasons",
+        url: "/basic-data/travel-purposes",
         icon: FaBook,
       },
       {
@@ -157,12 +159,14 @@ export const navMain = [
     icon: FaUserShield,
     items: [
       { title: "Felhasználók", url: "/admin/users", icon: Users },
-      { title: "Szerepkörök", url: "/admin/roles", icon: TbLockAccess },
-      {
+      //{ title: "Szerepkörök", url: "/admin/roles", icon: TbLockAccess },
+
+      /*{
         title: "Jogosultságok",
         url: "/admin/permissions",
         icon: MdEditOff,
       },
+      */
     ],
   },
 ];

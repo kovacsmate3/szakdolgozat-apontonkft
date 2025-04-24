@@ -427,3 +427,20 @@ export const carFormSchema = z.object({
       message: "Az üzemanyagtartály kapacitás pozitív egész szám kell legyen.",
     }),
 });
+
+export const travelPurposeDictionaryFormSchema = z.object({
+  travel_purpose: z
+    .string({ required_error: "Az utazási cél megadása kötelező." })
+    .min(1, "Az utazási cél megadása kötelező.")
+    .max(100, "Az utazási cél maximum 100 karakter hosszú lehet."),
+  type: z
+    .string({ required_error: "Az utazási cél típusának megadása kötelező." })
+    .min(1, "Az utazási cél típusának megadása kötelező.")
+    .max(50, "Az utazási cél típusa maximum 50 karakter hosszú lehet."),
+  note: z
+    .string()
+    .max(500, "A megjegyzés maximum 500 karakter hosszú lehet.")
+    .optional()
+    .nullable(),
+  is_system: z.boolean().optional(),
+});

@@ -177,13 +177,14 @@ export interface Trip {
   user?: UserData;
   start_location?: Location;
   destination_location?: Location;
-  travel_purpose?: TravelPurpose;
+  travel_purpose?: TravelPurposeDictionary;
 }
 
-export interface TravelPurpose {
+export interface TravelPurposeDictionary {
   id: number;
   travel_purpose: string;
   type: string;
   note: string | null;
   is_system: boolean;
+  user_id?: number;
 }

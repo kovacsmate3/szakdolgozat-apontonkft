@@ -77,3 +77,22 @@ export class CarApiError extends Error {
     this.name = "CarApiError";
   }
 }
+
+type TravelPurposeDictionaryValidationErrorResponse = {
+  message: string;
+  errors: {
+    travel_purpose?: string[];
+    type?: string[];
+    note?: string[];
+  };
+};
+
+export class TravelPurposeDictionaryApiError extends Error {
+  constructor(
+    public status: number,
+    public data: TravelPurposeDictionaryValidationErrorResponse
+  ) {
+    super("Travel Purpose Dictionary API error");
+    this.name = "TravelPurposeDictionaryApiError";
+  }
+}

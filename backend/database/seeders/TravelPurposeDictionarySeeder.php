@@ -63,7 +63,7 @@ class TravelPurposeDictionarySeeder extends Seeder
                 'type'          => 'Üzleti',
                 'note'          => 'Rendszerszintű, nem törölhető, nem módosítható',
                 'is_system'     => true,
-                'user_id'       => $userId,
+                'user_id'       => null,
             ],
             [
                 'travel_purpose' => 'Lakóhelyről történő bejárás munkahelyre/telephelyre',
@@ -112,7 +112,7 @@ class TravelPurposeDictionarySeeder extends Seeder
                 'type'          => 'Üzleti',
                 'note'          => 'Rendszerszintű, nem törölhető, nem módosítható',
                 'is_system'     => true,
-                'user_id'       => $userId,
+                'user_id'       => null,
             ],
             [
                 'travel_purpose' => 'Üzemorvosi vizsgálat',

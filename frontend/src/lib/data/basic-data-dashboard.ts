@@ -35,7 +35,7 @@ export const basicDataDashboardSections = [
     title: "Utazás célja",
     description: "Utazási célok szótára és kategóriái",
     icon: FaBook,
-    href: "/basic-data/travel-reasons",
+    href: "/basic-data/travel-purposes",
   },
   {
     title: "NAV Üzemanyagárak",
