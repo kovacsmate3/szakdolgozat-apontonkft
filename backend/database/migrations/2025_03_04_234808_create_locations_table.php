@@ -14,9 +14,13 @@ return new class extends Migration
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->enum('location_type', ['partner','telephely','töltőállomás','bolt','egyéb']);
+            $table->enum('location_type', ['partner', 'telephely', 'töltőállomás', 'bolt', 'egyéb']);
             $table->boolean('is_headquarter')->default(false);
             $table->timestamps();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')
+                ->references('id')->on('users')
+                ->onDelete('set null');
         });
     }
 

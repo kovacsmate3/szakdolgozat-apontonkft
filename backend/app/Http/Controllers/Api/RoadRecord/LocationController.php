@@ -3,12 +3,22 @@
 namespace App\Http\Controllers\Api\RoadRecord;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddressRequest;
+use App\Http\Requests\LocationRequest;
 use App\Models\Location;
+use App\Services\AddressService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class LocationController extends Controller
 {
+    protected $addressService;
+
+    public function __construct(AddressService $addressService)
+    {
+        $this->addressService = $addressService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -46,25 +56,26 @@ class LocationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(LocationRequest $request, AddressRequest $addressRequest)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'location_type' => ['required', 'string', 'in:partner,telephely,töltőállomás,bolt,egyéb'],
-            'is_headquarter' => ['sometimes', 'boolean'],
-        ], [
-            'name.required' => 'A helyszín nevének megadása kötelező.',
-            'name.string' => 'A helyszín neve csak szöveg formátumú lehet.',
-            'name.max' => 'A helyszín neve maximum 255 karakter hosszú lehet.',
+        $locationData = $request->validated();
 
-            'location_type.required' => 'A helyszín típusának megadása kötelező.',
-            'location_type.string' => 'A helyszín típusa csak szöveg formátumú lehet.',
-            'location_type.in' => 'A helyszín típusa csak a következők egyike lehet: partner, telephely, töltőállomás, bolt, egyéb.',
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
 
-            'is_headquarter.boolean' => 'A központi telephely megjelölés csak igaz vagy hamis értéket vehet fel.',
-        ]);
+        if ($locationData['location_type'] === 'telephely' && !$isAdmin) {
+            return response()->json([
+                'message' => 'Telephely létrehozására nincs jogosultsága.',
+            ], Response::HTTP_FORBIDDEN);
+        }
 
-        $location = Location::create($validated);
+        $locationData['user_id'] = $user->id;
+
+        // Címadatok kinyerése a validált adatokból
+        $addressData = $addressRequest->validated();
+
+        // Helyszín létrehozása címmel együtt
+        $location = $this->addressService->createLocationWithAddress($locationData, $addressData);
 
         return response()->json([
             'message' => 'A helyszín sikeresen létrehozva.',
@@ -106,7 +117,7 @@ class LocationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(LocationRequest $request, AddressRequest $addressRequest, string $id)
     {
 
         $location = Location::find($id);
@@ -117,21 +128,30 @@ class LocationController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'location_type' => ['sometimes', 'string', 'in:partner,telephely,töltőállomás,bolt,egyéb'],
-            'is_headquarter' => ['sometimes', 'boolean'],
-        ], [
-            'name.string' => 'A helyszín neve kizárólag nem üres, szöveg formátumú lehet.',
-            'name.max' => 'A helyszín neve maximum 255 karakter hosszú lehet.',
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
 
-            'location_type.string' => 'A helyszín típusa kizárólag nem üres, szöveg formátumú lehet.',
-            'location_type.in' => 'A helyszín típusa csak a következők egyike lehet: partner, telephely, töltőállomás, bolt, egyéb.',
+        // Jogosultság ellenőrzése: csak a létrehozó vagy admin módosíthat
+        if ($location->user_id != $user->id && !$isAdmin) {
+            return response()->json([
+                'message' => 'A helyszín módosítására nincs jogosultsága.'
+            ], Response::HTTP_FORBIDDEN);
+        }
 
-            'is_headquarter.boolean' => 'A központi telephely megjelölés csak igaz vagy hamis értéket vehet fel.',
-        ]);
+        $locationData = $request->validated();
 
-        $location->update($validated);
+        // Jogosultság ellenőrzése: telephely típust csak admin állíthat be
+        if (isset($locationData['location_type']) && $locationData['location_type'] === 'telephely' && !$isAdmin) {
+            return response()->json([
+                'message' => 'Telephely típus beállítására nincs jogosultsága.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        // Címadatok kinyerése ha vannak
+        $addressData = $addressRequest->safe()->all();
+
+        // Helyszín frissítése címmel együtt
+        $location = $this->addressService->updateLocationWithAddress($location, $locationData, $addressData);
 
         return response()->json([
             'message' => 'A helyszín adatai sikeresen frissítve lettek.',
@@ -150,6 +170,15 @@ class LocationController extends Controller
             return response()->json([
                 'message' => 'A megadott azonosítójú (ID: ' . $id . ') helyszín nem található.'
             ], Response::HTTP_NOT_FOUND);
+        }
+
+        $user = Auth::user();
+        $isAdmin = $user->role && $user->role->slug === 'admin';
+
+        if ($location->user_id != $user->id && !$isAdmin) {
+            return response()->json([
+                'message' => 'A helyszín törlésére nincs jogosultsága.'
+            ], Response::HTTP_FORBIDDEN);
         }
 
         if ($location->startTrips()->count() > 0 || $location->destinationTrips()->count() > 0 || $location->fuelExpenses()->count() > 0) {

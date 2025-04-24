@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Shared;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddressRequest;
 use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -43,39 +44,9 @@ class AddressController extends Controller
     /**
      * Store a newly created address in storage.
      */
-    public function store(Request $request)
+    public function store(AddressRequest $request)
     {
-        $validated = $request->validate(
-            [
-                'location_id' => ['nullable', 'exists:locations,id'],
-                'country' => ['required', 'string', 'max:100'],
-                'postalcode' => ['required', 'integer'],
-                'city' => ['required', 'string', 'max:100'],
-                'road_name' => ['required', 'string', 'max:100'],
-                'public_space_type' => ['required', 'string', 'max:50'],
-                'building_number' => ['required', 'string', 'max:50'],
-            ],
-            [
-                'location_id.exists' => 'A megadott helyszín nem létezik.',
-                'country.required' => 'Az ország megadása kötelező.',
-                'country.string' => 'Az ország csak szöveg formátumú lehet.',
-                'country.max' => 'Az ország neve maximum 100 karakter hosszú lehet.',
-                'postalcode.required' => 'Az irányítószám megadása kötelező.',
-                'postalcode.integer' => 'Az irányítószám csak szám lehet.',
-                'city.required' => 'A város megadása kötelező.',
-                'city.string' => 'A város csak szöveg formátumú lehet.',
-                'city.max' => 'A város neve maximum 100 karakter hosszú lehet.',
-                'road_name.required' => 'A közterület nevének megadása kötelező.',
-                'road_name.string' => 'A közterület neve csak szöveg formátumú lehet.',
-                'road_name.max' => 'A közterület neve maximum 100 karakter hosszú lehet.',
-                'public_space_type.required' => 'A közterület jellegének megadása kötelező.',
-                'public_space_type.string' => 'A közterület jellege csak szöveg formátumú lehet.',
-                'public_space_type.max' => 'A közterület jellege maximum 50 karakter hosszú lehet.',
-                'building_number.required' => 'A házszám megadása kötelező.',
-                'building_number.string' => 'A házszám csak szöveg formátumú lehet.',
-                'building_number.max' => 'A házszám maximum 50 karakter hosszú lehet.',
-            ]
-        );
+        $validated = $request->validated();
 
         $address = Address::create($validated);
         $address->load('location');
@@ -118,7 +89,7 @@ class AddressController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(AddressRequest $request, string $id)
     {
         $address = Address::find($id);
 
@@ -128,28 +99,7 @@ class AddressController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $validated = $request->validate([
-            'location_id' => ['sometimes', 'nullable', 'exists:locations,id'],
-            'country' => ['sometimes', 'string', 'max:100'],
-            'postalcode' => ['sometimes', 'integer'],
-            'city' => ['sometimes', 'string', 'max:100'],
-            'road_name' => ['sometimes', 'string', 'max:100'],
-            'public_space_type' => ['sometimes', 'string', 'max:50'],
-            'building_number' => ['sometimes', 'string', 'max:50'],
-        ], [
-            'location_id.exists' => 'A megadott helyszín nem létezik.',
-            'country.string' => 'Az ország kizárólag nem üres, szöveg formátumú lehet.',
-            'country.max' => 'Az ország neve maximum 100 karakter hosszú lehet.',
-            'postalcode.integer' => 'Az irányítószám csak szám lehet.',
-            'city.string' => 'A város kizárólag nem üres, szöveg formátumú lehet.',
-            'city.max' => 'A város neve maximum 100 karakter hosszú lehet.',
-            'road_name.string' => 'A közterület neve kizárólag nem üres, szöveg formátumú lehet.',
-            'road_name.max' => 'A közterület neve maximum 100 karakter hosszú lehet.',
-            'public_space_type.string' => 'A közterület jellege kizárólag nem üres, szöveg formátumú lehet.',
-            'public_space_type.max' => 'A közterület jellege maximum 50 karakter hosszú lehet.',
-            'building_number.string' => 'A házszám kizárólag nem üres, szöveg formátumú lehet.',
-            'building_number.max' => 'A házszám maximum 50 karakter hosszú lehet.',
-        ]);
+        $validated = $request->validated();
 
         $address->update($validated);
         $address->load('location');

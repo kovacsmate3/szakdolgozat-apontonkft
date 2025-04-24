@@ -107,4 +107,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(JournalEntry::class, 'user_id');
     }
+
+    public function locations()
+    {
+        return $this->hasMany(Location::class, 'user_id');
+    }
 }

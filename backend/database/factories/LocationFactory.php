@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,8 +19,9 @@ class LocationFactory extends Factory
     {
         return [
             'name' => fake()->address(),
-            'location_type' => fake()->randomElement(['partner','telephely','töltőállomás','bolt','egyéb']),
+            'location_type' => fake()->randomElement(['partner', 'telephely', 'töltőállomás', 'bolt', 'egyéb']),
             'is_headquarter' => false,
+            'user_id' => User::inRandomOrder()->first()->id ?? null,
         ];
     }
 }
