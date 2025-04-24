@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\RoadRecord;
 use App\Http\Controllers\Controller;
 use App\Models\FuelExpense;
 use App\Models\Location;
+use App\Models\Trip;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,7 @@ class FuelExpenseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = FuelExpense::query()->with(['car', 'user', 'location']);
+        $query = FuelExpense::query()->with(['car', 'user', 'location', 'trip']);
 
         if ($request->has('car_id')) {
             $query->where('car_id', $request->input('car_id'));
@@ -28,6 +29,10 @@ class FuelExpenseController extends Controller
 
         if ($request->has('location_id')) {
             $query->where('location_id', $request->input('location_id'));
+        }
+
+        if ($request->has('trip_id')) {
+            $query->where('trip_id', $request->input('trip_id'));
         }
 
         if ($request->has('from_date')) {
@@ -78,6 +83,7 @@ class FuelExpenseController extends Controller
             'currency' => ['required', 'string', 'max:10'],
             'fuel_quantity' => ['required', 'numeric', 'min:0'],
             'odometer' => ['required', 'integer', 'min:0'],
+            'trip_id' => ['nullable', 'exists:trips,id'],
         ];
 
         $messages = [
@@ -104,6 +110,7 @@ class FuelExpenseController extends Controller
             'odometer.required' => 'A kilométeróra állásának megadása kötelező.',
             'odometer.integer' => 'A kilométeróra állása csak egész szám lehet.',
             'odometer.min' => 'A kilométeróra állása nem lehet negatív érték.',
+            'trip_id.exists' => 'A megadott út nem létezik.',
         ];
 
         $userRole = Auth::user()->role->slug ?? null;
@@ -120,6 +127,16 @@ class FuelExpenseController extends Controller
             $validated['user_id'] = Auth::id();
         }
 
+        // Ha van trip_id, ellenőrizzük, hogy megegyezik-e a car_id
+        if (!empty($validated['trip_id'])) {
+            $trip = Trip::find($validated['trip_id']);
+            if ($trip && $trip->car_id != $validated['car_id']) {
+                return response()->json([
+                    'message' => 'A megadott út és jármű nem egyezik.'
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
         $fuelExpense = FuelExpense::create($validated);
         $fuelExpense->load(['car', 'user', 'location']);
 
@@ -134,7 +151,7 @@ class FuelExpenseController extends Controller
      */
     public function show(string $id)
     {
-        $fuelExpense = FuelExpense::with(['car', 'user', 'location'])->find($id);
+        $fuelExpense = FuelExpense::with(['car', 'user', 'location', 'trip'])->find($id);
 
         if (!$fuelExpense) {
             return response()->json([
@@ -183,6 +200,7 @@ class FuelExpenseController extends Controller
             'currency' => ['sometimes', 'string', 'max:10'],
             'fuel_quantity' => ['sometimes', 'numeric', 'min:0'],
             'odometer' => ['sometimes', 'integer', 'min:0'],
+            'trip_id' => ['sometimes', 'nullable', 'exists:trips,id'],
         ];
 
         $messages = [
@@ -201,6 +219,7 @@ class FuelExpenseController extends Controller
 
             'odometer.integer' => 'A kilométeróra állása csak egész szám lehet.',
             'odometer.min' => 'A kilométeróra állása nem lehet negatív érték.',
+            'trip_id.exists' => 'A megadott út nem létezik.',
         ];
 
         if (in_array($userRole, ['admin'])) {
@@ -214,8 +233,20 @@ class FuelExpenseController extends Controller
             unset($validated['user_id']);
         }
 
+        // Ha van trip_id, ellenőrizzük, hogy megegyezik-e a car_id
+        if (!empty($validated['trip_id'])) {
+            $trip = Trip::find($validated['trip_id']);
+            $carId = $validated['car_id'] ?? $fuelExpense->car_id;
+
+            if ($trip && $trip->car_id != $carId) {
+                return response()->json([
+                    'message' => 'A megadott út és jármű nem egyezik.'
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
+
         $fuelExpense->update($validated);
-        $fuelExpense->load(['car', 'user', 'location']);
+        $fuelExpense->load(['car', 'user', 'location', 'trip']);
 
         return response()->json([
             'message' => 'A tankolási adat sikeresen frissítve.',

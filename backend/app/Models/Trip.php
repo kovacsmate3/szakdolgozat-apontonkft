@@ -69,4 +69,12 @@ class Trip extends Model
     {
         return $this->belongsTo(TravelPurposeDictionary::class, 'dict_id');
     }
+
+    /**
+     * Get the fuel expenses associated with this trip.
+     */
+    public function fuelExpense()
+    {
+        return $this->hasOne(FuelExpense::class, 'trip_id');
+    }
 }

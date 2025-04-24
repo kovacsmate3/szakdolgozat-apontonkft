@@ -19,6 +19,7 @@ class FuelExpense extends Model
         'currency',
         'fuel_quantity',
         'odometer',
+        'trip_id',
     ];
 
     /**
@@ -49,5 +50,13 @@ class FuelExpense extends Model
     public function location()
     {
         return $this->belongsTo(Location::class, 'location_id');
+    }
+
+    /**
+     * Get the trip associated with this fuel expense.
+     */
+    public function trip()
+    {
+        return $this->belongsTo(Trip::class, 'trip_id');
     }
 }
