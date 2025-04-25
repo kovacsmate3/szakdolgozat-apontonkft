@@ -253,13 +253,13 @@ export default function LocationStatsChart() {
           </TabsList>
         </div>
         <TabsContent value="visits">
-          <CardContent className="h-72">
+          <CardContent className="h-80">
             {locationStats.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   layout="vertical"
                   data={getTabLocationStats("visits")}
-                  margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+                  margin={{ top: 20, right: 60, left: 30, bottom: 5 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -297,13 +297,13 @@ export default function LocationStatsChart() {
           </CardContent>
         </TabsContent>
         <TabsContent value="distance">
-          <CardContent className="h-72">
+          <CardContent className="h-80">
             {locationStats.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   layout="vertical"
                   data={getTabLocationStats("distance")}
-                  margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+                  margin={{ top: 20, right: 60, left: 30, bottom: 5 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -344,7 +344,7 @@ export default function LocationStatsChart() {
           </CardContent>
         </TabsContent>
       </Tabs>
-      <CardFooter>
+      <CardFooter className="flex-col items-center -mt-4 pb-1">
         <div className="text-sm text-muted-foreground">
           A top 10 leglátogatottabb vagy legnagyobb távolságú helyszínt mutatja
         </div>

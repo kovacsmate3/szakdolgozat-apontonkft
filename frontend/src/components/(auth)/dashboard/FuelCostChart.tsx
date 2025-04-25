@@ -17,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { formatHUF } from "@/lib/functions";
@@ -183,18 +182,6 @@ export default function FuelCostChart() {
     return null;
   };
 
-  // Chart konfigurációk
-  const chartConfig: ChartConfig = {
-    totalCost: {
-      label: "Teljes költség (Ft)",
-      color: "hsl(var(--chart-1))",
-    },
-    avgLiterPrice: {
-      label: "Átlagár/liter (Ft)",
-      color: "hsl(var(--chart-5))",
-    },
-  };
-
   const modernColors = [
     "#1E88E5", // sapphire - kék
     "#00A676", // emerald - zöld
@@ -263,60 +250,68 @@ export default function FuelCostChart() {
         <CardTitle>Üzemanyag költségek</CardTitle>
         <CardDescription>2024. évi adatok</CardDescription>
       </CardHeader>
-      <CardContent className="h-80 flex items-center justify-center">
-        <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value: string) => value.slice(0, 3)}
-              />
-              <YAxis
-                yAxisId="left"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value: number) => `${value} Ft`}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value: number) => `${value} Ft`}
-              />
-              {/* Használjuk a Recharts Tooltip-et */}
-              <Tooltip
-                content={<CustomTooltip />}
-                position={{ y: 0 }}
-                offset={10}
-              />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="totalCost"
-                stroke={modernColors[0]}
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: modernColors[0] }}
-                activeDot={{ r: 6, fill: modernColors[0] }}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="avgLiterPrice"
-                stroke={modernColors[2]}
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: modernColors[2] }}
-                activeDot={{ r: 6, fill: modernColors[2] }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+      <CardContent className="h-80">
+        <ResponsiveContainer width="100%" height={325}>
+          <LineChart
+            data={chartData}
+            margin={{ top: 10, right: 25, left: 35, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              tickMargin={15}
+              axisLine={false}
+              interval={0} // Legfontosabb: ez biztosítja, hogy minden hónap megjelenjen
+              angle={-55} // Megdöntött címkék a jobb olvashatóságért
+              textAnchor="end" // A dőlt szöveg jobb igazítása
+              height={55} // Több hely az X tengelynek
+              tick={{ fontSize: 11 }} // Kisebb betűméret
+              tickFormatter={(value: string) => value.slice(0, 3)}
+            />
+            <YAxis
+              yAxisId="left"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              width={60}
+              tickFormatter={(value: number) => `${value} Ft`}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+              width={60}
+              tickFormatter={(value: number) => `${value} Ft`}
+            />
+            {/* Használjuk a Recharts Tooltip-et */}
+            <Tooltip
+              content={<CustomTooltip />}
+              position={{ y: 0 }}
+              offset={10}
+            />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey="totalCost"
+              stroke={modernColors[0]}
+              strokeWidth={2.5}
+              dot={{ r: 3, fill: modernColors[0] }}
+              activeDot={{ r: 6, fill: modernColors[0] }}
+            />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="avgLiterPrice"
+              stroke={modernColors[2]}
+              strokeWidth={2.5}
+              dot={{ r: 3, fill: modernColors[2] }}
+              activeDot={{ r: 6, fill: modernColors[2] }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </CardContent>
       <CardFooter className="flex-col items-center gap-2 text-sm">
         <div className="leading-none text-muted-foreground">
