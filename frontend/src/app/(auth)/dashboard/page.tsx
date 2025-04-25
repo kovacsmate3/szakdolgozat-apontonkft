@@ -1,9 +1,13 @@
 "use client";
 
-import { DashboardHelpSection } from "@/components/(auth)/dashboard/DashboardHelpSection";
+//import { DashboardHelpSection } from "@/components/(auth)/dashboard/DashboardHelpSection";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import CarMileageChart from "@/components/(auth)/dashboard/CarMileageChart";
+import TravelPurposeChart from "@/components/(auth)/dashboard/TravelPurposeChart";
+import FuelCostChart from "@/components/(auth)/dashboard/FuelCostChart";
+import LocationStatsChart from "@/components/(auth)/dashboard/LocationStatsChart";
 
 export default function DashboardHomePage() {
   const { data: session } = useSession();
@@ -24,13 +28,26 @@ export default function DashboardHomePage() {
 
   return (
     <>
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
+      <div className="grid grid-cols-1 auto-rows-min gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="min-w-0 md:col-span-1 lg:col-span-2 xl:col-span-3">
+          <CarMileageChart />
+        </div>
+
+        <div className="md:col-span-1">
+          <FuelCostChart />
+        </div>
+
+        {/* Kisebb chartak */}
+        <div className="md:col-span-1 my-auto">
+          <TravelPurposeChart />
+        </div>
+
+        <div className="md:col-span-1">
+          <LocationStatsChart />
+        </div>
       </div>
-      <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
-      <DashboardHelpSection />
+
+      {/*<DashboardHelpSection />*/}
     </>
   );
 }
