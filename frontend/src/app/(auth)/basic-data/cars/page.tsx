@@ -5,7 +5,7 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Járművek",
+  title: "Autók",
 };
 
 export default async function CarsPage() {
