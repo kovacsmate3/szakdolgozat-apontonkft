@@ -50,20 +50,20 @@ export default function DashboardHomePageClient({
         megjelenítésre.
       </p>
 
-      <div className="grid grid-cols-1 auto-rows-min gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-        <div className="min-w-0 md:col-span-1 lg:col-span-2 xl:col-span-3">
+      <div className="grid grid-cols-1 auto-rows-min gap-6 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-3">
+        <div className="min-w-0 md:col-span-1 lg:col-span-1 xl:col-span-3">
           <CarMileageChart token={token} />
         </div>
 
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 lg:col-span-1 xl:col-span-1">
           <FuelCostChart token={token} />
         </div>
 
-        <div className="md:col-span-1 my-auto">
+        <div className="md:col-span-1 lg:col-span-1 xl:col-span-1 my-auto">
           <TravelPurposeChart token={token} />
         </div>
 
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 lg:col-span-1 xl:col-span-1">
           <LocationStatsChart token={token} />
         </div>
       </div>

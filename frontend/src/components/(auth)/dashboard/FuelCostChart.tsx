@@ -310,7 +310,7 @@ export default function FuelCostChart({ token }: ChartProps) {
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
-      <CardFooter className="flex-col items-center gap-2 text-sm">
+      <CardFooter className="flex-col items-center gap-2 text-sm pb-1">
         <div className="leading-none text-muted-foreground">
           Összes költség: {formatHUF(totalExpense)}
         </div>

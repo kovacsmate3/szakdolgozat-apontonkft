@@ -255,7 +255,7 @@ export default function LocationStatsChart({ token }: ChartProps) {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full pb-2">
       <CardHeader className="pb-2">
         <CardTitle>Helyszín statisztikák</CardTitle>
         <CardDescription>2024. évi helyszín adatok</CardDescription>
@@ -359,7 +359,7 @@ export default function LocationStatsChart({ token }: ChartProps) {
           </CardContent>
         </TabsContent>
       </Tabs>
-      <CardFooter className="flex-col items-center -mt-4 pb-1">
+      <CardFooter className="flex-col items-center -mt-4 pb-1 2xl:-mt-1 2xl:pb-3">
         <div className="text-sm text-muted-foreground">
           A top 10 leglátogatottabb vagy legnagyobb távolságú helyszínt mutatja
         </div>
