@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Address, Car, FuelPrice, Trip } from "./types";
+import { Address, Car, FuelExpense, FuelPrice, Trip } from "./types";
 import { hu } from "date-fns/locale";
 
 export function formatHUF(value: unknown): string {
@@ -125,19 +125,45 @@ export function formatDurationHU(seconds: number): string {
 }
 
 /**
- * Calculate the total distance of an array of trips
+ * Kiszámolja a teljes távolságot az utazások listája alapján
  */
 export function calculateTotalDistance(trips: Trip[]): number {
   return trips.reduce((total, trip) => {
-    // Use actual_distance if available, otherwise use planned_distance
-    const distance =
-      trip.actual_distance !== null
-        ? trip.actual_distance
-        : trip.end_odometer && trip.start_odometer
-          ? trip.end_odometer - trip.start_odometer
-          : trip.planned_distance || 0;
+    // Ha van tényleges távolság, azt használjuk
+    if (trip.actual_distance) {
+      return total + trip.actual_distance;
+    }
 
-    return total + distance;
+    // Ha nincs tényleges távolság, de van kezdő és záró kilométeróra, akkor abból számolunk
+    if (trip.start_odometer !== null && trip.end_odometer !== null) {
+      return total + (trip.end_odometer - trip.start_odometer);
+    }
+
+    // Ha nincs se tényleges távolság, se kilométeróra adatok, a tervezett távolságot használjuk
+    if (trip.planned_distance) {
+      return total + trip.planned_distance;
+    }
+
+    // Ha semmi adat nincs, 0-val térünk vissza
+    return total;
+  }, 0);
+}
+
+/**
+ * Kiszámolja a teljes üzemanyag mennyiséget a tankolások listája alapján
+ */
+export function calculateTotalFuelQuantity(expenses: FuelExpense[]): number {
+  return expenses.reduce((total, expense) => {
+    return total + expense.fuel_quantity;
+  }, 0);
+}
+
+/**
+ * Kiszámolja a teljes költséget a tankolások listája alapján
+ */
+export function calculateTotalFuelCost(expenses: FuelExpense[]): number {
+  return expenses.reduce((total, expense) => {
+    return total + expense.amount;
   }, 0);
 }
 
@@ -150,6 +176,41 @@ export function formatDistance(distance: number | null | undefined): string {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   })} km`;
+}
+
+/**
+ * Időtartam formázása órák:percek:másodpercek formátumban
+ */
+export function formatDuration(startTime: Date, endTime: Date): string {
+  const durationMs = endTime.getTime() - startTime.getTime();
+  const hours = Math.floor(durationMs / (1000 * 60 * 60));
+  const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
+
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Távolság számítása kilométeróra értékekből
+ */
+export function calculateDistanceFromOdometer(
+  startOdometer: number | null | undefined,
+  endOdometer: number | null | undefined
+): number | null {
+  if (
+    startOdometer === null ||
+    startOdometer === undefined ||
+    endOdometer === null ||
+    endOdometer === undefined
+  ) {
+    return null;
+  }
+
+  if (endOdometer < startOdometer) {
+    return null; // Érvénytelen értékek esetén null-t adunk vissza
+  }
+
+  return endOdometer - startOdometer;
 }
 
 /**

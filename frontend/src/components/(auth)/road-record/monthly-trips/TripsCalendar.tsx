@@ -8,9 +8,12 @@ import { TripsDayDetail } from "./TripsDayDetail";
 interface TripsCalendarProps {
   selectedDate: Date;
   tripsByDay: { [key: number]: Trip[] };
-  onDayClick: (day: Date) => void;
+  onDayClick: (date: Date) => void;
   view: "month" | "day";
   selectedDay: Date | null;
+  onEdit: (trip: Trip) => void;
+  onDelete: (trip: Trip) => void;
+  onCreateTrip: () => void;
 }
 
 export function TripsCalendar({
@@ -19,23 +22,47 @@ export function TripsCalendar({
   onDayClick,
   view,
   selectedDay,
+  onEdit,
+  onDelete,
+  onCreateTrip,
 }: TripsCalendarProps) {
+  // Render a single day cell in month view
+  const renderDayCell = (
+    day: Date,
+    items: Trip[],
+    isToday: boolean,
+    isCurrentMonth: boolean
+  ) => {
+    return (
+      <TripsDayCell
+        day={day}
+        trips={items}
+        isToday={isToday}
+        isCurrentMonth={isCurrentMonth}
+        onClick={() => {}} // The parent Calendar component will handle this
+      />
+    );
+  };
+
+  // Render the day detail view
+  const renderDayDetail = (day: Date, items: Trip[]) => {
+    return (
+      <TripsDayDetail
+        day={day}
+        trips={items}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onCreateTrip={onCreateTrip}
+      />
+    );
+  };
+
   return (
-    <Calendar<Trip>
+    <Calendar
       selectedDate={selectedDate}
       dataByDay={tripsByDay}
-      renderDayCell={(day, trips, isToday, isCurrentMonth) => (
-        <TripsDayCell
-          day={day}
-          trips={trips}
-          isToday={isToday}
-          onClick={() => {}} // A GenericCalendar div-jének onClick eseménye fogja kezelni
-          isCurrentMonth={isCurrentMonth}
-        />
-      )}
-      renderDayDetail={(day, trips) => (
-        <TripsDayDetail day={day} trips={trips} />
-      )}
+      renderDayCell={renderDayCell}
+      renderDayDetail={renderDayDetail}
       onDayClick={onDayClick}
       view={view}
       selectedDay={selectedDay}

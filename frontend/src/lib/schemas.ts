@@ -429,3 +429,166 @@ export const locationFormSchema = z.object({
         "A házszám formátuma érvénytelen. A házszámnak számmal kell kezdődnie és ponttal végződnie (pl. 1., 3/A., 5-7.).",
     }),
 });
+
+// Utazás űrlap validációs séma
+export const tripFormSchema = z
+  .object({
+    car_id: z
+      .string({
+        required_error: "A jármű azonosító megadása kötelező.",
+      })
+      .min(1, "A jármű kiválasztása kötelező"),
+
+    start_location_id: z
+      .string({
+        required_error: "Az indulási helyszín megadása kötelező.",
+      })
+      .min(1, "Az indulási helyszín kiválasztása kötelező"),
+
+    destination_location_id: z
+      .string({
+        required_error: "Az érkezési helyszín megadása kötelező.",
+      })
+      .min(1, "Az érkezési helyszín kiválasztása kötelező"),
+
+    start_time: z.date({
+      required_error: "Az indulási idő megadása kötelező.",
+    }),
+
+    end_time: z
+      .date()
+      .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
+        message: "Érvényes érkezési időpontot adjon meg",
+      })
+      .optional(),
+
+    planned_distance: z.coerce
+      .number()
+      .min(0, "A tervezett távolság nem lehet negatív érték.")
+      .optional(),
+
+    actual_distance: z.coerce
+      .number()
+      .min(0, "A tényleges távolság nem lehet negatív érték.")
+      .optional(),
+
+    start_odometer: z.coerce
+      .number()
+      .min(0, "A kilométeróra kezdő állása nem lehet negatív érték.")
+      .int("A kilométeróra kezdő állása csak egész szám lehet.")
+      .optional(),
+
+    end_odometer: z.coerce
+      .number()
+      .min(0, "A kilométeróra záró állása nem lehet negatív érték.")
+      .int("A kilométeróra záró állása csak egész szám lehet.")
+      .optional(),
+
+    planned_duration: z
+      .string()
+      .regex(
+        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/,
+        "A tervezett időtartam érvénytelen formátumú (óra:perc:másodperc)."
+      )
+      .optional(),
+
+    actual_duration: z
+      .string()
+      .regex(
+        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/,
+        "A tényleges időtartam érvénytelen formátumú (óra:perc:másodperc)."
+      )
+      .optional(),
+
+    dict_id: z.string().optional().nullable(),
+
+    // Ez a mező csak a frontend működését befolyásolja, az adatbázisba nem kerül
+    // Azt jelzi, hogy a távolság számításához a kilométeróra értékeket vagy a
+    // közvetlenül megadott távolságot használjuk-e
+    use_odometer: z.boolean().default(true),
+  })
+  .refine((data) => data.start_location_id !== data.destination_location_id, {
+    message: "Az indulási és érkezési helyszín nem lehet azonos.",
+    path: ["destination_location_id"],
+  })
+  .refine((data) => !data.end_time || data.start_time <= data.end_time, {
+    message: "Az érkezési idő nem lehet korábbi, mint az indulási idő.",
+    path: ["end_time"],
+  })
+  .refine(
+    (data) =>
+      !data.start_odometer ||
+      !data.end_odometer ||
+      data.start_odometer <= data.end_odometer,
+    {
+      message:
+        "A kilométeróra záró állása nem lehet kisebb, mint a kezdő állása.",
+      path: ["end_odometer"],
+    }
+  )
+  .refine(
+    (data) =>
+      !data.use_odometer ||
+      (data.start_odometer !== undefined && data.end_odometer !== undefined),
+    {
+      message:
+        "Ha kilométeróra alapján számol, adja meg a kezdő és záró kilométeróra állást.",
+      path: ["start_odometer", "end_odometer"],
+    }
+  )
+  .refine((data) => data.use_odometer || data.actual_distance !== undefined, {
+    message:
+      "Ha nem kilométeróra alapján számol, adja meg a megtett távolságot.",
+    path: ["actual_distance"],
+  });
+
+// Tankolás űrlap validációs séma
+export const fuelExpenseFormSchema = z.object({
+  car_id: z
+    .string({
+      required_error: "A jármű azonosító megadása kötelező.",
+    })
+    .min(1, "A jármű kiválasztása kötelező"),
+
+  location_id: z
+    .string({
+      required_error: "A helyszín azonosító megadása kötelező.",
+    })
+    .min(1, "A helyszín kiválasztása kötelező"),
+
+  expense_date: z.date({
+    required_error: "A költség dátumának megadása kötelező.",
+  }),
+
+  amount: z.coerce
+    .number()
+    .min(0, "Az összeg nem lehet negatív érték.")
+    .refine((value) => value > 0, {
+      message: "Az összeg megadása kötelező.",
+    }),
+
+  currency: z
+    .string({
+      required_error: "A pénznem megadása kötelező.",
+    })
+    .max(10, "A pénznem maximum 10 karakter hosszú lehet.")
+    .default("HUF"),
+
+  fuel_quantity: z.coerce
+    .number()
+    .min(0, "Az üzemanyag mennyiség nem lehet negatív érték.")
+    .refine((value) => value > 0, {
+      message: "Az üzemanyag mennyiség megadása kötelező.",
+    }),
+
+  odometer: z.coerce
+    .number()
+    .min(0, "A kilométeróra állása nem lehet negatív érték.")
+    .int("A kilométeróra állása csak egész szám lehet.")
+    .refine((value) => value > 0, {
+      message: "A kilométeróra állás megadása kötelező.",
+    }),
+
+  trip_id: z.string().optional().nullable(),
+  user_id: z.string().optional(),
+});

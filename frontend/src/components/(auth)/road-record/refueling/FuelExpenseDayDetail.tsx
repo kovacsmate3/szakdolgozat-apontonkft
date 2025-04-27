@@ -31,11 +31,17 @@ import { Badge } from "@/components/ui/badge";
 interface FuelExpenseDayDetailProps {
   day: Date;
   expenses: FuelExpense[];
+  onEdit?: (expense: FuelExpense) => void;
+  onDelete?: (expense: FuelExpense) => void;
+  onCreateExpense?: () => void;
 }
 
 export function FuelExpenseDayDetail({
   day,
   expenses,
+  onEdit,
+  onDelete,
+  onCreateExpense,
 }: FuelExpenseDayDetailProps) {
   const totalFuelQuantity = expenses.reduce(
     (total, expense) => total + expense.fuel_quantity,
@@ -61,8 +67,9 @@ export function FuelExpenseDayDetail({
           Ezen a napon ({format(day, "yyyy. MMMM d.", { locale: hu })}) nem
           található rögzített tankolási adat.
         </p>
-        <Button className="mt-2" asChild>
-          <Link href="/road-record/add-fuel-expense">Tankolás hozzáadása</Link>
+        <Button className="mt-2" onClick={onCreateExpense}>
+          <Plus className="mr-2 h-4 w-4" />
+          Tankolás hozzáadása
         </Button>
       </div>
     );
@@ -80,10 +87,12 @@ export function FuelExpenseDayDetail({
             liter, {formatHUF(totalAmount)}
           </p>
         </div>
-        <Button className="bg-primary text-primary-foreground" asChild>
-          <Link href="/road-record/add-fuel-expense">
-            <Plus className="mr-2 h-4 w-4" /> Tankolás hozzáadása
-          </Link>
+        <Button
+          className="bg-primary text-primary-foreground"
+          onClick={onCreateExpense}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Tankolás hozzáadása
         </Button>
       </div>
 
@@ -162,7 +171,7 @@ export function FuelExpenseDayDetail({
                           className="inline-flex items-center gap-1 text-primary hover:underline"
                         >
                           <LinkIcon className="h-3 w-3" />
-                          <span>Út megtekintése</span>
+                          <span>Megtekintés</span>
                         </Link>
                       ) : (
                         <Badge variant="outline" className="text-xs">
@@ -172,26 +181,30 @@ export function FuelExpenseDayDetail({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 whitespace-nowrap">
-                        <Link href={`/road-record/fuel-expenses/${expense.id}`}>
+                        {onEdit && (
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-8 px-2"
+                            size="sm"
+                            onClick={() => onEdit(expense)}
                           >
-                            <Pencil className="h-4 w-4" />
-                            <span className="ml-1 hidden sm:inline">
+                            <Pencil className="h-4 w-4 mr-1" />
+                            <span className="hidden sm:inline">
                               Szerkesztés
                             </span>
                           </Button>
-                        </Link>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          className="h-8 px-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="ml-1 hidden sm:inline">Törlés</span>
-                        </Button>
+                        )}
+                        {onDelete && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => onDelete(expense)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            <span className="hidden sm:inline">Törlés</span>
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

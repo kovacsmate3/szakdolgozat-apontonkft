@@ -35,7 +35,7 @@ export default function DashboardHomePage() {
       </div>
 
       {/* Leírás szekció */}
-      <p className="text-gray-600 dark:text-gray-400 mb-6">
+      <p className="text-gray-600 dark:text-gray-400 mb-6 text-justify">
         Ezen az oldalon átfogó képet kap a járművek használatáról, az utazási
         célokról, az üzemanyag költségekről és a leggyakrabban látogatott
         helyszínekről. Az adatok a <strong>2024-es év</strong> alapján kerülnek

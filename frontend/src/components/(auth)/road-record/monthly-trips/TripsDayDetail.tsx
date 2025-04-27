@@ -12,8 +12,8 @@ import {
   CalendarClock,
   Pencil,
   Trash2,
+  Plus,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -29,9 +29,18 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 interface TripsDayDetailProps {
   day: Date;
   trips: Trip[];
+  onEdit?: (trip: Trip) => void;
+  onDelete?: (trip: Trip) => void;
+  onCreateTrip?: () => void;
 }
 
-export function TripsDayDetail({ day, trips }: TripsDayDetailProps) {
+export function TripsDayDetail({
+  day,
+  trips,
+  onEdit,
+  onDelete,
+  onCreateTrip,
+}: TripsDayDetailProps) {
   const totalDistance = calculateTotalDistance(trips);
 
   // Sort trips by start time
@@ -48,8 +57,9 @@ export function TripsDayDetail({ day, trips }: TripsDayDetailProps) {
           Ezen a napon ({format(day, "yyyy. MMMM d.", { locale: hu })}) nem
           található rögzített utazás.
         </p>
-        <Button className="mt-2" asChild>
-          <Link href="/road-record/add-trip">Út hozzáadása</Link>
+        <Button className="mt-2" onClick={onCreateTrip}>
+          <Plus className="mr-2 h-4 w-4" />
+          Út hozzáadása
         </Button>
       </div>
     );
@@ -67,8 +77,12 @@ export function TripsDayDetail({ day, trips }: TripsDayDetailProps) {
             km
           </p>
         </div>
-        <Button className="bg-primary text-primary-foreground" asChild>
-          + Út hozzáadása
+        <Button
+          className="bg-primary text-primary-foreground"
+          onClick={onCreateTrip}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Út hozzáadása
         </Button>
       </div>
 
@@ -153,16 +167,28 @@ export function TripsDayDetail({ day, trips }: TripsDayDetailProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 whitespace-nowrap">
-                        <Link href={`/road-record/trips/${trip.id}`}>
-                          <Button type="button" variant="outline">
-                            <Pencil className="h-4 w-4" />
+                        {onEdit && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onEdit(trip)}
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
                             Szerkesztés
                           </Button>
-                        </Link>
-                        <Button type="submit" variant="destructive">
-                          <Trash2 className="h-4 w-4" />
-                          Törlés
-                        </Button>
+                        )}
+                        {onDelete && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => onDelete(trip)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Törlés
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

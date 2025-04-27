@@ -1,4 +1,3 @@
-// frontend/src/app/(auth)/road-record/monthly-trips/page.tsx
 import { auth } from "@/auth";
 import MonthlyTripsPageClient from "./page.client";
 import { Metadata } from "next";
@@ -16,5 +15,14 @@ export default async function MonthlyTripsPage() {
     return <div>Bejelentkezés szükséges.</div>;
   }
 
-  return <MonthlyTripsPageClient token={session.user.access_token} />;
+  const isAdmin = session.user.role === "admin";
+  const userId = parseInt(session.user.id);
+
+  return (
+    <MonthlyTripsPageClient
+      token={session.user.access_token}
+      userId={userId}
+      isAdmin={isAdmin}
+    />
+  );
 }

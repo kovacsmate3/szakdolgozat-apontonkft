@@ -1,4 +1,5 @@
 // frontend/src/server/trips.ts
+import { TripApiError } from "@/lib/errors";
 import { Trip } from "@/lib/types";
 
 /**
@@ -64,6 +65,114 @@ export const getTrip = async ({
   }
 
   return res.json();
+};
+
+/**
+ * Create a new trip
+ */
+export const createTrip = async ({
+  trip,
+  token,
+}: {
+  trip: Omit<
+    Trip,
+    | "id"
+    | "car"
+    | "user"
+    | "start_location"
+    | "destination_location"
+    | "travel_purpose"
+  >;
+  token: string;
+}): Promise<{ trip: Trip; message: string }> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trips`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: JSON.stringify(trip),
+  });
+
+  const responseData = await res.json();
+
+  if (!res.ok) {
+    throw new TripApiError(res.status, responseData);
+  }
+
+  return responseData;
+};
+
+/**
+ * Update an existing trip
+ */
+export const updateTrip = async ({
+  id,
+  trip,
+  token,
+}: {
+  id: number;
+  trip: Partial<
+    Omit<
+      Trip,
+      | "id"
+      | "car"
+      | "user"
+      | "start_location"
+      | "destination_location"
+      | "travel_purpose"
+    >
+  >;
+  token: string;
+}): Promise<{ trip: Trip; message: string }> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trips/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: JSON.stringify(trip),
+  });
+
+  const responseData = await res.json();
+
+  if (!res.ok) {
+    throw new TripApiError(res.status, responseData);
+  }
+
+  return responseData;
+};
+
+/**
+ * Delete a trip
+ */
+export const deleteTrip = async ({
+  tripId,
+  token,
+}: {
+  tripId: number;
+  token: string;
+}): Promise<{ message: string }> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/trips/${tripId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    }
+  );
+
+  const responseData = await res.json();
+
+  if (!res.ok) {
+    throw new TripApiError(res.status, responseData);
+  }
+
+  return responseData;
 };
 
 /**

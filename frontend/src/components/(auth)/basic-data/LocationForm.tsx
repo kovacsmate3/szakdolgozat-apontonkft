@@ -515,7 +515,7 @@ export function LocationForm({
                       <FormItem>
                         <FormLabel>Közterület neve</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="utca" />
+                          <Input {...field} placeholder="pl. Napkirály" />
                         </FormControl>
                         <FormMessage />
                         {serverErrors.road_name && (

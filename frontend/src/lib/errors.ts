@@ -121,3 +121,54 @@ export class LocationApiError extends Error {
     this.name = "LocationApiError";
   }
 }
+
+// Utazás validációs hiba
+type TripValidationErrorResponse = {
+  message: string;
+  errors?: {
+    car_id?: string[];
+    start_location_id?: string[];
+    destination_location_id?: string[];
+    start_time?: string[];
+    end_time?: string[];
+    start_odometer?: string[];
+    end_odometer?: string[];
+    actual_distance?: string[];
+    dict_id?: string[];
+  };
+};
+
+export class TripApiError extends Error {
+  constructor(
+    public status: number,
+    public data: TripValidationErrorResponse
+  ) {
+    super("Trip API error");
+    this.name = "TripApiError";
+  }
+}
+
+// Tankolás validációs hiba
+type FuelExpenseValidationErrorResponse = {
+  message: string;
+  errors?: {
+    car_id?: string[];
+    location_id?: string[];
+    expense_date?: string[];
+    amount?: string[];
+    currency?: string[];
+    fuel_quantity?: string[];
+    odometer?: string[];
+    trip_id?: string[];
+  };
+};
+
+export class FuelExpenseApiError extends Error {
+  constructor(
+    public status: number,
+    public data: FuelExpenseValidationErrorResponse
+  ) {
+    super("Fuel Expense API error");
+    this.name = "FuelExpenseApiError";
+  }
+}
