@@ -38,11 +38,8 @@ class TripController extends Controller
         }
 
         if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('start_time', [$request->input('start_date'), $request->input('end_date')]);
-        } else if ($request->has('start_date')) {
-            $query->where('start_time', '>=', $request->input('start_date'));
-        } else if ($request->has('end_date')) {
-            $query->where('start_time', '<=', $request->input('end_date'));
+            $query->where('start_time', '>=', $request->input('start_date') . ' 00:00:00')
+                ->where('start_time', '<=', $request->input('end_date') . ' 23:59:59');
         }
 
         if ($request->has('sort_by')) {

@@ -508,6 +508,7 @@ export const tripFormSchema = z
       .optional(),
 
     dict_id: z.string().optional().nullable(),
+    user_id: z.string().optional(),
 
     // Ez a mező csak a frontend működését befolyásolja, az adatbázisba nem kerül
     // Azt jelzi, hogy a távolság számításához a kilométeróra értékeket vagy a

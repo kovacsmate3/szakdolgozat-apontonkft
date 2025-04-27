@@ -19,6 +19,7 @@ import { useState } from "react";
 import { TripForm } from "@/components/(auth)/road-record/monthly-trips/TripForm";
 import { DeleteDialog } from "@/components/delete-dialog";
 import { toast } from "sonner";
+import { getUsers } from "@/server/users";
 
 interface Props {
   token: string;
@@ -26,7 +27,11 @@ interface Props {
   isAdmin: boolean;
 }
 
-export default function MonthlyTripsPageClient({ token, userId }: Props) {
+export default function MonthlyTripsPageClient({
+  token,
+  userId,
+  isAdmin,
+}: Props) {
   const queryClient = useQueryClient();
   const [tripToEdit, setTripToEdit] = useState<Trip | null>(null);
   const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
@@ -78,6 +83,12 @@ export default function MonthlyTripsPageClient({ token, userId }: Props) {
     }
   );
 
+  // Fetch users for association with trips
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ["users", token],
+    queryFn: getUsers,
+  });
+
   // Trips deletion mutation
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteTrip({ tripId: id, token }),
@@ -127,7 +138,10 @@ export default function MonthlyTripsPageClient({ token, userId }: Props) {
 
   // A formok adatbetöltésének állapota
   const isLoadingFormData =
-    isLoadingCars || isLoadingLocations || isLoadingTravelPurposes;
+    isLoadingCars ||
+    isLoadingLocations ||
+    isLoadingTravelPurposes ||
+    isLoadingUsers;
 
   // For better error handling
   if (isErrorTrips) {
@@ -251,6 +265,8 @@ export default function MonthlyTripsPageClient({ token, userId }: Props) {
           travelPurposes={travelPurposes || []}
           onLocationCreate={refreshLocations}
           userId={userId}
+          isAdmin={isAdmin}
+          users={users || []}
         />
       )}
 

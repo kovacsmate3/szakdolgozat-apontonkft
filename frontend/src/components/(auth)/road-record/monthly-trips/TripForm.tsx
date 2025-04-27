@@ -38,12 +38,19 @@ import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Car, Location, Trip, TravelPurposeDictionary } from "@/lib/types";
+import {
+  Car,
+  Location,
+  Trip,
+  TravelPurposeDictionary,
+  UserData,
+} from "@/lib/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTrip, updateTrip } from "@/server/trips";
 import { LocationForm } from "@/components/(auth)/basic-data/LocationForm";
 import { tripFormSchema } from "@/lib/schemas";
 import { TripApiError } from "@/lib/errors";
+import { formatLocalDateTime } from "@/lib/functions";
 
 // Define the form values type explicitly based on tripFormSchema
 type TripFormValues = z.infer<typeof tripFormSchema>;
@@ -55,8 +62,10 @@ interface TripFormProps {
   onOpenChange?: (open: boolean) => void;
   cars: Car[];
   locations: Location[];
+  users?: UserData[];
   travelPurposes: TravelPurposeDictionary[];
   onLocationCreate?: () => void;
+  isAdmin?: boolean;
   userId?: number;
 }
 
@@ -70,6 +79,8 @@ export function TripForm({
   travelPurposes,
   onLocationCreate,
   userId = 0,
+  isAdmin = false,
+  users = [],
 }: TripFormProps) {
   const isControlled =
     controlledIsOpen !== undefined && controlledOnOpenChange !== undefined;
@@ -98,7 +109,8 @@ export function TripForm({
       end_odometer: undefined,
       actual_distance: undefined,
       use_odometer: true,
-      dict_id: "none", // Changed from empty string to "none"
+      dict_id: "none",
+      ...(isAdmin ? { user_id: userId ? userId.toString() : "" } : {}),
     },
   });
 
@@ -119,7 +131,12 @@ export function TripForm({
         end_odometer: tripToEdit.end_odometer || undefined,
         actual_distance: tripToEdit.actual_distance || undefined,
         use_odometer: !!(tripToEdit.start_odometer && tripToEdit.end_odometer),
-        dict_id: tripToEdit.dict_id ? tripToEdit.dict_id.toString() : "none", // Changed from empty string to "none"
+        dict_id: tripToEdit.dict_id ? tripToEdit.dict_id.toString() : "none",
+        ...(isAdmin
+          ? {
+              user_id: userId ? userId.toString() : "",
+            }
+          : {}),
       });
     } else if (isOpen && !tripToEdit) {
       // Új utazás alapértékei
@@ -135,9 +152,14 @@ export function TripForm({
         actual_distance: undefined,
         use_odometer: true,
         dict_id: "none", // Changed from empty string to "none"
+        ...(isAdmin
+          ? {
+              user_id: userId ? userId.toString() : "",
+            }
+          : {}),
       });
     }
-  }, [isOpen, tripToEdit, form, cars]);
+  }, [isOpen, tripToEdit, form, cars, isAdmin, userId]);
 
   // Kilométeróra váltó értékének figyelése
   const useOdometer = form.watch("use_odometer");
@@ -200,6 +222,9 @@ export function TripForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trips"] });
       queryClient.invalidateQueries({ queryKey: ["calendarData"] });
+
+      queryClient.refetchQueries({ queryKey: ["trips"] });
+      queryClient.refetchQueries({ queryKey: ["calendarData"] });
       toast.success("Utazás sikeresen frissítve", {
         duration: 4000,
         description: `Az utazás adatai módosítva.`,
@@ -252,23 +277,13 @@ export function TripForm({
       ? formatDuration(values.start_time, values.end_time)
       : null;
 
-    // Időzóna korrekció: adjunk hozzá 2 órát az időpontokhoz
-    const correctedStartTime = new Date(values.start_time);
-    correctedStartTime.setHours(correctedStartTime.getHours() + 2);
-
-    const correctedEndTime = values.end_time ? new Date(values.end_time) : null;
-    if (correctedEndTime) {
-      correctedEndTime.setHours(correctedEndTime.getHours() + 2);
-    }
-
     // Fix the type issues by ensuring all undefined values are converted to null
     const tripData = {
       car_id: parseInt(values.car_id),
-      user_id: userId,
       start_location_id: parseInt(values.start_location_id),
       destination_location_id: parseInt(values.destination_location_id),
-      start_time: correctedStartTime.toISOString(),
-      end_time: correctedEndTime ? correctedEndTime.toISOString() : null,
+      start_time: formatLocalDateTime(values.start_time),
+      end_time: values.end_time ? formatLocalDateTime(values.end_time) : null,
       start_odometer: useOdometer ? (values.start_odometer ?? null) : null,
       end_odometer: useOdometer ? (values.end_odometer ?? null) : null,
       actual_distance: useOdometer
@@ -285,6 +300,7 @@ export function TripForm({
         values.dict_id && values.dict_id !== "none"
           ? parseInt(values.dict_id)
           : null,
+      user_id: isAdmin && values.user_id ? parseInt(values.user_id) : userId,
     };
 
     if (tripToEdit) {
@@ -422,6 +438,49 @@ export function TripForm({
               </div>
 
               <Separator />
+              {isAdmin && (
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="user_id"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Felhasználó</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue
+                                placeholder="Válasszon felhasználót"
+                                className="truncate"
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectGroup>
+                              {users.map((user) => (
+                                <SelectItem
+                                  key={user.id}
+                                  value={user.id.toString()}
+                                >
+                                  {user.firstname} {user.lastname} (
+                                  {user.username})
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription className="text-xs">
+                          Az utazási adat tulajdonosa.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
                 {/* Indulási helyszín */}

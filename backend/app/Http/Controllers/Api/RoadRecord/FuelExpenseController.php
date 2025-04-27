@@ -36,11 +36,11 @@ class FuelExpenseController extends Controller
         }
 
         if ($request->has('from_date')) {
-            $query->where('expense_date', '>=', $request->input('from_date'));
+            $query->where('expense_date', '>=', $request->input('from_date') . ' 00:00:00');
         }
 
         if ($request->has('to_date')) {
-            $query->where('expense_date', '<=', $request->input('to_date'));
+            $query->where('expense_date', '<=', $request->input('to_date') . ' 23:59:59');
         }
 
         if ($request->has('sort_by')) {

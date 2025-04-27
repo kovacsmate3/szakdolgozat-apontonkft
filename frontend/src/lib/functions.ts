@@ -253,3 +253,7 @@ export function capitalize(str: string): string {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+export const formatLocalDateTime = (date: Date): string => {
+  return format(date, "yyyy-MM-dd'T'HH:mm:ss");
+};
