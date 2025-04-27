@@ -290,32 +290,39 @@ export const carFormSchema = z.object({
     .string({ required_error: "A jármű típusának megadása kötelező." })
     .min(1, "A jármű típusának megadása kötelező.")
     .max(30, "A jármű típusa maximum 30 karakter hosszú lehet."),
+
   license_plate: z
     .string({ required_error: "A rendszám megadása kötelező." })
     .min(1, "A rendszám megadása kötelező.")
     .max(20, "A rendszám maximum 20 karakter hosszú lehet.")
     .refine(
       (val) => {
+        // Régi formátum: ABC-123
         const oldFormat = /^[A-Z]{3}-\d{3}$/.test(val);
-        const newFormat = /^([A-Z]{2})-([A-Z]{2})-(\d{1,3})$/.exec(val);
-
         if (oldFormat) return true;
+
+        // Új formátum: AA-BB-123
+        // Pontosan 3 számjegyet követelünk meg
+        const newFormat = /^([A-Z]{2})-([A-Z]{2})-(\d{3})$/.exec(val);
         if (newFormat) {
-          const [part1, digits] = newFormat;
+          const firstPart = newFormat[1]; // Az első két betű
+
           const vowels = "AEIOU";
-          const isAllVowels =
-            vowels.includes(part1[0]) && vowels.includes(part1[1]);
-          const isAllConsonants =
-            !vowels.includes(part1[0]) && !vowels.includes(part1[1]);
-          return (
-            (isAllVowels || isAllConsonants) && +digits >= 1 && +digits <= 999
-          );
+
+          // Az első két betű vagy mind magánhangzó, vagy mind mássalhangzó
+          const isFirstPartValid =
+            (vowels.includes(firstPart[0]) && vowels.includes(firstPart[1])) ||
+            (!vowels.includes(firstPart[0]) && !vowels.includes(firstPart[1]));
+
+          // A számok 000-999 között lehetnek, ami a \d{3} regex miatt már biztosított
+          return isFirstPartValid;
         }
+
         return false;
       },
       {
         message:
-          "A rendszám formátuma érvénytelen. Példa: ABC-123 vagy AA-BB-123 (első betűpár: 2 magán- vagy 2 mássalhangzó)",
+          "A rendszám formátuma érvénytelen. Példa: ABC-123 vagy AA-BB-123 (első betűpár: 2 magán- vagy 2 mássalhangzó, pontosan 3 számjegy)",
       }
     ),
   manufacturer: z
@@ -387,7 +394,7 @@ export const locationFormSchema = z.object({
     .string({ required_error: "Az ország megadása kötelező." })
     .min(1, "Az ország megadása kötelező.")
     .max(100, "Az ország neve maximum 100 karakter hosszú lehet.")
-    .refine((val) => /^[A-Za-zÀ-ÿ\s\-\.]+$/u.test(val), {
+    .refine((val) => /^[\p{L}\s\-\.]+$/u.test(val), {
       message:
         "Az ország neve csak betűket, szóközöket és kötőjeleket tartalmazhat.",
     }),
@@ -401,7 +408,7 @@ export const locationFormSchema = z.object({
     .string({ required_error: "A város megadása kötelező." })
     .min(1, "A város megadása kötelező.")
     .max(100, "A város neve maximum 100 karakter hosszú lehet.")
-    .refine((val) => /^[A-Za-zÀ-ÿ\s\-\.]+$/u.test(val), {
+    .refine((val) => /^[\p{L}\s\-\.]+$/u.test(val), {
       message:
         "A város neve csak betűket, szóközöket és kötőjeleket tartalmazhat.",
     }),
@@ -409,7 +416,7 @@ export const locationFormSchema = z.object({
     .string({ required_error: "A közterület nevének megadása kötelező." })
     .min(1, "A közterület nevének megadása kötelező.")
     .max(100, "A közterület neve maximum 100 karakter hosszú lehet.")
-    .refine((val) => /^[A-Za-zÀ-ÿ0-9\s\-\.]+$/u.test(val), {
+    .refine((val) => /^[\p{L}0-9\s\-\.]+$/u.test(val), {
       message:
         "A közterület neve csak betűket, számokat, szóközöket és kötőjeleket tartalmazhat.",
     }),

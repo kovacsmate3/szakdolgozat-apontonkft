@@ -7,6 +7,7 @@ use App\Models\TravelPurposeDictionary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class TravelPurposeDictionaryController extends Controller
 {
@@ -70,7 +71,7 @@ class TravelPurposeDictionaryController extends Controller
 
         $validated = $request->validate(
             [
-                'travel_purpose' => ['required', 'string', 'max:100'],
+                'travel_purpose' => ['required', 'string', 'max:100', Rule::unique('travel_purpose_dictionaries', 'travel_purpose')],
                 'type' => ['required', 'string', 'max:50'],
                 'note' => ['nullable', 'string'],
                 'is_system' => ['sometimes', 'boolean'],
@@ -80,6 +81,7 @@ class TravelPurposeDictionaryController extends Controller
                 'travel_purpose.required' => 'Az utazás céljának megadása kötelező.',
                 'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
                 'travel_purpose.max' => 'Az utazás célja maximum 100 karakter hosszú lehet.',
+                'travel_purpose.unique' => 'Ezzel a névvel már létezik utazási cél.',
 
                 'type.required' => 'A típus megadása kötelező.',
                 'type.string' => 'A típus csak szöveg formátumú lehet.',
@@ -151,7 +153,12 @@ class TravelPurposeDictionaryController extends Controller
 
         $validated = $request->validate(
             [
-                'travel_purpose' => ['sometimes', 'string', 'max:100'],
+                'travel_purpose' => [
+                    'sometimes',
+                    'string',
+                    'max:100',
+                    Rule::unique('travel_purpose_dictionaries', 'travel_purpose')->ignore($id)
+                ],
                 'type' => ['sometimes', 'string', 'max:50'],
                 'note' => ['sometimes', 'nullable', 'string'],
                 'is_system' => ['sometimes', 'boolean'],
@@ -160,6 +167,7 @@ class TravelPurposeDictionaryController extends Controller
             [
                 'travel_purpose.string' => 'Az utazás célja csak szöveg formátumú lehet.',
                 'travel_purpose.max' => 'Az utazás célja maximum 100 karakter hosszú lehet.',
+                'travel_purpose.unique' => 'Ezzel a névvel már létezik utazási cél.',
 
                 'type.string' => 'A típus csak szöveg formátumú lehet.',
                 'type.max' => 'A típus maximum 50 karakter hosszú lehet.',
