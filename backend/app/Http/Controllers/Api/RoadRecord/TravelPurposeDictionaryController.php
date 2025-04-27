@@ -17,16 +17,7 @@ class TravelPurposeDictionaryController extends Controller
     {
         $query = TravelPurposeDictionary::query();
 
-        // Ha nem admin, akkor csak a sajátjait és a rendszerszintűeket láthatja
         $user = Auth::user();
-        $isAdmin = $user->role && $user->role->slug === 'admin';
-
-        if (!$isAdmin) {
-            $query->where(function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                    ->orWhere('is_system', true);
-            });
-        }
 
         if ($request->has('type')) {
             $query->where('type', $request->input('type'));
@@ -230,16 +221,7 @@ class TravelPurposeDictionaryController extends Controller
      */
     private function canViewRecord(TravelPurposeDictionary $travelPurpose): bool
     {
-        $user = Auth::user();
-        $isAdmin = $user->role && $user->role->slug === 'admin';
-
-        // Admin mindent láthat
-        if ($isAdmin) {
-            return true;
-        }
-
-        // Nem admin csak a saját vagy rendszerszintű rekordokat láthatja
-        return $travelPurpose->user_id === $user->id || $travelPurpose->is_system;
+        return true;
     }
 
     /**

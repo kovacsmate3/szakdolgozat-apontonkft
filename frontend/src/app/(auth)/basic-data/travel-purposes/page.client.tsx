@@ -35,13 +35,6 @@ export default function TravelPurposesPageClient({
   const { data: travelPurposes, isFetching } = useQuery({
     queryKey: ["travel-purposes", token],
     queryFn: getTravelPurposes,
-    select: (data) => {
-      // Ha nem admin a felhasználó, akkor csak a saját és rendszerszintű elemeket mutatjuk
-      if (!isAdmin) {
-        return data.filter((item) => item.is_system || item.user_id === userId);
-      }
-      return data;
-    },
   });
 
   // Törlés mutáció

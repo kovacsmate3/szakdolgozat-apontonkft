@@ -15,9 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
-import { Trip, TravelPurposeDictionary } from "@/lib/types";
+import { Trip, TravelPurposeDictionary, ChartProps } from "@/lib/types";
 
 // Chart adattípus
 interface ChartDataItem {
@@ -62,9 +61,7 @@ const COLORS = [
   "#f43f5e", // piros
 ];
 
-export default function TravelPurposeChart() {
-  const { data: session } = useSession();
-  const token = session?.user?.access_token;
+export default function TravelPurposeChart({ token }: ChartProps) {
   const year = 2024;
 
   // Utazási célok lekérdezése React Query-vel

@@ -20,12 +20,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistance } from "@/lib/functions";
-import { Location, Trip } from "@/lib/types";
+import { ChartProps, Location, Trip } from "@/lib/types";
 import { getLocations } from "@/server/locations";
 import { getTrips } from "@/server/trips";
+import { Ban } from "lucide-react";
 
 // Helyszín statisztika chart adattípus
 interface LocationStatsItem {
@@ -64,9 +64,7 @@ const LOCATION_COLORS = [
   "#673AB7", // deep-purple
 ];
 
-export default function LocationStatsChart() {
-  const { data: session } = useSession();
-  const token = session?.user?.access_token;
+export default function LocationStatsChart({ token }: ChartProps) {
   const year = 2024;
   const [activeTab, setActiveTab] = useState<string>("visits");
   const [locationColorMap, setLocationColorMap] = useState<
@@ -234,6 +232,23 @@ export default function LocationStatsChart() {
         </CardHeader>
         <CardContent className="h-80 flex items-center justify-center">
           <div className="text-red-500">{(error as Error).message}</div>
+        </CardContent>
+      </Card>
+    );
+  }
+  // Ha nincs adat
+  if (locations.length === 0 || trips.length == 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Helyszín statisztikák</CardTitle>
+          <CardDescription>2024. évi adatok</CardDescription>
+        </CardHeader>
+        <CardContent className="h-80 flex flex-col items-center justify-center">
+          <Ban className="h-12 w-12 text-muted-foreground mb-4" />
+          <div className="text-muted-foreground">
+            Nincs rögzített helyszín vagy utazási adat
+          </div>
         </CardContent>
       </Card>
     );

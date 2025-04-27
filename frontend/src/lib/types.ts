@@ -206,3 +206,7 @@ export interface FuelExpense {
   location?: Location;
   trip?: Trip;
 }
+
+export interface ChartProps {
+  token: string;
+}

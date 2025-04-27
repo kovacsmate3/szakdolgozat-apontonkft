@@ -17,11 +17,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { formatHUF } from "@/lib/functions";
 import { Ban } from "lucide-react";
-import { FuelExpense, FuelPrice } from "@/lib/types";
+import { ChartProps, FuelExpense, FuelPrice } from "@/lib/types";
 
 // A hónapok nevei
 const months = [
@@ -63,9 +62,7 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-export default function FuelCostChart() {
-  const { data: session } = useSession();
-  const token = session?.user?.access_token;
+export default function FuelCostChart({ token }: ChartProps) {
   const year = 2024;
 
   // Üzemanyagárak lekérdezése React Query-vel

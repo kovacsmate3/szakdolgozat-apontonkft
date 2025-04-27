@@ -18,10 +18,9 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { useSession } from "next-auth/react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistance } from "@/lib/functions";
-import { Car, Trip } from "@/lib/types";
+import { Car, ChartProps, Trip } from "@/lib/types";
 import { getTrips } from "@/server/trips";
 import { getCars } from "@/server/cars";
 
@@ -47,12 +46,18 @@ interface ChartDataItem {
   [key: string]: string | number;
 }
 
-export default function CarMileageChart() {
-  const { data: session } = useSession();
-  const token = session?.user?.access_token;
+// Havi összehasonlítás típus
+interface MonthlyComparison {
+  lastMonthName: string;
+  prevMonthName: string;
+  percent: string;
+  isIncreasing: boolean;
+  hasEnoughData: boolean;
+}
+
+export default function CarMileageChart({ token }: ChartProps) {
   const year = 2024;
 
-  // Autók lekérdezése a server/cars.ts fájlból importált függvénnyel
   const { data: cars = [] } = useQuery<Car[]>({
     queryKey: ["cars", token],
     queryFn: async () => {
@@ -132,25 +137,49 @@ export default function CarMileageChart() {
     return total + distance;
   }, 0);
 
-  // Növekedés/csökkenés számítása az előző hónaphoz képest
-  const currentMonth = new Date().getMonth();
-  const prevMonth = currentMonth - 1 >= 0 ? currentMonth - 1 : 11;
+  // Megtaláljuk azokat a hónapokat, amelyekre van adat (legalább 1 km)
+  const monthsWithData = chartData
+    .map((data, index) => {
+      const totalMonthDistance = Object.entries(data)
+        .filter(([key]) => key.startsWith("car_"))
+        .reduce((sum: number, [, value]) => sum + (value as number), 0);
 
-  const currentMonthTotal = Object.entries(chartData[currentMonth] || {})
-    .filter(([key]) => key.startsWith("car_"))
-    .reduce((sum: number, [, value]) => sum + (value as number), 0);
+      return {
+        index,
+        distance: totalMonthDistance,
+      };
+    })
+    .filter((item) => item.distance > 0)
+    .sort((a, b) => a.index - b.index); // Rendezés hónap szerint
 
-  const prevMonthTotal = Object.entries(chartData[prevMonth] || {})
-    .filter(([key]) => key.startsWith("car_"))
-    .reduce((sum: number, [, value]) => sum + (value as number), 0);
+  // Havi összehasonlítás számítása
+  const comparison: MonthlyComparison = {
+    lastMonthName: "",
+    prevMonthName: "",
+    percent: "0.0",
+    isIncreasing: true,
+    hasEnoughData: monthsWithData.length >= 2,
+  };
 
-  const percentChange =
-    prevMonthTotal > 0
-      ? ((currentMonthTotal - prevMonthTotal) / prevMonthTotal) * 100
-      : 0;
+  // Csak akkor számoljuk a változást, ha van elég adat
+  if (comparison.hasEnoughData) {
+    const lastMonthData = monthsWithData[monthsWithData.length - 1];
+    const prevMonthData = monthsWithData[monthsWithData.length - 2];
 
-  const comparisonPercent = Math.abs(percentChange).toFixed(1);
-  const isIncreasing = percentChange >= 0;
+    comparison.lastMonthName = months[lastMonthData.index];
+    comparison.prevMonthName = months[prevMonthData.index];
+
+    const lastMonthTotal = lastMonthData.distance;
+    const prevMonthTotal = prevMonthData.distance;
+
+    const percentChange =
+      prevMonthTotal > 0
+        ? ((lastMonthTotal - prevMonthTotal) / prevMonthTotal) * 100
+        : 0;
+
+    comparison.percent = Math.abs(percentChange).toFixed(2);
+    comparison.isIncreasing = percentChange >= 0;
+  }
 
   // Chart konfigurációk létrehozása
   const chartConfig: ChartConfig = {};
@@ -265,19 +294,28 @@ export default function CarMileageChart() {
         )}
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          {isIncreasing ? (
-            <>
-              Növekedés: {comparisonPercent}% az előző hónaphoz képest{" "}
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </>
-          ) : (
-            <>
-              Csökkenés: {comparisonPercent}% az előző hónaphoz képest{" "}
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            </>
-          )}
-        </div>
+        {comparison.hasEnoughData ? (
+          <div className="flex gap-2 font-medium leading-none">
+            {comparison.isIncreasing ? (
+              <>
+                Növekedés: {comparison.percent}% ({comparison.prevMonthName} ⟶{" "}
+                {comparison.lastMonthName}){" "}
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              </>
+            ) : (
+              <>
+                Csökkenés: {comparison.percent}% ({comparison.prevMonthName} ⟶{" "}
+                {comparison.lastMonthName}){" "}
+                <TrendingDown className="h-4 w-4 text-red-500" />
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="flex gap-2 font-medium leading-none text-muted-foreground">
+            Nincs elég adat a havi változás kiszámításához (legalább két
+            hónapnyi adat szükséges)
+          </div>
+        )}
         <div className="leading-none text-muted-foreground">
           Összes megtett távolság: {formatDistance(totalDistance)} a 2024-es
           évben
