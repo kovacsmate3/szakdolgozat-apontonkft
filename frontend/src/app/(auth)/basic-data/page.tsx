@@ -41,7 +41,7 @@ export default function BasicDataDashboardPage() {
         <h2 className="text-2xl font-semibold mb-4">
           Mire szolgálnak az „Adataim” oldalak?
         </h2>
-        <div className="prose max-w-none leading-relaxed text-sm md:text-base">
+        <div className="prose max-w-none leading-relaxed text-sm md:text-base text-justify">
           <p>
             Az „Adataim” szekció lehetőséget nyújt a cég működéséhez szorosan
             kapcsolódó alapinformációk strukturált kezelésére. Ezek az adatok
@@ -49,7 +49,9 @@ export default function BasicDataDashboardPage() {
             riportálások szempontjából.
           </p>
 
-          <p>Ezen az oldalon a következő adatcsoportokat kezelheti:</p>
+          <p className="text-justify">
+            Ezen az oldalon a következő adatcsoportokat kezelheti:
+          </p>
 
           <ul className="list-disc pl-4">
             <li>
@@ -83,7 +85,7 @@ export default function BasicDataDashboardPage() {
             </li>
           </ul>
 
-          <p className="mt-4">
+          <p className="mt-4 text-justify">
             Az itt található információk naprakészen tartása biztosítja a
             rendszer pontos és hatékony működését, megkönnyítve a belső
             adminisztrációt, az elszámolásokat, valamint a jogszabályi
