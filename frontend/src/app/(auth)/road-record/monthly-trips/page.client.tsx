@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trip } from "@/lib/types";
-import { ChevronLeft, ChevronRight, FileText, Plus } from "lucide-react";
+import { ChevronLeft, FileText, Plus } from "lucide-react";
 import { getCars } from "@/server/cars";
 import { getLocations } from "@/server/locations";
 import { getTravelPurposes } from "@/server/travel-purposes";
@@ -20,6 +20,7 @@ import { TripForm } from "@/components/(auth)/road-record/monthly-trips/TripForm
 import { DeleteDialog } from "@/components/delete-dialog";
 import { toast } from "sonner";
 import { getUsers } from "@/server/users";
+import { MonthYearNavigator } from "@/components/(auth)/road-record/MonthYearNavigator";
 
 interface Props {
   token: string;
@@ -53,6 +54,9 @@ export default function MonthlyTripsPageClient({
     exportDialogOpen,
     setExportDialogOpen,
     handleExportClick,
+    setSelectedDate,
+    setSelectedDay,
+    setSelectedView,
   } = useCalendar<Trip>({
     token,
     fetchData: getTrips,
@@ -216,25 +220,16 @@ export default function MonthlyTripsPageClient({
                   </div>
                 </>
               ) : (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={navigateToPreviousMonth}
-                    className="lg:text-lg"
-                  >
-                    <ChevronLeft className="mr-1 h-4 w-4" /> Előző hónap
-                  </Button>
-                  <CardTitle className="text-lg lg:text-xl">
-                    {format(selectedDate, "yyyy. MMMM", { locale: hu })}
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    onClick={navigateToNextMonth}
-                    className="lg:text-lg"
-                  >
-                    Következő hónap <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </>
+                <MonthYearNavigator
+                  selectedDate={selectedDate}
+                  onDateChange={(date) => {
+                    setSelectedDate(date);
+                    setSelectedDay(null);
+                    setSelectedView("month");
+                  }}
+                  onPreviousMonth={navigateToPreviousMonth}
+                  onNextMonth={navigateToNextMonth}
+                />
               )}
             </div>
           </CardHeader>

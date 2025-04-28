@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFuelExpenses, deleteFuelExpense } from "@/server/fuel-expenses";
 import { FuelExpense } from "@/lib/types";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, Plus } from "lucide-react";
 import { useCalendar } from "@/hooks/use-calendar";
 import { FuelExpensesCalendar } from "@/components/(auth)/road-record/refueling/FuelExpensesCalendar";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import { FuelExpenseForm } from "@/components/(auth)/road-record/refueling/FuelE
 import { DeleteDialog } from "@/components/delete-dialog";
 import { toast } from "sonner";
 import { getUsers } from "@/server/users";
+import { MonthYearNavigator } from "@/components/(auth)/road-record/MonthYearNavigator";
 
 interface Props {
   token: string;
@@ -49,6 +50,9 @@ export default function RefuelingsPageClient({
     navigateToNextMonth,
     handleDayClick,
     navigateBackToMonth,
+    setSelectedDate,
+    setSelectedDay,
+    setSelectedView,
   } = useCalendar<FuelExpense>({
     token,
     fetchData: getFuelExpenses,
@@ -185,25 +189,16 @@ export default function RefuelingsPageClient({
                   </div>
                 </>
               ) : (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={navigateToPreviousMonth}
-                    className="lg:text-lg"
-                  >
-                    <ChevronLeft className="mr-1 h-4 w-4" /> Előző hónap
-                  </Button>
-                  <CardTitle className="text-lg lg:text-xl">
-                    {format(selectedDate, "yyyy. MMMM", { locale: hu })}
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    onClick={navigateToNextMonth}
-                    className="lg:text-lg"
-                  >
-                    Következő hónap <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </>
+                <MonthYearNavigator
+                  selectedDate={selectedDate}
+                  onDateChange={(date) => {
+                    setSelectedDate(date);
+                    setSelectedDay(null);
+                    setSelectedView("month");
+                  }}
+                  onPreviousMonth={navigateToPreviousMonth}
+                  onNextMonth={navigateToNextMonth}
+                />
               )}
             </div>
           </CardHeader>
