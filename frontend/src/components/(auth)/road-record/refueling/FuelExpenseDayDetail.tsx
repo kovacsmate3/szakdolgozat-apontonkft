@@ -12,9 +12,10 @@ import {
   Pencil,
   Trash2,
   Plus,
-  Link as LinkIcon,
+  Info,
+  Calendar,
+  ArrowRight,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,16 +25,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatHUF } from "@/lib/functions";
+import { formatDistance, formatHUF, getFullAddress } from "@/lib/functions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface FuelExpenseDayDetailProps {
   day: Date;
   expenses: FuelExpense[];
   onEdit?: (expense: FuelExpense) => void;
   onDelete?: (expense: FuelExpense) => void;
-  onCreateExpense?: () => void;
+  onCreateExpense?: (defaultDate?: Date) => void;
 }
 
 export function FuelExpenseDayDetail({
@@ -67,7 +73,17 @@ export function FuelExpenseDayDetail({
           Ezen a napon ({format(day, "yyyy. MMMM d.", { locale: hu })}) nem
           található rögzített tankolási adat.
         </p>
-        <Button className="mt-2" onClick={onCreateExpense}>
+        <Button
+          className="mt-2"
+          onClick={() => {
+            // Új Date objektum létrehozása az adott napra, 12:00 órakor
+            const defaultDate = new Date(day);
+            defaultDate.setHours(12);
+            defaultDate.setMinutes(0);
+            defaultDate.setSeconds(0);
+            onCreateExpense?.(defaultDate);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Tankolás hozzáadása
         </Button>
@@ -89,7 +105,14 @@ export function FuelExpenseDayDetail({
         </div>
         <Button
           className="bg-primary text-primary-foreground"
-          onClick={onCreateExpense}
+          onClick={() => {
+            // Új Date objektum létrehozása az adott napra, 12:00 órakor
+            const defaultDate = new Date(day);
+            defaultDate.setHours(12);
+            defaultDate.setMinutes(0);
+            defaultDate.setSeconds(0);
+            onCreateExpense?.(defaultDate);
+          }}
         >
           <Plus className="mr-2 h-4 w-4" />
           Tankolás hozzáadása
@@ -165,14 +188,106 @@ export function FuelExpenseDayDetail({
                       </div>
                     </TableCell>
                     <TableCell>
-                      {expense.trip_id ? (
-                        <Link
-                          href={`/road-record/trips/${expense.trip_id}`}
-                          className="inline-flex items-center gap-1 text-primary hover:underline"
-                        >
-                          <LinkIcon className="h-3 w-3" />
-                          <span>Megtekintés</span>
-                        </Link>
+                      {expense.trip ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 gap-1 px-2"
+                            >
+                              <Info className="h-3.5 w-3.5" />
+                              <span>Útadatok</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80" align="start">
+                            <div className="space-y-3">
+                              <h4 className="font-medium text-sm">
+                                Kapcsolódó út részletei
+                              </h4>
+
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between gap-2">
+                                  <div className="flex items-center gap-1 text-muted-foreground">
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    <span>Időpont:</span>
+                                  </div>
+                                  <div className="font-medium">
+                                    {format(
+                                      new Date(expense.trip.start_time),
+                                      "yyyy.MM.dd HH:mm",
+                                      { locale: hu }
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-1 items-center border-b pb-1">
+                                  <div className="text-muted-foreground text-xs w-24">
+                                    Útvonal:
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs">
+                                    <span className="font-medium">
+                                      {expense.trip.start_location?.address
+                                        ? getFullAddress(
+                                            expense.trip.start_location.address
+                                          )
+                                        : expense.trip.start_location?.name ||
+                                          "Ismeretlen"}
+                                    </span>
+                                    <ArrowRight className="h-3 w-3 mx-1 text-muted-foreground" />
+                                    <span className="font-medium">
+                                      {expense.trip.destination_location
+                                        ?.address
+                                        ? getFullAddress(
+                                            expense.trip.destination_location
+                                              .address
+                                          )
+                                        : expense.trip.destination_location
+                                            ?.name || "Ismeretlen"}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-sm pt-1">
+                                  <div className="text-muted-foreground">
+                                    Távolság:
+                                  </div>
+                                  <div className="text-right">
+                                    {formatDistance(
+                                      expense.trip.actual_distance || 0
+                                    )}
+                                  </div>
+
+                                  <div className="text-muted-foreground">
+                                    Utazási cél:
+                                  </div>
+                                  <div className="text-right">
+                                    {expense.trip.travel_purpose
+                                      ?.travel_purpose || "Nincs megadva"}
+                                  </div>
+
+                                  <div className="text-muted-foreground">
+                                    Km. óra (kezdő):
+                                  </div>
+                                  <div className="text-right">
+                                    {expense.trip.start_odometer
+                                      ? `${expense.trip.start_odometer} km`
+                                      : "Nincs megadva"}
+                                  </div>
+
+                                  <div className="text-muted-foreground">
+                                    Km. óra (záró):
+                                  </div>
+                                  <div className="text-right">
+                                    {expense.trip.end_odometer
+                                      ? `${expense.trip.end_odometer} km`
+                                      : "Nincs megadva"}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       ) : (
                         <Badge variant="outline" className="text-xs">
                           Nincs kapcsolt út

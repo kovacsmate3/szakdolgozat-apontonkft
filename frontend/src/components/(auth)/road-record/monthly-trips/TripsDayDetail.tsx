@@ -31,7 +31,7 @@ interface TripsDayDetailProps {
   trips: Trip[];
   onEdit?: (trip: Trip) => void;
   onDelete?: (trip: Trip) => void;
-  onCreateTrip?: () => void;
+  onCreateTrip?: (defaultDate?: Date) => void;
 }
 
 export function TripsDayDetail({
@@ -57,7 +57,17 @@ export function TripsDayDetail({
           Ezen a napon ({format(day, "yyyy. MMMM d.", { locale: hu })}) nem
           található rögzített utazás.
         </p>
-        <Button className="mt-2" onClick={onCreateTrip}>
+        <Button
+          className="mt-2"
+          onClick={() => {
+            // Új Date objektum létrehozása az adott napra, 12:00 órakor
+            const defaultDate = new Date(day);
+            defaultDate.setHours(12);
+            defaultDate.setMinutes(0);
+            defaultDate.setSeconds(0);
+            onCreateTrip?.(defaultDate);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Út hozzáadása
         </Button>
@@ -79,7 +89,14 @@ export function TripsDayDetail({
         </div>
         <Button
           className="bg-primary text-primary-foreground"
-          onClick={onCreateTrip}
+          onClick={() => {
+            // Új Date objektum létrehozása az adott napra, 12:00 órakor
+            const defaultDate = new Date(day);
+            defaultDate.setHours(12);
+            defaultDate.setMinutes(0);
+            defaultDate.setSeconds(0);
+            onCreateTrip?.(defaultDate);
+          }}
         >
           <Plus className="mr-2 h-4 w-4" />
           Út hozzáadása

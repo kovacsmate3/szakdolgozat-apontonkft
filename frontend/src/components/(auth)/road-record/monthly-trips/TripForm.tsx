@@ -67,6 +67,7 @@ interface TripFormProps {
   onLocationCreate?: () => void;
   isAdmin?: boolean;
   userId?: number;
+  initialDate?: Date;
 }
 
 export function TripForm({
@@ -81,6 +82,7 @@ export function TripForm({
   userId = 0,
   isAdmin = false,
   users = [],
+  initialDate,
 }: TripFormProps) {
   const isControlled =
     controlledIsOpen !== undefined && controlledOnOpenChange !== undefined;
@@ -140,13 +142,13 @@ export function TripForm({
       });
     } else if (isOpen && !tripToEdit) {
       // Új utazás alapértékei
-      const now = new Date();
+      const defaultDate = initialDate || new Date();
       form.reset({
         car_id: cars.length === 1 ? cars[0].id.toString() : "",
         start_location_id: "",
         destination_location_id: "",
-        start_time: now,
-        end_time: now,
+        start_time: defaultDate,
+        end_time: defaultDate,
         start_odometer: undefined,
         end_odometer: undefined,
         actual_distance: undefined,
@@ -159,7 +161,7 @@ export function TripForm({
           : {}),
       });
     }
-  }, [isOpen, tripToEdit, form, cars, isAdmin, userId]);
+  }, [isOpen, tripToEdit, form, cars, isAdmin, userId, initialDate]);
 
   // Kilométeróra váltó értékének figyelése
   const useOdometer = form.watch("use_odometer");

@@ -93,6 +93,8 @@ export default function MonthlyTripsPageClient({
     queryFn: getUsers,
   });
 
+  const [initialDate, setInitialDate] = useState<Date | undefined>(undefined);
+
   // Trips deletion mutation
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteTrip({ tripId: id, token }),
@@ -111,9 +113,17 @@ export default function MonthlyTripsPageClient({
     },
   });
 
-  // Új utazás létrehozása
-  const handleCreateTrip = () => {
+  const handleCreateTrip = (dateOrEvent?: Date | React.MouseEvent) => {
     setTripToEdit(null);
+
+    // Ha date típusú paraméter érkezett
+    if (dateOrEvent instanceof Date) {
+      setInitialDate(dateOrEvent);
+    } else {
+      // Különben reset-eljük, hogy ne maradjon az előző
+      setInitialDate(undefined);
+    }
+
     setTripFormOpen(true);
   };
 
@@ -262,6 +272,7 @@ export default function MonthlyTripsPageClient({
           userId={userId}
           isAdmin={isAdmin}
           users={users || []}
+          initialDate={initialDate}
         />
       )}
 

@@ -83,6 +83,8 @@ export default function RefuelingsPageClient({
     queryFn: getUsers,
   });
 
+  const [initialDate, setInitialDate] = useState<Date | undefined>(undefined);
+
   // Fuel expense deletion mutation
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteFuelExpense({ token, id }),
@@ -99,9 +101,17 @@ export default function RefuelingsPageClient({
     },
   });
 
-  // Új tankolás létrehozása
-  const handleCreateExpense = () => {
+  const handleCreateExpense = (dateOrEvent?: Date | React.MouseEvent) => {
     setExpenseToEdit(null);
+
+    // Ha date típusú paraméter érkezett
+    if (dateOrEvent instanceof Date) {
+      setInitialDate(dateOrEvent);
+    } else {
+      // Különben reset-eljük, hogy ne maradjon az előző
+      setInitialDate(undefined);
+    }
+
     setExpenseFormOpen(true);
   };
 
@@ -231,6 +241,7 @@ export default function RefuelingsPageClient({
           onLocationCreate={refreshLocations}
           userId={userId}
           isAdmin={isAdmin}
+          initialDate={initialDate}
         />
       )}
 

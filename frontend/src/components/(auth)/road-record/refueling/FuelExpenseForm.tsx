@@ -42,6 +42,7 @@ import { LocationForm } from "@/components/(auth)/basic-data/LocationForm";
 import { fuelExpenseFormSchema } from "@/lib/schemas";
 import { FuelExpenseApiError } from "@/lib/errors";
 import { z } from "zod";
+import { formatLocalDateTime } from "@/lib/functions";
 
 // Define the form values type explicitly based on the schema
 type FuelExpenseFormValues = z.infer<typeof fuelExpenseFormSchema>;
@@ -66,6 +67,7 @@ interface FuelExpenseFormProps {
   userId?: number;
   isAdmin?: boolean;
   users?: UserData[];
+  initialDate?: Date;
 }
 
 export function FuelExpenseForm({
@@ -80,6 +82,7 @@ export function FuelExpenseForm({
   userId = 0,
   isAdmin = false,
   users = [],
+  initialDate,
 }: FuelExpenseFormProps) {
   const isControlled =
     controlledIsOpen !== undefined && controlledOnOpenChange !== undefined;
@@ -163,10 +166,11 @@ export function FuelExpenseForm({
       setSelectedCarId(expenseToEdit.car_id.toString());
     } else if (isOpen && !expenseToEdit) {
       // Új tankolás alapértékei
+      const defaultDate = initialDate || new Date();
       const formDefaults = {
         car_id: cars.length === 1 ? cars[0].id.toString() : "",
         location_id: "",
-        expense_date: new Date(),
+        expense_date: defaultDate,
         amount: 0,
         currency: "HUF",
         fuel_quantity: 0,
@@ -180,7 +184,7 @@ export function FuelExpenseForm({
       form.reset(formDefaults);
       setSelectedCarId(cars.length === 1 ? cars[0].id.toString() : "");
     }
-  }, [isOpen, expenseToEdit, form, cars, isAdmin, userId]);
+  }, [isOpen, expenseToEdit, form, cars, isAdmin, userId, initialDate]);
 
   // Létrehozás mutáció
   const createFuelExpenseMutation = useMutation({
@@ -263,7 +267,7 @@ export function FuelExpenseForm({
     const fuelExpenseData = {
       car_id: parseInt(values.car_id),
       location_id: parseInt(values.location_id),
-      expense_date: values.expense_date.toISOString(),
+      expense_date: formatLocalDateTime(values.expense_date),
       amount: Number(values.amount),
       currency: values.currency,
       fuel_quantity: Number(values.fuel_quantity),
