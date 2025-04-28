@@ -1,7 +1,6 @@
-import Image from "next/image";
 import { formatHUF, formatPeriodToHungarianMonth } from "@/lib/functions";
 import { Car, FuelPrice } from "@/lib/types";
-import { useTheme } from "next-themes";
+import { Banknote } from "lucide-react";
 
 interface Props {
   fuelCost: number | null;
@@ -14,27 +13,15 @@ export function FuelCostSection({
   selectedCar,
   latestFuelPrice,
 }: Props) {
-  const { theme } = useTheme();
-
-  const iconSrc =
-    theme === "dark"
-      ? "/images/(auth)/road-record/route-planning/hungarian-forint-price-tag-icon-dark.svg"
-      : "/images/(auth)/road-record/route-planning/hungarian-forint-price-tag-icon-light.svg";
-
   if (!fuelCost) return null;
 
   return (
     <div className="pt-2 border-t border-border">
       <div className="flex items-center justify-center gap-2 leading-none">
-        <div className="relative w-4 h-4">
-          <Image
-            src={iconSrc}
-            alt="Üzemanyag költség ikon"
-            fill
-            className="object-contain"
-          />
-        </div>
-        <strong className="whitespace-nowrap">Becsült üzemanyagköltség:</strong>{" "}
+        <Banknote className="w-4 h-4" />
+        <strong className="whitespace-nowrap">
+          Becsült üzemanyagköltség:
+        </strong>{" "}
         {formatHUF(fuelCost)}
       </div>
       {selectedCar && (
