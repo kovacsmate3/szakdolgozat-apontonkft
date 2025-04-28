@@ -174,6 +174,6 @@ class TravelPurposeDictionaryTest extends TestCase
 
         // Ellenőrzés - a nem admin felhasználó nem törölhet rendszerszintű elemet
         $response->assertStatus(403)
-            ->assertJsonPath('message', 'Rendszerszintű utazási cél nem törölhető.');
+            ->assertJsonPath('message', 'Nincs jogosultsága törölni ezt az utazási célt.');
     }
 }

@@ -17,7 +17,14 @@ class FuelExpenseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = FuelExpense::query()->with(['car', 'user', 'location', 'trip']);
+        $query = FuelExpense::query()->with([
+            'car',
+            'user',
+            'location',
+            'trip',
+            'trip.startLocation',
+            'trip.destinationLocation'
+        ]);
 
         if ($request->has('car_id')) {
             $query->where('car_id', $request->input('car_id'));
@@ -151,7 +158,14 @@ class FuelExpenseController extends Controller
      */
     public function show(string $id)
     {
-        $fuelExpense = FuelExpense::with(['car', 'user', 'location', 'trip'])->find($id);
+        $fuelExpense = FuelExpense::with([
+            'car',
+            'user',
+            'location',
+            'trip',
+            'trip.startLocation',
+            'trip.destinationLocation'
+        ])->find($id);
 
         if (!$fuelExpense) {
             return response()->json([

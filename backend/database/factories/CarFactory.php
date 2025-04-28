@@ -21,7 +21,7 @@ class CarFactory extends Factory
         $vehicle = $this->faker->vehicleArray();
 
         return [
-            'user_id' => null,
+            'user_id' => fake()->randomElement([1, 2, 3, 4, 5, 6, 7]),
             'car_type' => fake()->randomElement(['hatchback', 'sedan', 'convertible', 'SUV', 'coupe']),
             'license_plate' => $this->faker->vehicleRegistration,
             'manufacturer' => $vehicle['brand'],

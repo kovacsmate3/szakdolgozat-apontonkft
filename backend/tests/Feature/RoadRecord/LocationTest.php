@@ -73,8 +73,16 @@ class LocationTest extends TestCase
     {
         $locationData = [
             'name' => 'New Office',
-            'location_type' => 'telephely',
+            'location_type' => 'partner', // Vagy 'egyéb', ha nem telephely
             'is_headquarter' => false,
+
+            // Kötelező címadatok hozzáadása
+            'country' => 'Magyarország',
+            'postalcode' => 1000,
+            'city' => 'Budapest',
+            'road_name' => 'Teszt',
+            'public_space_type' => 'utca',
+            'building_number' => '1',
         ];
 
         $response = $this->actingAs($this->regularUser)
@@ -87,7 +95,13 @@ class LocationTest extends TestCase
 
         $this->assertDatabaseHas('locations', [
             'name' => 'New Office',
-            'location_type' => 'telephely'
+            'location_type' => 'partner'
+        ]);
+
+        // Opcionálisan ellenőrizheted a címet is
+        $this->assertDatabaseHas('addresses', [
+            'city' => 'Budapest',
+            'road_name' => 'Teszt'
         ]);
     }
 
@@ -113,6 +127,7 @@ class LocationTest extends TestCase
             'name' => 'Old Name',
             'location_type' => 'partner',
             'is_headquarter' => false,
+            'user_id' => $this->regularUser->id,
         ]);
 
         $updateData = [

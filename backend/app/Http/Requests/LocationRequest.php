@@ -22,7 +22,7 @@ class LocationRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name' => ['string', 'max:255'],
+            'name' => ['string', 'filled', 'max:255'],
             'location_type' => ['string', 'in:partner,telephely,töltőállomás,bolt,egyéb'],
             'is_headquarter' => ['boolean'],
         ];
