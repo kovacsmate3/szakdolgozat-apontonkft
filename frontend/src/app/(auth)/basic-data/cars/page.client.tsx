@@ -9,6 +9,7 @@ import { getCars, deleteCar } from "@/server/cars";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { CarApiError } from "@/lib/errors";
 
 interface Props {
   token: string;
@@ -38,12 +39,22 @@ export default function CarsPageClient({ token, isAdmin, userId }: Props) {
       });
       setCarToDelete(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error("Delete error:", error);
-      toast.error(`Hiba történt`, {
-        description: "A jármű törlése sikertelen.",
-        duration: 4000,
-      });
+      // Ellenőrizzük, hogy CarApiError típusú-e a hiba
+      if (error instanceof CarApiError) {
+        // Ha igen, akkor használjuk a szerverről érkező hibaüzenetet
+        toast.error(`Hiba történt`, {
+          description: error.data?.message || "A jármű törlése sikertelen.",
+          duration: 4000,
+        });
+      } else {
+        // Egyéb hiba esetén az általános hibaüzenetet jelenítjük meg
+        toast.error(`Hiba történt`, {
+          description: error.message || "A jármű törlése sikertelen.",
+          duration: 4000,
+        });
+      }
       setCarToDelete(null);
     },
   });
