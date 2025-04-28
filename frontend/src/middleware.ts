@@ -1,16 +1,11 @@
 import { auth } from "./auth";
 import { NextRequest, NextResponse } from "next/server";
-
-export const protectedRoutes = [
-  "/dashboard",
-  //"/timesheet",
-  "/road-record",
-  "/basic-data",
-  "/laws",
-  "/admin",
-];
-
-export const adminRoutes = ["/admin"];
+import {
+  adminRoutes,
+  mainRoutes,
+  protectedRoutes,
+  validRoutes,
+} from "./lib/data/pathnames-data";
 
 export async function middleware(req: NextRequest) {
   const session = await auth();
@@ -34,17 +29,34 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
+  if (session) {
+    // Ellenőrizzük, hogy a jelenlegi útvonal érvényes-e
+    const isValidRoute = validRoutes.some(
+      (route) =>
+        pathname === route ||
+        (route.includes("*") &&
+          new RegExp(route.replace("*", ".*")).test(pathname))
+    );
+
+    if (!isValidRoute) {
+      // Ha nem érvényes, ellenőrizzük, hogy melyik fő útvonal alá tartozik
+      const parentRoute = Object.keys(mainRoutes).find((route) =>
+        pathname.startsWith(route)
+      );
+
+      if (parentRoute) {
+        // Ha van szülő útvonal, oda irányítjuk vissza
+        return NextResponse.redirect(new URL(mainRoutes[parentRoute], req.url));
+      } else {
+        // Ha nem tartozik egyik fő útválhoz sem, a dashboard-ra irányítjuk
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/dashboard/:path*",
-    //"/timesheet/:path*",
-    "/road-record/:path*",
-    "/basic-data/:path*",
-    "/laws/:path*",
-    "/admin/:path*",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
