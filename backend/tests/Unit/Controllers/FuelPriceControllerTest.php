@@ -163,13 +163,6 @@ class FuelPriceControllerTest extends TestCase
         // Assert the response contains the fuel price data
         $responseData = json_decode($response->getContent(), true);
 
-        // Diagnosztikai kiírás
-        var_dump([
-            'Eredeti dátum' => '2024-04-01',
-            'Mentett dátum' => $fuelPrice->period,
-            'Válasz dátum' => $responseData['period']
-        ]);
-
         $this->assertEquals($fuelPrice->id, $responseData['id']);
         $this->assertEquals('2024-04-01', substr($responseData['period'], 0, 10), 'A dátum nem egyezik az elvárttal');
         $this->assertEquals(650, $responseData['petrol']);

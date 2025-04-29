@@ -10,7 +10,6 @@ use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class FuelPriceTest extends TestCase
 {
@@ -105,14 +104,6 @@ class FuelPriceTest extends TestCase
         // Dátum ellenőrzése
         $periodFromResponse = Carbon::parse($response->json('period'))->setTimezone('UTC');
         $periodFromDatabase = Carbon::parse($fuelPrice->period)->setTimezone('UTC');
-
-        // Debug információ
-        dump([
-            'db_date' => $periodFromDatabase->toDateTimeString(),
-            'response_date' => $periodFromResponse->toDateTimeString(),
-            'db_date_raw' => $fuelPrice->period,
-            'response_date_raw' => $response->json('period')
-        ]);
 
         // Dátumok ellenőrzése UTC időzónában
         $this->assertEquals(
