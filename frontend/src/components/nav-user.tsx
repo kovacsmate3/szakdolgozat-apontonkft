@@ -42,8 +42,8 @@ export function NavUser() {
 
   const defaultAvatar =
     theme === "light"
-      ? "/images/(auth)/default-avatar-light.png"
-      : "/images/(auth)/default-avatar-dark.png";
+      ? "/images/auth/default-avatar-light.png"
+      : "/images/auth/default-avatar-dark.png";
 
   // useQuery-t mindig meghívjuk, csak feltételesen engedélyezzük
   const { data: freshUserData } = useQuery({

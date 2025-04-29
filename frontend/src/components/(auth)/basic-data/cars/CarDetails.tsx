@@ -25,8 +25,8 @@ const CarDetails = ({ isOpen, closeModal, car }: Props) => {
 
   const imageSrc =
     resolvedTheme === "dark"
-      ? "/images/(auth)/basic-data/cars/car-placeholder-light.png"
-      : "/images/(auth)/basic-data/cars/car-placeholder-dark.png";
+      ? "/images/auth/basic-data/cars/car-placeholder-light.png"
+      : "/images/auth/basic-data/cars/car-placeholder-dark.png";
 
   return (
     <Dialog open={isOpen} onOpenChange={closeModal}>

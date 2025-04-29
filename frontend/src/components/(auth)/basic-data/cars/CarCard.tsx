@@ -27,8 +27,8 @@ const CarCard = ({
 
   const imageSrc =
     resolvedTheme === "dark"
-      ? "/images/(auth)/basic-data/cars/car-placeholder-light.png"
-      : "/images/(auth)/basic-data/cars/car-placeholder-dark.png";
+      ? "/images/auth/basic-data/cars/car-placeholder-light.png"
+      : "/images/auth/basic-data/cars/car-placeholder-dark.png";
 
   // Ellenőrizzük, hogy a felhasználó jogosult-e a szerkesztésre/törlésre
   const canModify = isAdmin || car.user_id === currentUserId;
