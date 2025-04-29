@@ -24,7 +24,7 @@ export default function CapitalEquipmentPage() {
   ];
 
   return (
-    <div className="bg-[url('/images/(main)/capital-equipment/fohatter3.jpeg')] bg-cover bg-center min-h-screen pt-20">
+    <div className="bg-[url('/images/main/capital-equipment/fohatter3.jpeg')] bg-cover bg-center min-h-screen pt-20">
       <div className="full-width-container mx-auto px-8 md:px-16 pb-12">
         <h1 className="text-center lg:text-left text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold my-6 text-white">
           Eszközparkunk

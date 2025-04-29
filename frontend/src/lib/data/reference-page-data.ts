@@ -1,8 +1,8 @@
 export const references = [
   {
     image: {
-      src: "/images/(main)/references/budapart1_edited.jpg",
-      originalSrc: "/images/(main)/references/budapart1.jpg",
+      src: "/images/main/references/budapart1_edited.jpg",
+      originalSrc: "/images/main/references/budapart1.jpg",
       alt: "Kép az új budaparti városnegyedről (XI. kerület)",
       title: "BudaPart városnegyed (XI. kerület)",
     },
@@ -13,8 +13,8 @@ export const references = [
   },
   {
     image: {
-      src: "/images/(main)/references/liberty1_edited.jpg",
-      originalSrc: "/images/(main)/references/liberty1.jpg",
+      src: "/images/main/references/liberty1_edited.jpg",
+      originalSrc: "/images/main/references/liberty1.jpg",
       alt: "Kép a Liberty Irodaházról (IX. kerület)",
       title: "Liberty Irodaház (IX. kerület)",
     },
@@ -25,8 +25,8 @@ export const references = [
   },
   {
     image: {
-      src: "/images/(main)/references/gobuda1_edited.jpg",
-      originalSrc: "/images/(main)/references/gobuda1.jpg",
+      src: "/images/main/references/gobuda1_edited.jpg",
+      originalSrc: "/images/main/references/gobuda1.jpg",
       alt: "Kép a GoBuda Mall plázáról (III. kerület)",
       title: "GoBuda Mall (III. kerület)",
     },
@@ -37,8 +37,8 @@ export const references = [
   },
   {
     image: {
-      src: "/images/(main)/references/greencourtoffice1_edited.jpg",
-      originalSrc: "/images/(main)/references/greencourtoffice1.jpg",
+      src: "/images/main/references/greencourtoffice1_edited.jpg",
+      originalSrc: "/images/main/references/greencourtoffice1.jpg",
       alt: "Kép a Green Court Office épületegyüttesről (XIII. kerület)",
       title: "Green Court Office (XIII. kerület)",
     },
@@ -49,8 +49,8 @@ export const references = [
   },
   {
     image: {
-      src: "/images/(main)/references/makoimeki1_edited.png",
-      originalSrc: "/images/(main)/references/makoimeki1.png",
+      src: "/images/main/references/makoimeki1_edited.png",
+      originalSrc: "/images/main/references/makoimeki1.png",
       alt: "Kép a makói McDonald's étteremről",
       title: "McDonald's éttermek",
     },
@@ -61,8 +61,8 @@ export const references = [
   },
   {
     image: {
-      src: "/images/(main)/references/ezusthegy2_edited.jpg",
-      originalSrc: "/images/(main)/references/ezusthegy2.jpg",
+      src: "/images/main/references/ezusthegy2_edited.jpg",
+      originalSrc: "/images/main/references/ezusthegy2.jpg",
       alt: "Kép az ürömi Ezüsthegy Villaparkról",
       title: "Ezüsthegy Villapark (Üröm)",
     },

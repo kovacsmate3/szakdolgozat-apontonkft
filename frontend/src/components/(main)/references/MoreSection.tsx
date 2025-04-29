@@ -15,7 +15,7 @@ const MoreSection = () => {
             className="w-full aspect-video rounded-md object-cover"
             controls
             preload="metadata"
-            poster="/images/(main)/references/poster.png"
+            poster="/images/main/references/poster.png"
           >
             <source src="/videos/eon3d_varazsdoboz.mp4" type="video/mp4" />
             Your browser does not support the video tag.
