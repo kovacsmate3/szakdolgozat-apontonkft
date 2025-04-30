@@ -467,7 +467,7 @@ export function TripForm({
                                   key={user.id}
                                   value={user.id.toString()}
                                 >
-                                  {user.firstname} {user.lastname} (
+                                  {user.lastname} {user.firstname} (
                                   {user.username})
                                 </SelectItem>
                               ))}

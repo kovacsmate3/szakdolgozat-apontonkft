@@ -652,7 +652,6 @@ class TripController extends Controller
             }
         }
 
-
         // Figyelmeztetés hiányzó üzemanyagárakról
         if ($isSingleMonth) {
             // Ha csak egy hónapra exportálunk, elég ha csak ahhoz van meg az üzemanyagár
@@ -805,13 +804,57 @@ class TripController extends Controller
             $fogyElszSheet->setCellValue('D24', $car->license_plate);          // Rendszám
             $fogyElszSheet->setCellValue('D25', $car->manufacturer . ' ' . $car->model); // Típus
 
-            // ---- 2. HAVI MUNKALAPOK KITÖLTÉSE ----
-            // Meghatározni, mely hónapokat kell feldolgozni
+            // ---- 2. HAVI MUNKALAPOK INICIALIZÁLÁSA ÉS KITÖLTÉSE ----
             $monthsToProcess = $isSingleMonth ? [$targetMonth] : range(1, 12);
             Log::debug('Months to process:', ['months' => $monthsToProcess]);
 
+            // Először inicializáljuk az összes havi munkalapot és beállítjuk az F2 cellát
             foreach ($monthsToProcess as $currentMonth) {
-                Log::debug("Feldolgozás: hónap {$currentMonth}");
+                try {
+                    $monthlySheet = $spreadsheet->getSheetByName($monthIndexes[$currentMonth - 1]);
+
+                    if (!$monthlySheet) {
+                        // Ha nem találtuk név alapján, próbáljuk meg index alapján
+                        try {
+                            $monthlySheet = $spreadsheet->getSheet($currentMonth + 1); // +1 a helység és fogy-elsz miatt
+
+                            if ($monthlySheet) {
+                                // Állítsuk be a munkalap nevét
+                                $monthlySheet->setTitle($monthIndexes[$currentMonth - 1]);
+                            }
+                        } catch (\Exception $e) {
+                            \Log::error("Nem sikerült a {$currentMonth}. havi munkalapot elérni: " . $e->getMessage());
+                            continue; // Átugorjuk ezt a hónapot
+                        }
+                    }
+
+                    if (!$monthlySheet) {
+                        \Log::warning("A(z) {$monthNames[$currentMonth]} havi munkalap nem található a sablonban, átugorjuk.");
+                        continue;
+                    }
+
+                    // Minden esetben kitöltjük az F2 cellát az évszámmal
+                    $originalF2 = $monthlySheet->getCell('F2')->getValue();
+                    $monthlySheet->setCellValue('F2', $year . '. ' . $originalF2);
+
+                    // Itt töröljük a korábbi tartalmat még mielőtt az adatokat kitöltenénk
+                    for ($i = 0; $i < 40; $i++) {
+                        $row = 8 + $i;
+                        $monthlySheet->setCellValue('B' . $row, '');      // Dátum
+                        $monthlySheet->setCellValue('C' . $row, '');      // Honnan
+                        $monthlySheet->setCellValue('D' . $row, '');      // Hová
+                        $monthlySheet->setCellValue('E' . $row, '');      // Partner
+                        $monthlySheet->setCellValue('F' . $row, '');      // Távolság
+                        $monthlySheet->setCellValue('G' . $row, '');      // Megjegyzés
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Hiba a(z) {$currentMonth}. havi munkalap inicializálásakor: " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            // Utána töltsük fel a konkrét adatokat külön ciklusban
+            foreach ($monthsToProcess as $currentMonth) {
                 // Az aktuális hónap utazásainak lekérése
                 $start = Carbon::create($year, $currentMonth, 1)->startOfMonth();
                 $end = $start->copy()->endOfMonth();
@@ -834,93 +877,64 @@ class TripController extends Controller
                 } else {
                     $trips = collect(); // Üres kollekció
                 }
+
+                // Ha egy hónapra exportálunk és nincs adat, akkor hibát dobunk
+                if ($trips->isEmpty() && $isSingleMonth) {
+                    return response()->json([
+                        'message' => 'Ebben a hónapban nincs üzleti célú utazási adat az adott járműhöz.'
+                    ], Response::HTTP_NOT_FOUND);
+                }
+
+                // Ha nincs adat az adott hónapban, akkor átugorjuk az adatfeltöltést
                 if ($trips->isEmpty()) {
-                    if ($isSingleMonth) {
-                        return response()->json([
-                            'message' => 'Ebben a hónapban nincs üzleti célú utazási adat az adott járműhöz.'
-                        ], Response::HTTP_NOT_FOUND);
-                    } else {
-                        continue; // egész éves export esetén csak átugorjuk
-                    }
+                    continue;
                 }
 
                 try {
                     $monthlySheet = $spreadsheet->getSheetByName($monthIndexes[$currentMonth - 1]);
-
                     if (!$monthlySheet) {
-                        // Ha nem találtuk név alapján, próbáljuk meg index alapján
-                        try {
-                            $monthlySheet = $spreadsheet->getSheet($currentMonth + 1); // +1 a helység és fogy-elsz miatt
+                        continue; // Ha nem találjuk a munkalapot, átugorjuk
+                    }
 
-                            if ($monthlySheet) {
-                                // Állítsuk be a munkalap nevét
-                                $monthlySheet->setTitle($monthIndexes[$currentMonth - 1]);
-                            }
-                        } catch (\Exception $e) {
-                            \Log::error("Nem sikerült a {$currentMonth}. havi munkalapot elérni: " . $e->getMessage());
-                            continue; // Átugorjuk ezt a hónapot
+                    // Utazások feltöltése
+                    foreach ($trips as $i => $trip) {
+                        if ($i >= 40) break; // Maximum 40 utazás
+
+                        $row = 8 + $i;
+
+                        // Dátum
+                        $monthlySheet->setCellValue('B' . $row, $trip->end_time ? $trip->end_time->format('Y-m-d H:i') : $trip->start_time->format('Y-m-d H:i'));
+
+                        $fromAddress = '';
+                        if ($trip->startLocation && $trip->startLocation->address) {
+                            $fromAddress = $trip->startLocation->address->fullAddress();
                         }
+                        $monthlySheet->setCellValue('C' . $row, $fromAddress);
+
+                        // Hová
+                        $toAddress = '';
+                        if ($trip->destinationLocation && $trip->destinationLocation->address) {
+                            $toAddress = $trip->destinationLocation->address->fullAddress();
+                        }
+                        $monthlySheet->setCellValue('D' . $row, $toAddress);
+
+                        // Partner neve
+                        $partnerName = '';
+                        if ($trip->destinationLocation) {
+                            $partnerName = $trip->destinationLocation->name;
+                        }
+                        $monthlySheet->setCellValue('E' . $row, $partnerName);
+
+                        // Megtett távolság
+                        $distance = (!is_null($trip->start_odometer) && !is_null($trip->end_odometer))
+                            ? $trip->end_odometer - $trip->start_odometer
+                            : $trip->actual_distance;
+
+                        $monthlySheet->setCellValue('F' . $row, $distance);
                     }
                 } catch (\Exception $e) {
-                    \Log::error("Hiba a havi munkalap elérésekor: " . $e->getMessage());
-                    continue; // Átugorjuk ezt a hónapot
-                }
-
-                if (!$monthlySheet) {
-                    \Log::warning("A(z) {$monthNames[$currentMonth]} havi munkalap nem található a sablonban, átugorjuk.");
+                    \Log::error("Hiba a(z) {$currentMonth}. havi adatok feltöltésekor: " . $e->getMessage());
                     continue;
-                }
-
-                $originalF2 = $monthlySheet->getCell('F2')->getValue();
-                $monthlySheet->setCellValue('F2', $year . '. ' . $originalF2);
-
-                // Adatok feltöltése a táblázatba - a 8. sortól kezdődően
-                // Előző adatok törlése
-                for ($i = 0; $i < 40; $i++) {
-                    $row = 8 + $i;
-                    $monthlySheet->setCellValue('B' . $row, '');      // Dátum
-                    $monthlySheet->setCellValue('C' . $row, '');      // Honnan
-                    $monthlySheet->setCellValue('D' . $row, '');      // Hová
-                    $monthlySheet->setCellValue('E' . $row, '');      // Partner
-                    $monthlySheet->setCellValue('F' . $row, '');      // Távolság
-                    $monthlySheet->setCellValue('G' . $row, '');      // Megjegyzés
-                }
-
-                // Utazások feltöltése
-                foreach ($trips as $i => $trip) {
-                    if ($i >= 40) break; // Maximum 40 utazás
-
-                    $row = 8 + $i;
-
-                    // Dátum
-                    $monthlySheet->setCellValue('B' . $row, $trip->end_time ? $trip->end_time->format('Y-m-d H:i') : $trip->start_time->format('Y-m-d H:i'));
-
-                    $fromAddress = '';
-                    if ($trip->startLocation && $trip->startLocation->address) {
-                        $fromAddress = $trip->startLocation->address->fullAddress();
-                    }
-                    $monthlySheet->setCellValue('C' . $row, $fromAddress);
-
-                    // Hová
-                    $toAddress = '';
-                    if ($trip->destinationLocation && $trip->destinationLocation->address) {
-                        $toAddress = $trip->destinationLocation->address->fullAddress();
-                    }
-                    $monthlySheet->setCellValue('D' . $row, $toAddress);
-
-                    // Partner neve
-                    $partnerName = '';
-                    if ($trip->destinationLocation) {
-                        $partnerName = $trip->destinationLocation->name;
-                    }
-                    $monthlySheet->setCellValue('E' . $row, $partnerName);
-
-                    // Megtett távolság
-                    $distance = (!is_null($trip->start_odometer) && !is_null($trip->end_odometer))
-                        ? $trip->end_odometer - $trip->start_odometer
-                        : $trip->actual_distance;
-
-                    $monthlySheet->setCellValue('F' . $row, $distance);
                 }
             }
 
