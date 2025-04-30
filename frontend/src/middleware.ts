@@ -11,6 +11,11 @@ export async function middleware(req: NextRequest) {
   const session = await auth();
   const { pathname } = req.nextUrl;
 
+  // Ha a path /html/-lel kezdődik vagy statikus erőforrást kér, azonnal engedjük tovább
+  if (pathname.startsWith("/html/") || isStaticResourcePath(pathname)) {
+    return NextResponse.next();
+  }
+
   if (pathname === "/") {
     return NextResponse.redirect(new URL("/home", req.url));
   }
@@ -55,6 +60,39 @@ export async function middleware(req: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+// Segédfüggvény a statikus erőforrás útvonalak felismeréséhez
+function isStaticResourcePath(pathname: string): boolean {
+  // Ellenőrizze, hogy a fájl neve végződik-e valamilyen ismert statikus fájl kiterjesztéssel
+  const staticExtensions = [
+    ".html",
+    ".htm",
+    ".css",
+    ".js",
+    ".json",
+    ".xml",
+    ".pdf",
+    ".txt",
+    ".csv",
+    ".xlsx",
+    ".doc",
+    ".docx",
+    ".mp4",
+    ".mp3",
+    ".avi",
+    ".mov",
+    ".webm",
+    ".ogg",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".svg",
+    ".webp",
+  ];
+
+  return staticExtensions.some((ext) => pathname.toLowerCase().endsWith(ext));
 }
 
 export const config = {

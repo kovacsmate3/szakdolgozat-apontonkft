@@ -14,8 +14,10 @@ const MoreSection = () => {
           <video
             className="w-full aspect-video rounded-md object-cover"
             controls
-            preload="metadata"
+            preload="none"
             poster="/images/main/references/poster.png"
+            playsInline
+            crossOrigin="anonymous"
           >
             <source src="/videos/eon3d_varazsdoboz.mp4" type="video/mp4" />
             Your browser does not support the video tag.
@@ -31,6 +33,7 @@ const MoreSection = () => {
           href="/html/videoleiras.html"
           target="_blank"
           title="Hogyan készült az EON karácsonyi 3D térhatású varázsdoboza? videó szöveges leírása"
+          rel="noopener noreferrer"
         >
           Kattints a Hogyan készült az EON karácsonyi 3D térhatású varázsdoboza?
           videó szöveges leírásának megtekintéséhez
