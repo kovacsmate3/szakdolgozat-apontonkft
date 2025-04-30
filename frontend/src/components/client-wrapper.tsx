@@ -12,7 +12,7 @@ export default function ClientWrapper({
   const [prevWidth, setPrevWidth] = useState<number>(
     typeof window !== "undefined" ? window.innerWidth : 0
   );
-  const resizeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const resizeTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
