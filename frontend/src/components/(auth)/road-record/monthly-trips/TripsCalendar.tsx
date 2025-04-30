@@ -14,6 +14,8 @@ interface TripsCalendarProps {
   onEdit: (trip: Trip) => void;
   onDelete: (trip: Trip) => void;
   onCreateTrip: () => void;
+  userId: number;
+  isAdmin: boolean;
 }
 
 export function TripsCalendar({
@@ -25,6 +27,8 @@ export function TripsCalendar({
   onEdit,
   onDelete,
   onCreateTrip,
+  userId,
+  isAdmin,
 }: TripsCalendarProps) {
   // Render a single day cell in month view
   const renderDayCell = (
@@ -53,6 +57,8 @@ export function TripsCalendar({
         onEdit={onEdit}
         onDelete={onDelete}
         onCreateTrip={onCreateTrip}
+        userId={userId}
+        isAdmin={isAdmin}
       />
     );
   };

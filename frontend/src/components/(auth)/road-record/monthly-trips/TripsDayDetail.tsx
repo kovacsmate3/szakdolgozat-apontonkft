@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  LockIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,13 @@ import {
 } from "@/components/ui/table";
 import { calculateTotalDistance, roundToTwoDecimals } from "@/lib/functions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface TripsDayDetailProps {
   day: Date;
@@ -32,6 +40,8 @@ interface TripsDayDetailProps {
   onEdit?: (trip: Trip) => void;
   onDelete?: (trip: Trip) => void;
   onCreateTrip?: (defaultDate?: Date) => void;
+  userId: number;
+  isAdmin: boolean;
 }
 
 export function TripsDayDetail({
@@ -40,6 +50,8 @@ export function TripsDayDetail({
   onEdit,
   onDelete,
   onCreateTrip,
+  userId,
+  isAdmin,
 }: TripsDayDetailProps) {
   const totalDistance = calculateTotalDistance(trips);
 
@@ -48,6 +60,11 @@ export function TripsDayDetail({
     (a, b) =>
       new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
   );
+
+  // Helper function to determine if user can edit/delete a trip
+  const canModifyTrip = (trip: Trip): boolean => {
+    return isAdmin || trip.user_id === userId;
+  };
 
   if (trips.length === 0) {
     return (
@@ -184,7 +201,7 @@ export function TripsDayDetail({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 whitespace-nowrap">
-                        {onEdit && (
+                        {onEdit && canModifyTrip(trip) && (
                           <Button
                             type="button"
                             variant="outline"
@@ -195,7 +212,7 @@ export function TripsDayDetail({
                             Szerkesztés
                           </Button>
                         )}
-                        {onDelete && (
+                        {onDelete && canModifyTrip(trip) && (
                           <Button
                             type="button"
                             variant="destructive"
@@ -205,6 +222,27 @@ export function TripsDayDetail({
                             <Trash2 className="h-4 w-4 mr-1" />
                             Törlés
                           </Button>
+                        )}
+                        {!canModifyTrip(trip) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs text-muted-foreground gap-1 cursor-default"
+                                >
+                                  <LockIcon className="h-3 w-3" />
+                                  Más felhasználó adata
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Csak a saját utazásait szerkesztheti vagy
+                                  törölheti
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
                     </TableCell>

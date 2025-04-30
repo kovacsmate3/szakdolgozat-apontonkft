@@ -15,6 +15,7 @@ import {
   Info,
   Calendar,
   ArrowRight,
+  LockIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FuelExpenseDayDetailProps {
   day: Date;
@@ -40,6 +47,8 @@ interface FuelExpenseDayDetailProps {
   onEdit?: (expense: FuelExpense) => void;
   onDelete?: (expense: FuelExpense) => void;
   onCreateExpense?: (defaultDate?: Date) => void;
+  userId: number;
+  isAdmin: boolean;
 }
 
 export function FuelExpenseDayDetail({
@@ -48,6 +57,8 @@ export function FuelExpenseDayDetail({
   onEdit,
   onDelete,
   onCreateExpense,
+  userId,
+  isAdmin,
 }: FuelExpenseDayDetailProps) {
   const totalFuelQuantity = expenses.reduce(
     (total, expense) => total + expense.fuel_quantity,
@@ -64,6 +75,11 @@ export function FuelExpenseDayDetail({
     (a, b) =>
       new Date(a.expense_date).getTime() - new Date(b.expense_date).getTime()
   );
+
+  // Helper function to determine if user can edit/delete an expense
+  const canModifyExpense = (expense: FuelExpense): boolean => {
+    return isAdmin || expense.user_id === userId;
+  };
 
   if (expenses.length === 0) {
     return (
@@ -296,7 +312,7 @@ export function FuelExpenseDayDetail({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 whitespace-nowrap">
-                        {onEdit && (
+                        {onEdit && canModifyExpense(expense) && (
                           <Button
                             type="button"
                             variant="outline"
@@ -309,7 +325,7 @@ export function FuelExpenseDayDetail({
                             </span>
                           </Button>
                         )}
-                        {onDelete && (
+                        {onDelete && canModifyExpense(expense) && (
                           <Button
                             type="button"
                             variant="destructive"
@@ -319,6 +335,28 @@ export function FuelExpenseDayDetail({
                             <Trash2 className="h-4 w-4 mr-1" />
                             <span className="hidden sm:inline">Törlés</span>
                           </Button>
+                        )}
+                        {/* Message when user can't modify the expense */}
+                        {!canModifyExpense(expense) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs text-muted-foreground gap-1 cursor-default"
+                                >
+                                  <LockIcon className="h-3 w-3" />
+                                  Más felhasználó adata
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  Csak a saját tankolásait szerkesztheti vagy
+                                  törölheti
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
                     </TableCell>

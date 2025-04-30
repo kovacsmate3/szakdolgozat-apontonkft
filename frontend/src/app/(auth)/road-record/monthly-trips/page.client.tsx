@@ -31,7 +31,7 @@ interface Props {
 export default function MonthlyTripsPageClient({
   token,
   userId,
-  isAdmin,
+  isAdmin = false,
 }: Props) {
   const queryClient = useQueryClient();
   const [tripToEdit, setTripToEdit] = useState<Trip | null>(null);
@@ -253,6 +253,8 @@ export default function MonthlyTripsPageClient({
               onEdit={handleEditTrip}
               onDelete={handleDeleteTrip}
               onCreateTrip={handleCreateTrip}
+              userId={userId}
+              isAdmin={isAdmin}
             />
           </CardContent>
         </Card>

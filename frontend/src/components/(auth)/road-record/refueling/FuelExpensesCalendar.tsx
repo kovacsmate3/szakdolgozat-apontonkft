@@ -14,6 +14,8 @@ interface FuelExpensesCalendarProps {
   onEdit: (expense: FuelExpense) => void;
   onDelete: (expense: FuelExpense) => void;
   onCreateExpense: () => void;
+  userId: number;
+  isAdmin: boolean;
 }
 
 export function FuelExpensesCalendar({
@@ -25,6 +27,8 @@ export function FuelExpensesCalendar({
   onEdit,
   onDelete,
   onCreateExpense,
+  userId,
+  isAdmin,
 }: FuelExpensesCalendarProps) {
   // Render a single day cell in month view
   const renderDayCell = (
@@ -52,6 +56,8 @@ export function FuelExpensesCalendar({
         onEdit={onEdit}
         onDelete={onDelete}
         onCreateExpense={onCreateExpense}
+        userId={userId}
+        isAdmin={isAdmin}
       />
     );
   };

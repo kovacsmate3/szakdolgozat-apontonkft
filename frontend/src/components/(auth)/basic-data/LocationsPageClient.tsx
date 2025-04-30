@@ -106,6 +106,32 @@ export default function LocationsPageClient({
     return `+ Új ${typeText}`;
   }, [currentType, locationType, defaultLocationType]);
 
+  // Ellenőrizzük, hogy az aktuális helyszíntípushoz van-e jogosultsága a felhasználónak
+  const canCreateCurrentType = useMemo(() => {
+    // Az aktuális típus
+    const typeToCheck = currentType || locationType;
+
+    // Adminok bármit létrehozhatnak
+    if (isAdmin) return true;
+
+    // A telephely típus csak adminnak érhető el
+    if (typeToCheck === "telephely") return false;
+
+    // Ha vesszővel elválasztott több típus van
+    if (typeToCheck?.includes(",")) {
+      // Ha a telephelyet tartalmazza, akkor nézzük meg, hogy van-e más típus is
+      if (typeToCheck.includes("telephely")) {
+        // Ha csak 'telephely' van, akkor nem engedélyezett
+        const types = typeToCheck.split(",");
+        // Ha csak telephely van, vagy üres a lista, akkor nincs jogosultsága
+        return types.length > 1 && types.some((type) => type !== "telephely");
+      }
+    }
+
+    // Minden más esetben engedélyezett
+    return true;
+  }, [isAdmin, currentType, locationType]);
+
   const {
     data: locations,
     isLoading,
@@ -262,9 +288,12 @@ export default function LocationsPageClient({
               </SelectContent>
             </Select>
           )}
-          <Button onClick={onCreateLocation} className="flex-shrink-0">
-            {buttonText}
-          </Button>
+          {/* Only show the button if user has permission for the current type */}
+          {canCreateCurrentType && (
+            <Button onClick={onCreateLocation} className="flex-shrink-0">
+              {buttonText}
+            </Button>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

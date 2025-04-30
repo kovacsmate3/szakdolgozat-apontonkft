@@ -30,7 +30,7 @@ interface Props {
 export default function RefuelingsPageClient({
   token,
   userId,
-  isAdmin,
+  isAdmin = false,
 }: Props) {
   const queryClient = useQueryClient();
   const [expenseToEdit, setExpenseToEdit] = useState<FuelExpense | null>(null);
@@ -222,6 +222,8 @@ export default function RefuelingsPageClient({
               onEdit={handleEditExpense}
               onDelete={handleDeleteExpense}
               onCreateExpense={handleCreateExpense}
+              userId={userId}
+              isAdmin={isAdmin}
             />
           </CardContent>
         </Card>
