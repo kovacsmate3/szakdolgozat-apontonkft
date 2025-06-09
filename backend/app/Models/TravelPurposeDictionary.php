@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class TravelPurposeDictionary extends Model
+{
+    /** @use HasFactory<\Database\Factories\TravelPurposeDictionaryFactory> */
+    use HasFactory;
+
+    protected $fillable = [
+        'travel_purpose',
+        'type',
+        'note',
+        'is_system',
+        'user_id',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_system' => 'boolean'
+        ];
+    }
+
+    /**
+     * A felhasználó, aki létrehozta az utazási célt
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function locations()
+    {
+        return $this->belongsToMany(
+            Location::class,
+            'location_purpose',
+            'travel_purpose_id',
+            'location_id',
+        )->withTimestamps();
+    }
+
+    public function trips()
+    {
+        return $this->hasMany(Trip::class, 'dict_id');
+    }
+}
