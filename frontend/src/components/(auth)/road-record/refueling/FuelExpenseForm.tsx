@@ -42,7 +42,7 @@ import { LocationForm } from "@/components/(auth)/basic-data/LocationForm";
 import { fuelExpenseFormSchema } from "@/lib/schemas";
 import { FuelExpenseApiError } from "@/lib/errors";
 import { z } from "zod";
-import { formatLocalDateTime } from "@/lib/functions";
+import { formatLocalDateTime, getLastTripEndOdometer } from "@/lib/functions";
 
 // Define the form values type explicitly based on the schema
 type FuelExpenseFormValues = z.infer<typeof fuelExpenseFormSchema>;
@@ -185,6 +185,40 @@ export function FuelExpenseForm({
       setSelectedCarId(cars.length === 1 ? cars[0].id.toString() : "");
     }
   }, [isOpen, expenseToEdit, form, cars, isAdmin, userId, initialDate]);
+
+  const carId = form.watch("car_id");
+  const expenseDate = form.watch("expense_date");
+
+  // ÚJ: Automatikus kilométeróra beállítás utolsó út alapján
+  useEffect(() => {
+    // Csak új tankolás esetén (nem szerkesztésnél)
+    if (expenseToEdit) return;
+
+    // Ha van kiválasztott autó, mindig frissítjük a kilométerórát
+    if (carId) {
+      const lastTripEndOdometer = getLastTripEndOdometer(
+        trips,
+        carId,
+        expenseDate || new Date()
+      );
+
+      if (lastTripEndOdometer && lastTripEndOdometer > 0) {
+        console.log(
+          "🚗 Automatikus kilométeróra beállítva utolsó út alapján:",
+          lastTripEndOdometer
+        );
+        form.setValue("odometer", lastTripEndOdometer);
+      } else {
+        console.log(
+          "🚗 Nincs korábbi út end_odometer adat ehhez az autóhoz - 0-ra állítva"
+        );
+        form.setValue("odometer", 0); // Ha nincs adat, 0-ra állítjuk
+      }
+    } else {
+      // Ha nincs autó kiválasztva, 0-ra állítjuk
+      form.setValue("odometer", 0);
+    }
+  }, [carId, expenseDate, trips, form, expenseToEdit]);
 
   // Létrehozás mutáció
   const createFuelExpenseMutation = useMutation({
@@ -559,6 +593,7 @@ export function FuelExpenseForm({
                         <Input
                           type="number"
                           placeholder="pl. 45230"
+                          min="0"
                           {...field}
                           value={field.value === 0 ? "" : field.value}
                           onChange={(e) =>
@@ -586,6 +621,8 @@ export function FuelExpenseForm({
                           type="number"
                           placeholder="pl. 45.5"
                           step="0.01"
+                          min="0"
+                          max="1000"
                           {...field}
                           value={field.value === 0 ? "" : field.value}
                           onChange={(e) =>
@@ -612,6 +649,7 @@ export function FuelExpenseForm({
                         <Input
                           type="number"
                           placeholder="pl. 25450"
+                          min="0"
                           {...field}
                           value={field.value === 0 ? "" : field.value}
                           onChange={(e) =>

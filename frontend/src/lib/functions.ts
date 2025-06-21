@@ -76,7 +76,7 @@ export const calculateFuelCost = (
     case "dízel":
       pricePerLiter = fuelPrice.diesel;
       break;
-    case "gáz":
+    case "lpg gáz":
       pricePerLiter = fuelPrice.lp_gas;
       break;
     case "keverék":
@@ -91,6 +91,60 @@ export const calculateFuelCost = (
 
   // Teljes költség (Ft)
   return totalConsumption * pricePerLiter;
+};
+
+/**
+ * Megkeresi az utolsó út záró kilométeróra állását egy adott autóhoz és dátumhoz képest
+ *
+ * @param trips - Utak listája
+ * @param carId - Autó ID (string formátumban)
+ * @param beforeDate - Ezen dátum előtti utolsó út end_odometer keresése
+ * @returns Utolsó út záró kilométeróra állása vagy null
+ */
+export const getLastTripEndOdometer = (
+  trips: Trip[],
+  carId: string,
+  beforeDate: Date
+): number | null => {
+  if (!carId) return null;
+
+  const carIdNum = parseInt(carId);
+  const targetTimestamp = beforeDate.getTime();
+
+  console.log(
+    `🔍 Keresés: autó ${carId}, dátum előtt: ${beforeDate.toISOString()}`
+  );
+
+  // Az adott autó utai, amelyek a megadott dátum előtt történtek
+  const relevantTrips = trips
+    .filter((trip) => trip.car_id === carIdNum)
+    .filter((trip) => {
+      const tripEndTime = trip.end_time || trip.start_time; // Ha nincs end_time, a start_time-ot használjuk
+      return new Date(tripEndTime).getTime() < targetTimestamp;
+    })
+    .sort((a, b) => {
+      // Legfrissebb először (end_time vagy start_time alapján)
+      const aTime = new Date(a.end_time || a.start_time).getTime();
+      const bTime = new Date(b.end_time || b.start_time).getTime();
+      return bTime - aTime;
+    });
+
+  console.log(`📊 Talált utak száma: ${relevantTrips.length}`);
+
+  // Keressük az első olyan utat, amelynek van end_odometer értéke
+  for (const trip of relevantTrips) {
+    console.log(
+      `📅 Út: ${new Date(trip.start_time).toISOString()} → end_odometer: ${trip.end_odometer}`
+    );
+
+    if (trip.end_odometer && trip.end_odometer > 0) {
+      console.log(`✅ Utolsó end_odometer találva: ${trip.end_odometer} km`);
+      return trip.end_odometer;
+    }
+  }
+
+  console.log(`❌ Nincs megfelelő end_odometer adat`);
+  return null;
 };
 
 /**
