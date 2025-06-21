@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+//import { Checkbox } from "@/components/ui/checkbox";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
@@ -165,7 +165,7 @@ export default function LoginForm() {
                 </FormItem>
               )}
             />
-
+            {/*
             <FormField
               control={form.control}
               name="remember"
@@ -183,7 +183,7 @@ export default function LoginForm() {
                 </FormItem>
               )}
             />
-
+            */}
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && (
                 <LoaderCircle className="h-4 w-4 animate-spin mr-2" />
