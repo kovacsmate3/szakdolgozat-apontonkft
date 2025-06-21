@@ -49,6 +49,7 @@ interface LocationFormProps {
   defaultLocationType?: string; // Az alapértelmezett helyszín típus
   allowedLocationTypes?: string[]; // Engedélyezett helyszín típusok
   allowTypeSelection?: boolean;
+  allLocations: Location[];
 }
 
 type LocationFormValues = {
@@ -73,11 +74,27 @@ export function LocationForm({
   defaultLocationType = "egyéb", // Alapértelmezett típus
   allowedLocationTypes, // Engedélyezett típusok listája
   allowTypeSelection,
+  allLocations,
 }: LocationFormProps) {
   const queryClient = useQueryClient();
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>(
     {}
   );
+
+  const isOnlyHeadquarter = useMemo(() => {
+    if (!locationToEdit?.is_headquarter || !isAdmin) {
+      return false;
+    }
+
+    const otherHeadquarters = allLocations.filter(
+      (loc) =>
+        loc.is_headquarter &&
+        loc.id !== locationToEdit.id &&
+        loc.location_type === "telephely"
+    ).length;
+
+    return otherHeadquarters === 0;
+  }, [locationToEdit, allLocations, isAdmin]);
 
   // Figyelni kell a kiválasztott típust
   const [selectedType, setSelectedType] = useState<string>(
@@ -429,7 +446,14 @@ export function LocationForm({
                         <FormControl>
                           <Checkbox
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked) => {
+                              // Ha ez az egyetlen székhely és le akarjuk venni, megakadályozzuk
+                              if (isOnlyHeadquarter && !checked) {
+                                return;
+                              }
+                              field.onChange(checked);
+                            }}
+                            disabled={isOnlyHeadquarter && field.value}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">

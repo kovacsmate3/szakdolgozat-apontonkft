@@ -335,6 +335,7 @@ export default function LocationsPageClient({
         defaultLocationType={defaultLocationType}
         allowedLocationTypes={filteredAllowedTypes}
         allowTypeSelection={shouldAllowTypeSelection}
+        allLocations={locations || []}
       />
     </div>
   );

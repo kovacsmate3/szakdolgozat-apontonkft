@@ -171,6 +171,23 @@ class LocationController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
+        // ÚJ VALIDÁCIÓ: Ellenőrizzük a székhely státusz módosítását
+        if (isset($locationData['is_headquarter'])) {
+            // Ha jelenleg ez székhely, és le akarjuk venni a státuszt
+            if ($location->is_headquarter && !$locationData['is_headquarter']) {
+                // Ellenőrizzük, hogy van-e másik székhely
+                $otherHeadquarters = Location::where('is_headquarter', true)
+                    ->where('id', '!=', $location->id)
+                    ->count();
+
+                if ($otherHeadquarters === 0) {
+                    return response()->json([
+                        'message' => 'Legalább egy helyszínnek székhelynek kell lennie. Először jelöljön ki egy másik helyszínt székhelyként, majd próbálja újra a módosítást.'
+                    ], Response::HTTP_FORBIDDEN);
+                }
+            }
+        }
+
         // Címadatok kinyerése ha vannak
         $addressData = $addressRequest->safe()->all();
 
