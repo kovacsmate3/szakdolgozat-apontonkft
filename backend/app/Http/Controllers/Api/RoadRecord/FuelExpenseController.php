@@ -23,7 +23,8 @@ class FuelExpenseController extends Controller
             'location',
             'trip',
             'trip.startLocation',
-            'trip.destinationLocation'
+            'trip.destinationLocation',
+            'trip.travelPurpose'
         ]);
 
         if ($request->has('car_id')) {
@@ -164,7 +165,8 @@ class FuelExpenseController extends Controller
             'location',
             'trip',
             'trip.startLocation',
-            'trip.destinationLocation'
+            'trip.destinationLocation',
+            'trip.travelPurpose'
         ])->find($id);
 
         if (!$fuelExpense) {

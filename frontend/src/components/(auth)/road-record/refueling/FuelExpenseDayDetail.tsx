@@ -277,7 +277,7 @@ export function FuelExpenseDayDetail({
                                   <div className="text-muted-foreground">
                                     Utazási cél:
                                   </div>
-                                  <div className="text-right">
+                                  <div className="text-justify break-words whitespace-normal leading-tight">
                                     {expense.trip.travel_purpose
                                       ?.travel_purpose || "Nincs megadva"}
                                   </div>
