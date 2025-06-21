@@ -7,7 +7,7 @@ export default function LoadingScreen() {
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const [prevWidth, setPrevWidth] = useState<number>(window.innerWidth);
-  const resizeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const resizeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
