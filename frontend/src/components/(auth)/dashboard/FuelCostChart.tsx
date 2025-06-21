@@ -155,22 +155,32 @@ export default function FuelCostChart({ token }: ChartProps) {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-card border border-border rounded-md shadow-md p-2 text-xs max-w-[180px]">
-          <h3 className="font-medium text-sm mb-1">{data.month || label}</h3>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="text-muted-foreground">Teljes költség:</div>
-            <div className="font-medium text-right">
-              {formatHUF(data.totalCost)}
+        <div className="bg-card backdrop-blur-sm border border-border rounded-md shadow-md p-2 text-xs max-w-[200px]">
+          <h3 className="font-medium text-sm mb-2 text-center">
+            {data.month || label}
+          </h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 rounded-full bg-[#1E88E5]"></div>
+              <span className="text-muted-foreground">Havi költség:</span>
+              <span className="font-medium ml-auto">
+                {formatHUF(data.totalCost)}
+              </span>
             </div>
 
-            <div className="text-muted-foreground">Átlagos literár:</div>
-            <div className="font-medium text-right">
-              {formatHUF(data.avgLiterPrice)}
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-0.5 rounded-full bg-[#FF5252]"></div>
+              <span className="text-muted-foreground">Átlagos literár:</span>
+              <span className="font-medium ml-auto">
+                {formatHUF(data.avgLiterPrice)}/l
+              </span>
             </div>
 
-            <div className="text-muted-foreground">Tankolás mennyiség:</div>
-            <div className="font-medium text-right">
-              {data.fuelQuantity} liter
+            <div className="border-t pt-1 mt-1">
+              <span className="text-muted-foreground">Tankolt mennyiség:</span>
+              <span className="font-medium ml-auto float-right">
+                {data.fuelQuantity} liter
+              </span>
             </div>
           </div>
         </div>
@@ -281,7 +291,7 @@ export default function FuelCostChart({ token }: ChartProps) {
               tickMargin={10}
               axisLine={false}
               width={60}
-              tickFormatter={(value: number) => `${value} Ft`}
+              tickFormatter={(value: number) => `${value} Ft/l`}
             />
             {/* Használjuk a Recharts Tooltip-et */}
             <Tooltip
@@ -315,7 +325,7 @@ export default function FuelCostChart({ token }: ChartProps) {
           Összes költség: {formatHUF(totalExpense)}
         </div>
         <div className="leading-none text-muted-foreground">
-          Átlagos literár: {formatHUF(avgPricePerLiter)} / liter
+          Átlagos literár: {formatHUF(avgPricePerLiter)}/l
         </div>
         <div className="leading-none text-muted-foreground">
           Összesen tankolt: {totalFuelQuantity.toFixed(2)} liter
