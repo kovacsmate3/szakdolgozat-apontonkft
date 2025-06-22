@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/stylesheets/globals.css";
-import { TailwindIndicator } from "@/components/tailwind-indicator";
+//import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { Toaster } from "sonner";
 import DashboardLayout from "@/layouts/dashboard-layout";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -57,7 +57,7 @@ export default function RootLayout({
             <NextAuthProvider>
               <DashboardLayout>{children}</DashboardLayout>
               <Toaster position="top-center" />
-              <TailwindIndicator />
+              {/*<TailwindIndicator />*/}
             </NextAuthProvider>
           </ThemeProvider>
         </TanstackProvider>
