@@ -801,6 +801,7 @@ export function TripForm({
             "egyéb",
           ]}
           allowTypeSelection={true}
+          allLocations={locations || []}
         />
       )}
     </>
