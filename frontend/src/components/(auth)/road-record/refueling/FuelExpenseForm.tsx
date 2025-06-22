@@ -704,6 +704,7 @@ export function FuelExpenseForm({
           defaultLocationType="töltőállomás"
           allowedLocationTypes={["töltőállomás"]}
           allowTypeSelection={false}
+          allLocations={locations || []}
         />
       )}
     </>
