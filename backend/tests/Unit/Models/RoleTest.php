@@ -9,14 +9,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class RoleModelTest extends TestCase
+class RoleTest extends TestCase
 {
     use RefreshDatabase;
 
     #[Test]
     public function it_can_create_a_role()
     {
-        $role = Role::factory()->create([
+        Role::factory()->create([
             'slug' => 'test-role',
             'title' => 'Test Role',
             'description' => 'A test role for unit testing'
