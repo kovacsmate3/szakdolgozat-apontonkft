@@ -53,7 +53,7 @@ class UserTest extends TestCase
             'birthdate' => '1990-01-01',
             'phonenumber' => '+36201234567',
             'email' => 'newuser@example.com',
-            'password' => 'Password1!',
+            'password' => 'S3cureP@ssw0rd!',
             'role_id' => $employeeRole->id,
         ];
 
