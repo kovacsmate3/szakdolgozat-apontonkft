@@ -23,6 +23,7 @@ class FuelExpenseFactory extends Factory
             'currency' => fake()->currencyCode(),
             'fuel_quantity' => fake()->randomFloat(1, 5, 80),
             'odometer' => fake()->numberBetween(10000, 300000),
+            'location_id' => 2,
             'trip_id' => null,
         ];
     }
@@ -41,18 +42,28 @@ class FuelExpenseFactory extends Factory
             return $this->state(function (array $attributes) {
                 return [
                     'trip_id' => null,
+                    'location_id' => 2,
                 ];
             });
         }
 
-        // Ha van Trip, akkor az adataihoz igazítjuk a töltést
+        $locationId = 2;
+
         return $this->state(function (array $attributes) use ($trip) {
+
+            if ($trip->destinationLocation && $trip->destinationLocation->location_type === 'töltőállomás') {
+                $locationId = $trip->destination_location_id;
+            } elseif ($trip->startLocation && $trip->startLocation->location_type === 'töltőállomás') {
+                $locationId = $trip->start_location_id;
+            }
+
             return [
                 'car_id' => $trip->car_id,
                 'user_id' => $trip->user_id,
                 'expense_date' => $trip->end_time ?? $trip->start_time,
                 'trip_id' => $trip->id,
                 'odometer' => $trip->end_odometer ?? $trip->start_odometer, // Lehetőleg a út végállomása
+                'location_id' => $locationId,
             ];
         });
     }
