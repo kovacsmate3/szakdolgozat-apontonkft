@@ -417,21 +417,19 @@ export function TripForm({
                         <SelectContent>
                           <SelectGroup>
                             <SelectItem value="none">Nincs megadva</SelectItem>
-                            {travelPurposes
-                              .filter((purpose) => purpose.type === "Üzleti")
-                              .map((purpose) => (
-                                <SelectItem
-                                  key={purpose.id}
-                                  value={purpose.id.toString()}
-                                >
-                                  {purpose.travel_purpose}
-                                </SelectItem>
-                              ))}
+                            {travelPurposes.map((purpose) => (
+                              <SelectItem
+                                key={purpose.id}
+                                value={purpose.id.toString()}
+                              >
+                                {purpose.travel_purpose}
+                              </SelectItem>
+                            ))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
                       <FormDescription className="text-xs">
-                        Az utazás üzleti célját adja meg.
+                        Az utazás célját adja meg.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
